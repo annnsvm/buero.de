@@ -1,0 +1,18 @@
+{
+  "name": "buero.de",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "lint": "eslint \"frontend/**/*.{js,jsx}\" \"backend/**/*.{js,cjs,mjs}\"",
+    "lint:fix": "eslint \"frontend/**/*.{js,jsx}\" \"backend/**/*.{js,cjs,mjs}\" --fix",
+    "format": "prettier --write \"frontend/**/*.{js,jsx,json,css,md}\" \"backend/**/*.{js,json,md}\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1"
+  }
+}
