@@ -1,9 +1,70 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
+
+model User {
+  id                String   @id @default(uuid()) @db.Uuid @map("id")
+  email             String   @unique @map("email")
+  password_hash     String   @map("password_hash")
+  role              String   @default("user") @map("role")
+  is_email_verified Boolean  @default(false) @map("is_email_verified")
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
+
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid @map("id")
+  user_id    String    @db.Uuid @map("user_id")
+  token_hash String    @unique @map("token_hash")
+  expires_at DateTime  @map("expires_at")
+  revoked_at DateTime? @map("revoked_at")
+  created_at DateTime  @default(now()) @map("created_at")
+  ip         String?   @map("ip")
+  user_agent String?   @map("user_agent")
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+
+model Course {
+  id           String   @id @default(uuid()) @db.Uuid @map("id")
+  level        String   @map("level")
+  title        String   @map("title")
+  description  String?  @map("description")
+  is_published Boolean  @default(false) @map("is_published")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  lessons      Lesson[]
+
+  @@map("courses")
+}
+
+model Lesson {
+  id           String   @id @default(uuid()) @db.Uuid @map("id")
+  course_id    String   @db.Uuid @map("course_id")
+  title        String   @map("title")
+  video_url    String?  @map("video_url")
+  content      String?  @map("content")
+  order_index  Int      @default(0) @map("order_index")
+  is_published Boolean  @default(false) @map("is_published")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  course       Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@index([course_id])
+  @@map("lessons")
+}
+
