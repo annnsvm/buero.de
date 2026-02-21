@@ -1,0 +1,22 @@
+---
+globs: "frontend/**/*,web/**/*,app/**/*,src/pages/**/*,src/components/**/*"
+description: "Frontend — auth contract та орієнтири (основний стек визначає інший розробник)"
+---
+
+# Frontend — buero.de
+
+Frontend stack and detailed UI conventions are defined by the **frontend developer**. This rule documents the **auth contract** and integration points the backend provides; backend owner is responsible for correct auth setup and CORS so the frontend can integrate.
+
+## Auth contract (для інтеграції з бекендом)
+
+- **Tokens in cookie only:** `access_token`, `refresh_token` (names and options in docs/auth-spec.md, docs/auth-config.md). Do not store tokens in localStorage (XSS). Send cookies with requests; optional fallback: `Authorization: Bearer <access_token>`.
+- **API base URL and credentials:** use one HTTP client with baseURL and **withCredentials: true** for cookie. On 401: try refresh (POST /auth/refresh with refresh cookie), then redirect to login if refresh fails.
+- **UI languages:** EN / DE (users.language or Accept-Language); architecture requires EN/DE support.
+
+## Орієнтири (з architecture)
+
+- **Roles:** student vs teacher; student — courses, progress, lesson request; teacher — CRUD courses/materials, lesson_requests.
+- **Content access:** show course list and materials only when user has active subscription or trial; otherwise CTA to Placement Test / subscription.
+- **UI/UX:** minimal design, focus on learning scenarios; mobile-friendly; immediate feedback in quiz.
+
+Concrete stack (React/Vue, UI library) and full frontend rules are set by the frontend developer.

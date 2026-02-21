@@ -1,0 +1,23 @@
+---
+globs: "buero-backend-api/src/**/subscriptions/**/*,buero-backend-api/src/**/payments/**/*,buero-backend-api/src/**/webhooks/**/*,buero-backend-api/src/**/*.ts"
+description: "Stripe, підписки та перевірка доступу до контенту"
+---
+
+# Stripe та доступ до контенту — buero.de
+
+## Stripe
+
+- **Картки не зберігаємо**; Stripe Checkout + **Customer Portal** для керування підпискою.
+- **Webhook:** `POST /webhooks/stripe`. Обов’язково: **перевірка signature** (Stripe SDK); **ідемпотентність** — перед обробкою перевірити `stripe_event_id` у таблиці **stripe_webhook_events**, при UNIQUE conflict — пропустити обробку.
+- Події: checkout.session.completed, invoice.paid, customer.subscription.updated, customer.subscription.deleted (docs/architecture.md, секція Webhook Processing).
+- Один **активний** subscription на користувача (partial unique за user_id де status = active).
+
+## Доступ до контенту (курси, матеріали)
+
+- Список курсів (**GET /api/courses**) та перегляд курсу/матеріалу для **студента** — лише якщо є **активна підписка** або **активний trial** (subscriptions.status = 'active' | 'trialing' або student_profiles.trial_ends_at > now()).
+- Вчитель: доступ до CRUD курсів/матеріалів незалежно від підписки (за роллю teacher).
+- Якщо студент без підписки/trial запитує список курсів або матеріал — повертати **403** або **402** та зрозуміле повідомлення (або окремий ендпоінт «статус доступу» для UI).
+
+## Посилання
+
+- docs/modules/06-subscriptions-billing.md; docs/architecture.md (Payments, Business Rules).

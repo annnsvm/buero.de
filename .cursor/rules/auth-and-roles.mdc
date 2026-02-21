@@ -1,0 +1,25 @@
+---
+globs: "buero-backend-api/src/**/auth/**/*,buero-backend-api/src/**/guards/**/*,buero-backend-api/src/**/strategies/**/*,buero-backend-api/src/**/*.ts"
+description: "Auth та ролі — JWT, cookie, student/teacher"
+---
+
+# Auth та ролі — buero.de
+
+## Джерела
+
+- **docs/auth-spec.md** — повна специфікація (реєстрація = логін, cookie, refresh у Postgres, logout).
+- **docs/auth-config.md** — конфігурація (TTL, назви cookie).
+
+## Ключові правила
+
+- **Токени в cookie**, не в тілі JSON: `access_token`, `refresh_token`. Опційно приймати access з заголовка `Authorization: Bearer` для клієнтів, які не відправляють cookie.
+- **Refresh** зберігається в БД (таблиця **refresh_tokens**); при logout — **revoke** (revoked_at або видалення). Ротація refresh при виклику /refresh.
+- **Ролі:** тільки **student** та **teacher**. Немає ролі admin; для адміністративних дій використовувати окремий механізм поза MVP якщо знадобиться.
+- **Guards:** JwtAuthGuard для захищених ендпоінтів; RolesGuard з **@Roles('student' | 'teacher')** де потрібна перевірка ролі (наприклад тільки teacher може POST /api/courses).
+- **Студент:** доступ до курсів/матеріалів — лише за умови **активної підписки або trial** (subscriptions.status або student_profiles.trial_ends_at). Перевірка в сервісі або guard перед поверненням списку курсів / матеріалів.
+- **Вчитель:** будь-який вчитель може створювати/редагувати/видаляти **будь-який** курс і матеріали (не обмежувати за teacher_id для доступу).
+
+## Реєстрація та логін
+
+- Реєстрація: створення user + відповідного профілю (student_profiles або teacher_profiles); після успішної реєстрації одразу видавати пару токенів у cookie (не вимагати окремий login).
+- Логін: перевірка email + password (bcrypt); видача access + refresh у cookie.

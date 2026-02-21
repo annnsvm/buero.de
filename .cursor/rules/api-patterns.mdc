@@ -1,0 +1,40 @@
+---
+globs: buero-backend-api/src/**/*.ts
+description: "API та NestJS-патерни для backend buero.de"
+---
+
+# API Patterns — NestJS backend buero.de
+
+## Структура модуля
+
+- Модуль: `*.module.ts` (imports, exports, providers).
+- Контролер: `*.controller.ts` — тільки HTTP (параметри, виклик сервісу, повернення).
+- Сервіс: `*.service.ts` — бізнес-логіка, робота з Prisma (інжекція PrismaService).
+- DTO: окремі файли або папка dto; class-validator + class-transformer; Swagger @ApiProperty / @ApiPropertyOptional.
+
+## Аутентифікація та авторизація
+
+- Захист ендпоінтів: **JwtAuthGuard** (Passport JWT). Токен з cookie або заголовка `Authorization: Bearer`.
+- Ролі: **RolesGuard** + декоратор **@Roles('student' | 'teacher')**. Адмін-ролі немає.
+- Поточний користувач: декоратор типу **@CurrentUser()** або **req.user** (payload JWT: id, role, email тощо).
+- Деталі: docs/auth-spec.md (токени в cookie, refresh у Postgres, revoke при logout).
+
+## Контролери
+
+- Swagger: **@ApiTags**, **@ApiOperation**, **@ApiResponse**; для захищених — **@ApiBearerAuth()** або опис cookie.
+- Валідація: **ValidationPipe** глобально; DTO з декораторами class-validator.
+- Помилки: **HttpException** з відповідним статусом (400, 401, 403, 404); не витікати внутрішні деталі.
+- Доступ до контенту (курси, матеріали): перевіряти активну підписку або trial для студента (модуль Subscriptions / student_profiles.trial_ends_at).
+
+## DTO та валідація
+
+- **@IsString()**, **@IsEmail()**, **@IsUUID()**, **@IsEnum()**, **@IsOptional()**, **@Min()**, **@Max()**, **@ValidateNested()**, **@Type()** (class-transformer).
+- Swagger: **@ApiProperty({ description, example })** для обов'язкових; **@ApiPropertyOptional()** для опціональних.
+- Не повертати в response поля типу password_hash; при потребі **@Exclude()** та class-transformer.
+
+## Робота з БД
+
+- Єдиний доступ до БД через **PrismaService** (інжекція в сервіси).
+- Складні операції (кілька записів, консистентність) — **транзакції** Prisma.
+- Перевіряти існування сутностей перед оновленням/видаленням (наприклад курс, матеріал, user); 404 якщо не знайдено.
+- Не використовувати Redis у MVP; сесія = JWT + refresh у Postgres.
