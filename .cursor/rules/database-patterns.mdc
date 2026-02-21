@@ -1,0 +1,37 @@
+---
+globs: buero-backend-api/prisma/**/*,buero-backend-api/**/prisma.service.ts,**/prisma/**/*,**/*repository*
+description: "Prisma та БД — buero.de (PostgreSQL)"
+---
+
+# База даних та Prisma — buero.de
+
+## Джерело схеми
+
+Схема та зв'язки описані в **docs/architecture.md** (розділ 3). Prisma schema (schema.prisma) має відповідати цим таблицям.
+
+## Основні сутності
+
+- **users** — id (UUID), email, password_hash, role (student | teacher), language (en | de), stripe_customer_id, deleted_at, timestamps.
+- **refresh_tokens** — зберігання refresh JWT для revoke при logout.
+- **student_profiles** — user_id (1-1), level (A1|A2|B1|B2), trial_ends_at, timezone.
+- **teacher_profiles** — user_id (1-1), bio, is_active.
+- **courses** — teacher_id (nullable, «хто створив»), title, description, language, category (language | sociocultural), is_published.
+- **course_materials** — course_id, type (video, vocabulary, grammar, quiz, scenario, cultural_insight, homework, text), title, content (JSONB), order_index.
+- **subscriptions**, **payments** — Stripe; один активний subscription на user (partial unique).
+- **stripe_webhook_events** — stripe_event_id (UNIQUE) для ідемпотентності webhook.
+- **course_progress**, **quiz_attempts** — прогрес і покрокові відповіді квізів/сценаріїв.
+- **lesson_requests** — student_id, teacher_id (після прийняття), status (pending | accepted | completed | rejected).
+- **placement_questions** — один глобальний Placement Test (без course_id).
+
+## Патерни
+
+- Інжекція **PrismaService** у сервіси; не створювати окремий репозиторійний шар без потреби.
+- Транзакції для операцій з кількома таблицями (наприклад створення subscription + оновлення user).
+- Міграції: описові назви; тестувати на dev перед застосуванням.
+- Індекси з architecture.md (users.email, subscriptions.user_id, course_materials.course_id, тощо) — додати в міграції або вручну.
+
+## Команди (орієнтовно)
+
+- Генерація клієнта: `npx prisma generate`
+- Міграції: `npx prisma migrate dev` / `migrate deploy`
+- Seed: за потреби (placement_questions, тестові курси тощо).

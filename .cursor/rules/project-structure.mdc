@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+description: "Структура проєкту buero.de — платформа вивчення німецької мови"
+---
+
+# Buero.de — структура проєкту
+
+## Backend
+
+- Код backend у папці **buero-backend-api/**; вихідний код у **buero-backend-api/src/**.
+- **Package manager:** npm.
+- Джерела правди (архітектура, модулі, auth) — у **docs/** (див. нижче).
+
+## Джерела правди
+
+- **Архітектура та БД:** docs/architecture.md
+- **API-модулі:** docs/api-plan.md, docs/modules/*.md
+- **Auth:** docs/auth-spec.md, docs/auth-config.md
+- **Вимоги:** docs/requirements.md
+- **Інструменти:** docs/tools.md
+
+## Модулі backend (порядок реалізації)
+
+1. **Auth** — реєстрація, логін, refresh, logout; JWT у cookie; refresh у Postgres.
+2. **Users** — профіль поточного користувача (GET/PATCH me).
+3. **Placement Test** — один глобальний тест, рівень A1–B2, trial після проходження.
+4. **Courses** — CRUD курсів (teacher); список/перегляд для студента (доступ за підпискою/trial).
+5. **Course Materials** — CRUD матеріалів (teacher); читання для студента; типи: video (YouTube), vocabulary, grammar, quiz, scenario, cultural_insight, homework, text.
+6. **Progress & Quizzes** — course_progress, quiz_attempts (покрокове збереження), рекомендований крок.
+7. **Subscriptions & Billing** — Stripe Checkout, Customer Portal, webhooks (ідемпотентність через stripe_webhook_events).
+8. **Lesson Requests** — студент створює запит; вчитель приймає/відхиляє, виставляє completed/rejected.
+
+## Ролі
+
+- **student** | **teacher**. Адмін-ролі немає.
+- Будь-який вчитель може створювати/редагувати/видаляти будь-який курс (courses.teacher_id лише «хто створив»).
+
+## Стек (MVP)
+
+- Backend: NestJS, Prisma, PostgreSQL, JWT (cookie), Swagger, class-validator, class-transformer. **npm** для залежностей.
+- Платежі: Stripe. Відео: YouTube (embed). Redis у MVP не використовується.
+
+## Контент-моделі (фіксовані в проєкті)
+
+- **Placement Test:** питання в таблиці **placement_questions**; поле **question_data** (JSONB) — текст питання, варіанти відповідей, правильна відповідь; **order_index** для порядку. Один глобальний тест (без course_id). Деталі: docs/modules/02-placement-test.md, docs/architecture.md §3.13.
+- **Сценарії (course_materials type = scenario):** **content** — JSON з нодами та гілками. Мінімум 3 гілки на сценарій. Формат нод: `{ id, type: "situation"|"choice"|"consequence"|"explanation", text, choices?: [{ text, nextNodeId, isCorrect, feedback }] }`. Деталі: docs/architecture.md §3.6, docs/modules/04-course-materials.md.
+- **Відео (course_materials type = video):** у **content** обов'язково поле **youtube_video_id** для embed (YouTube). Опційно **video_source: "youtube"** для майбутнього S3. Деталі: docs/modules/04-course-materials.md.
