@@ -1,12 +1,6 @@
-import { useEffect, useState } from "react";
-
-type HealthResponse = unknown; // або уточниш тип, коли буде бекенд
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
 
 export default function App() {
-
-  return (
-    <div>
-      <h1>Frontend</h1>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
