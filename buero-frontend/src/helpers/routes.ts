@@ -1,6 +1,4 @@
-/**
- * Route path constants. Use these instead of magic strings for navigation and router config.
- */
+
 export const ROUTES = Object.freeze({
   HOME: "/",
   ASSESSMENT: "/assessment",
@@ -18,7 +16,5 @@ export const ROUTES = Object.freeze({
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
 
-/**
- * Builds course learning URL for a given course id.
- */
+
 export const getCoursePath = (courseId: string): string => `/courses/${courseId}`;

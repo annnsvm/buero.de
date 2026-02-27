@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-// TODO: when auth slice is ready, redirect to /auth if user is not logged in
 
 type PrivateGuardProps = {
   children: ReactNode;
