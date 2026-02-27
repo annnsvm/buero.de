@@ -1,0 +1,29 @@
+---
+globs: "buero-backend-api/**/*.ts,*.ts,*.tsx,*.js,*.jsx"
+description: "Стиль коду та конвенції — buero.de"
+---
+
+# Стиль коду — buero.de
+
+## Загальні правила
+
+- **Мова коментарів та повідомлень помилок API:** **English**.
+- **TypeScript:** strict typing; avoid `any` where possible.
+- **Naming:** camelCase for variables/methods; PascalCase for classes, interfaces, DTOs; UPPER_SNAKE for constants when needed.
+
+## Backend (NestJS)
+
+- **class-validator** and **class-transformer** for DTOs; **ValidationPipe** globally.
+- All public DTOs must have Swagger docs (**@ApiProperty**, **@ApiPropertyOptional**).
+- Services — **@Injectable()**, inject via constructor.
+- Errors — **HttpException** (or exception filter) with clear message and correct HTTP status; messages in English.
+- Do not hardcode secrets; use **ConfigService** (@nestjs/config) and env vars.
+
+## Frontend
+
+- Frontend conventions and UI stack are defined by the frontend developer. Backend owner is responsible for **backend implementation** and **auth contract** (cookie names, refresh flow, CORS) so the frontend can integrate auth correctly; see docs/auth-spec.md, docs/auth-config.md.
+
+## Formatting
+
+- ESLint + Prettier (docs/tools.md); same config across the repo.
+- Quotes, indentation, line length — follow project config.

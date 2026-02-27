@@ -1,0 +1,31 @@
+---
+globs: "buero-backend-api/**/*.spec.ts,buero-backend-api/**/*.test.ts,buero-backend-api/**/e2e/**/*.ts"
+description: "Тестування API та backend — buero.de"
+---
+
+# Тестування — buero.de
+
+## Інструменти
+
+- **Jest** — unit and integration tests (docs/tools.md).
+- **Supertest** — e2e HTTP requests to the NestJS app (in-memory, no real network).
+
+## Test database
+
+- Use a **dedicated test database** for tests (e.g. separate `DATABASE_URL_TEST` or test schema). Do not run tests against the development database. Ensure tests are isolated (clean state or transactions per test) and do not depend on execution order.
+
+## Що тестувати
+
+- **Services:** logic without HTTP (e.g. UserService: password hashing, JWT generation; CourseService: CRUD, access check for subscription/trial). Mock PrismaService or use the test DB.
+- **Controllers / e2e:** requests to endpoints (register, login, GET /api/courses, etc.); assert status codes, response body, cookies where relevant.
+- **Stripe webhook:** idempotency (duplicate stripe_event_id must not change DB); signature verification (mock or test key).
+
+## Конвенції
+
+- Test files next to code: ***.spec.ts** (unit/integration) or under **test/** / **e2e/** for e2e.
+- Descriptive names in English: `describe('CourseService')`, `it('returns 403 when student has no subscription')`.
+- Isolate tests; do not rely on execution order.
+
+## Посилання
+
+- docs/tools.md (Jest, Supertest); docs/auth-spec.md for auth flows.
