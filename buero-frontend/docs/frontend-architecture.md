@@ -103,30 +103,18 @@ Frontend `buero-frontend` — це **SPA на React + TypeScript**, яка ре�
 
 ### 2.6. Стилі та Design Tokens
 
-**Tailwind CSS** (рекомендовано):
+**Tailwind CSS** (у проєкті — v4 з Vite):
 
-- `tailwind.config.js`:
-  - кастомні кольори бренду (`primary`, `secondary`, `accent`, `muted`, `background`, `foreground`).
-  - шрифти (наприклад, `font-sans` на базі Inter/Roboto, `font-serif` для заголовків).
-  - `spacing` шкала: кратна 4 (`4, 8, 12, 16, 20, 24, ...`).
-  - `borderRadius`: `sm`, `md`, `lg`, `xl` (наприклад, `0.375rem`, `0.5rem`, `0.75rem`, `1rem`).
-  - `boxShadow`: `sm`, `md`, `lg` для карток та модалок.
+- Токени визначені в `src/styles/index.css` через `@theme` (кольори, шрифти). Окремий `tailwind.config.js` у v4 не обов’язковий.
+- Кольори бренду: `--color-primary`, `--color-secondary`, `--color-background`, `--color-foreground`, `--color-muted` тощо (див. `index.css`).
+- Шрифти: `--font-sans` (Inter), `--font-heading` (Sora).
+- Spacing, borderRadius, boxShadow — стандартна шкала Tailwind або кастом у `@theme` за потреби.
 
-**Design tokens** (описом у цьому документі):
+**Design tokens** реалізовані в **`src/styles/index.css`** (Tailwind v4 `@theme`): колірна палітра з макету (Cinnabar, Torea Bay, neutrals), шрифти Inter та Sora, семантичні змінні (`--color-primary`, `--color-background`, `--font-heading` тощо). У цьому документі лише загальні принципи:
 
-- **Колірна палітра (приклад)**:
-  - `primary`: #1D4ED8 (насичений синій) — основні CTA.
-  - `primary-foreground`: #FFFFFF.
-  - `secondary`: #0EA5E9 (бірюзовий) — вторинні CTA.
-  - `background`: #F9FAFB (світлий фон).
-  - `muted`: #6B7280 (сірий текст).
-  - `danger`: #DC2626 (помилки).
-- **Типографіка**:
-  - `font-sans`: Inter/Roboto, 14–16px базовий розмір.
-  - Заголовки: `text-2xl`, `text-3xl` для hero; `text-xl` для секцій.
-- **Радіуси та тіні**:
-  - Карти: `rounded-xl`, `shadow-md`.
-  - Плаваючі панелі/модалки: `rounded-2xl`, `shadow-lg`.
+- **Кольори:** primary (CTA), secondary, background, foreground, muted, border, error; hover-токени за потреби.
+- **Типографіка:** `font-sans` (основний текст), `font-heading` (заголовки); базовий розмір 14–16px; заголовки — `text-xl`–`text-3xl`.
+- **Радіуси та тіні:** картки `rounded-xl`, `shadow-md`; модалки `rounded-2xl`, `shadow-lg`.
 
 ---
 
@@ -139,7 +127,7 @@ src/
   main.tsx
   App.tsx
   routes/
-    layout.tsx
+    index.tsx    ← конфіг роутера (createBrowserRouter)
   pages/
     HomePage/
     AssessmentPage/
@@ -155,6 +143,7 @@ src/
     NotFoundPage/
   features/
     auth/
+    landing/
     placement-test/
     courses-catalog/
     course-learning/
@@ -162,6 +151,7 @@ src/
     subscriptions/
     lesson-requests/
     progress-quizzes/
+    account-settings/
   components/
     layout/
     ui/
@@ -180,17 +170,18 @@ src/
 
 - Точка входу:
   - створює React root;
-  - обгортає `App` у `Provider` (Redux), `BrowserRouter`, `I18nextProvider`, можливо, `ThemeProvider`.
+  - обгортає `App` у `Provider` (Redux), `PersistGate` (redux-persist);
+  - **не** використовує `BrowserRouter` — роутер підключається в `App` через `RouterProvider`.
 
-Приклад (високорівневий):
+Приклад (поточна реалізація):
 
 ```ts
 createRoot(rootElement).render(
   <StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
+      <PersistGate loading={null} persistor={persistor}>
         <App />
-      </BrowserRouter>
+      </PersistGate>
     </Provider>
   </StrictMode>
 );
@@ -199,18 +190,17 @@ createRoot(rootElement).render(
 ### 3.2. `src/App.tsx`
 
 - Відповідає за:
-  - оголошення `Router` (через `createBrowserRouter` або `Routes`/`Route`);
-  - підключення глобального `AppErrorBoundary`;
-  - lazy-loading сторінок (`React.lazy`, `Suspense` або `createBrowserRouter` `lazy`).
+  - підключення **React Router** через `RouterProvider` та один об’єкт `router` (див. §4 «Роутинг»);
+  - опційно — глобальний `AppErrorBoundary` навколо всього дерева.
+- Роути оголошуються **не** тут, а в `src/routes/index.tsx` (createBrowserRouter). Lazy-loading сторінок реалізовано через `React.lazy()` у конфігу роутера.
 
-### 3.3. `src/routes/layout.tsx`
+### 3.3. Layout: `SharedLayout` та `src/routes/index.tsx`
 
-- **LayoutShell**:
-  - глобальний Header (logo, навігація, CTA, language switch).
-  - Footer (copyright, links).
-  - основна область `<main>` з `<Outlet />`.
-  - виклик `fetchCurrentUser()`/`refreshSession()` при mount.
-  - компонент глобального `Toaster` для notification’ів.
+- **SharedLayout** (`src/components/layout/SharedLayout/`) виконує роль LayoutShell:
+  - Header (logo, навігація, CTA), Footer;
+  - область `<main>` з `<Outlet />` для дочірніх роутів;
+  - при mount можна викликати `fetchCurrentUser()` / refresh сесії.
+- Роутер визначено в **`src/routes/index.tsx`**: один батьківський маршрут з `element: <SharedLayout />` і `children` — усі сторінки. Таким чином layout один на весь застосунок, змінюється лише вміст `<Outlet />`.
 
 ### 3.4. `src/pages/*`
 
@@ -235,32 +225,24 @@ createRoot(rootElement).render(
 
 ### 3.5. `src/features/*`
 
-**Feature-based** підхід:
+**Feature-based** підхід: кожна фіча — окрема папка з опційними підпапками `components/`, `redux/`, `api/`, `validation/`. У кожній фічі є `index.ts` з JSDoc (посилання на doc у `docs/frontend-features/`, перелік запланованих підпапок). Загальний barrel — `src/features/index.ts`: імпорт через `import { auth, landing, ... } from "@/features"`.
 
-- `src/features/auth/`
-  - `components/` (`LoginForm`, `RegisterForm`, `ResetPasswordForm`).
-  - `redux/` (`authSlice.ts`).
-  - `api/` (`authApi.ts`).
-  - `validation/` (`authSchemas.ts`).
-- `src/features/placement-test/`
-  - компоненти для проходження, прогрес-бар, summary.
-- `src/features/courses-catalog/`
-  - фільтри, список курсів, картки.
-- `src/features/course-learning/`
-  - sidebar, lesson content viewer, video/quiz/scenario renderers, notes.
-- `src/features/profile/`
-  - profile overview, avatar upload, profile forms.
-- `src/features/subscriptions/`
-  - subscription banners, статус, кнопки Checkout/Portal.
-- `src/features/lesson-requests/`
-  - форма створення запиту, списки для студента/вчителя.
-- `src/features/progress-quizzes/`
-  - компоненти відображення прогресу, progress bar, recommended-next widgets.
+**Детальний опис:** див. **[docs/features-folder-guide.md](features-folder-guide.md)** — навіщо папка features, як з нею працювати, приклад фічі (auth), і чому Redux лишається окремо в `src/redux/`.
 
-У features **не лежать**:
+Перелік фіч:
 
-- глобальні layout (Header, Footer);
-- базові UI-компоненти (buttons, inputs, modals).
+- `src/features/auth/` — `components/` (LoginForm, RegisterForm, ResetPasswordForm), `api/`, `validation/`. Redux (auth slice) — окремо в `src/redux/slices/auth/`.
+- `src/features/landing/` — компоненти лендингу (hero, why-buro, beyond-classroom тощо).
+- `src/features/placement-test/` — проходження тесту, прогрес-бар, summary.
+- `src/features/courses-catalog/` — фільтри, список курсів, картки.
+- `src/features/course-learning/` — sidebar, lesson content viewer, video/quiz/scenario renderers, notes.
+- `src/features/profile/` — profile overview, avatar upload, profile forms.
+- `src/features/subscriptions/` — subscription banners, статус, кнопки Checkout/Portal.
+- `src/features/lesson-requests/` — форма створення запиту, списки для студента/вчителя.
+- `src/features/progress-quizzes/` — відображення прогресу, progress bar, recommended-next widgets.
+- `src/features/account-settings/` — форми налаштувань акаунту (мова, timezone, пароль тощо).
+
+У features **не лежать**: глобальний layout (Header, Footer); базові UI-компоненти (Button, Input, Card, Modal); **Redux** — усі слайси лишаються в `src/redux/slices/`.
 
 ### 3.6. `src/components/layout/*`
 
@@ -284,12 +266,7 @@ createRoot(rootElement).render(
 
 - `store.ts` — конфігурація Redux store.
 - `persistConfig.ts` — конфіг `redux-persist` (whitelist/blacklist для slices).
-- `slices/` або інтеграція slices з features.
-
-Рекомендація:
-
-- slices, специфічні для feature, розташовані в `src/features/<feature>/redux`.
-- у `src/redux/rootReducer.ts` — імпорт slices з features.
+- Усі слайси лежать у **`src/redux/slices/`** (auth, user, placementTest, coursesCatalog, courseLearning, progressQuizzes, subscriptions, lessonRequests). `rootReducer.ts` імпортує редьюсери тільки звідти. Redux у фічах не використовується — стейт залишається окремо від папки `features/` (див. [docs/features-folder-guide.md](features-folder-guide.md)).
 
 ### 3.9. `src/hooks/*`
 
@@ -306,8 +283,8 @@ createRoot(rootElement).render(
 
 ### 3.11. `src/styles/*`
 
-- Глобальні стилі Tailwind (`index.css` з `@tailwind base; @tailwind components; @tailwind utilities;`).
-- Допоміжні CSS (якщо потрібні) — типографіка, layout-токени.
+- Глобальні стилі: `index.css` з `@import "tailwindcss"`, `@theme` (дизайн-токени), `@layer base` (reset, типографіка), ключові анімації (наприклад, skeleton).
+- Шрифти підключаються через `@font-face` у `index.css` (файли з `public/fonts/`).
 
 ### 3.12. `src/api/*`
 
@@ -325,7 +302,27 @@ createRoot(rootElement).render(
 
 ## 4. Routing & Navigation
 
-### 4.1. Таблиця роутів
+У проєкті використовується **React Router v6+ у режимі Data Router**: роутер створюється через `createBrowserRouter`, а не через компоненти `<BrowserRouter>` + `<Routes>`/`<Route>`.
+
+### 4.1. Чому саме createBrowserRouter (Data Router)
+
+- **Один конфіг.** Усі маршрути описані в одному місці (`src/routes/index.tsx`): батьківський layout, дочірні шляхи, guards, lazy-компоненти. Легше читати й змінювати.
+- **Lazy-loading з коробки.** Кожна сторінка підключається через `lazy(() => import(...))`, тому бандл ділиться на чанки по сторінках без додаткового коду в `App`.
+- **Централізований errorElement.** Для всього дерева або окремого маршруту можна задати `errorElement` (наприклад, 404 або fallback при помилці рендеру).
+- **Підготовка до data API.** У майбутньому можна додати `loader`/`action` для даних і дій без зміни підходу до роутингу.
+- **Guards як обгортки.** Замість окремого «роуту перевірки» використовуємо компоненти `PublicGuard` / `PrivateGuard`: вони обгортають `element` дочірнього маршруту і роблять редірект за умовою (наприклад, неавторизований користувач → `/auth`).
+
+### 4.2. Як це працює зараз
+
+- **Де оголошується роутер:** `src/routes/index.tsx`. Експортується об’єкт `router` (результат `createBrowserRouter([...])`).
+- **Де підключається:** у `App.tsx` — `<RouterProvider router={router} />`. Історія й зміна URL керуються цим провайдером.
+- **Структура маршрутів:**
+  - Один кореневий маршрут з `path: "/"`, `element: <Suspense><SharedLayout /></Suspense>`, `errorElement: <NotFoundPage />`.
+  - У `children` — усі сторінки: `index: true` (HomePage), `path: "assessment"`, `path: "auth"`, `path: "courses/:courseId"` тощо. Константи шляхів зберігаються в `src/helpers/routes.ts` (`ROUTES`, `getCoursePath(courseId)`).
+  - `SharedLayout` рендерить Header, Footer і `<Outlet />`; у `<Outlet />` потрапляє відповідна дочірня сторінка.
+- **Guards:** для захищених маршрутів `element` обгорнуто в `<PrivateGuard>` (редирект на `/auth`, якщо не залогінений); для публічних, де не має бути залогіненого користувача, — `<PublicGuard>`. Реалізація guards у `src/components/guards/`.
+
+### 4.3. Таблиця роутів
 
 | Route | Page | Role/Access | Опис | Guard | ErrorBoundary |
 |-------|------|-------------|------|-------|---------------|
@@ -342,7 +339,7 @@ createRoot(rootElement).render(
 | `/profile` або `/me` | `UserProfilePage` | authenticated | Мій прогрес, курси, profile settings, avatar. | ProtectedRoute | Profile boundary |
 | `*` | `NotFoundPage` | public | 404 з CTA на `/` або `/courses`. | — | Global |
 
-### 4.2. ProtectedRoute / Guards
+### 4.4. ProtectedRoute / Guards
 
 - **ProtectedRoute**:
   - читає `auth`/`currentUser` з Redux.
@@ -353,7 +350,7 @@ createRoot(rootElement).render(
   - при відсутності доступу:
     - редірект на `/dashboard/trial` або `/subscriptions` CTA.
 
-### 4.3. Error Boundaries
+### 4.5. Error Boundaries
 
 - **Global `AppErrorBoundary`**:
   - обгортає `App` на кореневому рівні.

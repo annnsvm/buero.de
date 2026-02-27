@@ -1,10 +1,10 @@
 /**
  * Feature modules. Each feature may contain:
  * - components/
- * - redux/ (slice; rootReducer imports from here when migrated)
  * - api/
  * - validation/
- * See docs/frontend-architecture.md §3.5
+ * Redux stays in src/redux/slices/ (not in features).
+ * See docs/features-folder-guide.md
  */
 
 export * as auth from "./auth";
