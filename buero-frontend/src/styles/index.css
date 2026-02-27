@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/* ========== Шрифти (public/fonts) ========== */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter_18pt-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter_18pt-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter_18pt-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("/fonts/Sora-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+  Палітра з макету (Figma). Hover-кольори поки не визначені — додати пізніше.
+  Якщо є точні hex для Cinnabar / Torea Bay з макету — замінити відповідні змінні.
+*/
+@theme {
+  /* Base */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Cinnabar (основний акцент, CTA) */
+  --color-cinnabar: #e34234;
+  --color-cinnabar-darkest: #b53529;
+  --color-cinnabar-lightest: #fde8e6;
+
+  /* Torea Bay (синій акцент) */
+  --color-torea-bay: #1e3a5f;
+  --color-torea-bay-darkest: #0f1d2e;
+
+  /* Neutrals */
+  --color-neutral-darkest: #1c201b;
+  --color-neutral-darker: #2f312d;
+  --color-neutral: #2e302c;
+  --color-neutral-lighter: #6b6d69;
+  --color-neutral-lightest: #f5f5f4;
+
+  /* Semantic (для компонентів) */
+  --color-primary: var(--color-cinnabar);
+  --color-primary-foreground: var(--color-white);
+  --color-primary-darkest: var(--color-cinnabar-darkest);
+  --color-secondary: var(--color-torea-bay);
+  --color-secondary-foreground: var(--color-white);
+  --color-text: var(--color-neutral-darkest);
+  --color-text-muted: var(--color-neutral-darker);
+  --color-muted: var(--color-neutral-darker);
+  --color-border: var(--color-neutral-lighter);
+  --color-border-subtle: #262e2a;
+  --color-background: var(--color-white);
+  --color-background-alt: var(--color-neutral-lightest);
+  --color-foreground: var(--color-neutral-darkest);
+  /* Hover (тимчасово — замінити на значення з макету, коли будуть) */
+  --color-primary-hover: var(--color-cinnabar-darkest);
+  --color-secondary-hover: var(--color-torea-bay-darkest);
+  /* Помилки (формованість) */
+  --color-error: var(--color-cinnabar);
+  --color-error-border: var(--color-cinnabar-darkest);
+  /* Skeleton loader */
+  --color-skeleton: var(--color-background-alt);
+  --color-skeleton-shine: var(--color-neutral-lightest);
+
+  /* Opacity */
+  --opacity-neutral-darkest-60: rgba(28, 32, 27, 0.6);
+  --opacity-neutral-darkest-15: rgba(28, 32, 27, 0.15);
+  --opacity-white-60: rgba(255, 255, 255, 0.6);
+  --opacity-white-20: rgba(255, 255, 255, 0.2);
+
+  /* Шрифти: Inter — основний текст, Sora — заголовки */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-heading: "Sora", "Inter", system-ui, sans-serif;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-skeleton) 0%,
+    var(--color-skeleton) 40%,
+    var(--color-skeleton-shine) 50%,
+    var(--color-skeleton) 60%,
+    var(--color-skeleton) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+/* ========== Base reset (modern-normalize style) ========== */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    @apply antialiased;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    @apply bg-[var(--color-background)] font-sans text-[var(--color-foreground)];
+  }
+
+  h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote, pre, hr, dl, dd {
+    margin: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-size: inherit;
+    font-weight: 600;
+  }
+
+  ul, ol {
+    padding-left: 1.5em;
+    list-style: inherit;
+  }
+
+  img, svg, video, canvas, audio, iframe, embed, object {
+    display: block;
+    max-width: 100%;
+    vertical-align: middle;
+  }
+
+  img, video {
+    height: auto;
+  }
+
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+  }
+
+  button, [type="button"], [type="reset"], [type="submit"] {
+    cursor: pointer;
+    -webkit-appearance: button;
+  }
+
+  button:focus-visible, [type="button"]:focus-visible, [type="reset"]:focus-visible, [type="submit"]:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+  }
+}
