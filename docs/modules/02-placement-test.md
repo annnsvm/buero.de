@@ -9,7 +9,7 @@
 **Студент:**
 - Отримати питання **одного** placement-тесту (з таблиці `placement_questions`, **не прив'язані до курсу**).
 - Відправити відповіді; обчислити рівень **за кількістю правильних відповідей** (MVP); зберегти в `student_profiles.level`.
-- Після підтвердження пробного періоду — створити запис trial (`subscriptions` trialing або `student_profiles.trial_ends_at`).
+- Після підтвердження пробного періоду — створити запис **user_course_access** для **одного** курсу (наприклад рекомендованого за рівнем): access_type = trial, trial_ends_at = now() + N днів.
 
 **Вчитель (адмін контенту):**
 - Додавати, редагувати та видаляти питання placement-тесту (CRUD для `placement_questions`). Вчитель керує єдиним тестом визначення рівня.
@@ -24,7 +24,7 @@
 |---------|----------|
 | placement_questions | читання (студент + вчитель), створення, оновлення, видалення (вчитель) |
 | student_profiles | читання, оновлення (level, trial_ends_at) |
-| subscriptions | створення (при підтвердженні trial — status = trialing) або тільки student_profiles.trial_ends_at |
+| user_course_access | створення (при підтвердженні trial — один курс, access_type = trial, trial_ends_at) |
 | placement_results | опціонально — історія проходжень placement (raw_score, level) |
 
 ---
@@ -37,7 +37,7 @@
 - **CRUD питань (вчитель):** створення, оновлення, видалення записів у placement_questions (question_data, level, order_index).
 - Перевірка відповідей, підрахунок правильних, визначення рівня за правилами (діапазони балів → A1/A2/B1/B2).
 - Збереження рівня в student_profiles; опціонально запис у placement_results.
-- Активація trial: при підтвердженні користувачем — створити subscription (trialing) або оновити student_profiles.trial_ends_at.
+- Активація trial: при підтвердженні користувачем — створити запис user_course_access для одного курсу (access_type = trial, trial_ends_at).
 
 ---
 
@@ -95,7 +95,7 @@ flowchart TB
     subgraph DB["PostgreSQL"]
         Q[(placement_questions)]
         SP[(student_profiles)]
-        Sub[(subscriptions)]
+        UCA[(user_course_access)]
     end
 
     A --> Ctrl
@@ -113,7 +113,7 @@ flowchart TB
     S2 --> Q
     S2 --> SP
     S3 --> SP
-    S3 --> Sub
+    S3 --> UCA
     S4 --> Q
 ```
 

@@ -27,7 +27,7 @@ description: "Структура проєкту buero.de — платформа 
 4. **Courses** — CRUD курсів (teacher); список/перегляд для студента (доступ за підпискою/trial).
 5. **Course Materials** — CRUD матеріалів (teacher); читання для студента; типи: video (YouTube), vocabulary, grammar, quiz, scenario, cultural_insight, homework, text.
 6. **Progress & Quizzes** — course_progress, quiz_attempts (покрокове збереження), рекомендований крок.
-7. **Subscriptions & Billing** — Stripe Checkout, Customer Portal, webhooks (ідемпотентність через stripe_webhook_events).
+7. **Subscriptions & Billing** — купівля/підписка на курс (Checkout з course_id), user_course_access, Stripe Customer Portal, webhooks.
 8. **Lesson Requests** — студент створює запит; вчитель приймає/відхиляє, виставляє completed/rejected.
 
 ## Ролі

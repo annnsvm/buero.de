@@ -113,7 +113,7 @@
 ### Stripe SDK (stripe)
 
 - **Що робить:** створення Checkout Session, Customer Portal URL, верифікація webhook signature, робота з subscription/payment objects.
-- **У проєкті:** Subscriptions & Billing (06-subscriptions-billing): checkout, portal, обробка webhook (checkout.session.completed, invoice.paid, customer.subscription.updated/deleted); ідемпотентність через stripe_webhook_events.
+- **У проєкті:** Subscriptions & Billing: checkout **на курс** (course_id), створення user_course_access, portal, webhook; ідемпотентність через stripe_webhook_events. Курси продаються окремо.
 - **Чому обрали:** офіційний клієнт; без нього неможливо безпечно обробляти webhook та створювати сесії (architecture, Stripe в компонентах).
 
 ---
