@@ -1,20 +1,12 @@
 {
   "eslint.experimental.useFlatConfig": true,
-
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-
   "editor.codeActionsOnSave": {
     "source.fixAll": "always",
     "source.fixAll.eslint": "always"
   },
-
-  "eslint.workingDirectories": [
-    { "mode": "auto" }
-  ],
-
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact"
-  ]
+  "eslint.workingDirectories": [{"mode": "auto"}],
+  "eslint.validate": ["javascript", "javascriptreact"],
+  "css.lint.unknownAtRules": "ignore"
 }
