@@ -1,40 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# buero-backend-api
 
-## Getting Started
+Backend API платформи buero.de на **NestJS**: авторизація, курси, матеріали, прогрес, підписки (Stripe). БД — PostgreSQL, ORM — Prisma.
 
-First, run the development server:
+---
+
+## Що потрібно локально
+
+- **Node.js** (LTS, рекомендовано 20+)
+- **npm**
+- **PostgreSQL** (запущений локально або доступний за адресом з `DATABASE_URL`)
+
+---
+
+## Покроковий запуск
+
+### 1. Встановити залежності
+
+З кореня проєкту `buero-backend-api`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Налаштувати середовище
 
-You can start editing the page by modifying `app/route.ts`. The page auto-updates as you edit the file.
+- Скопіюй `.env.example` у `.env`:
+  ```bash
+  cp .env.example .env
+  ```
+- Відкрий `.env` і вкажи реальні значення (мінімум — `DATABASE_URL` на твою PostgreSQL):
+  ```env
+  DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/buero_platform_db?schema=public"
+  NODE_ENV=development
+  PORT=3000
+  ```
+  Решту змінних (JWT, CORS, Cookie) можна заповнити пізніше для модуля Auth.
 
-## Learn More
+### 3. Підготувати БД і Prisma Client
 
-To learn more about Next.js, take a look at the following resources:
+Переконайся, що база з іменем у `DATABASE_URL` існує (створи її в pgAdmin або через `createdb`). Потім:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx prisma generate
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Якщо потрібні міграції (таблиці згідно з `schema.prisma`):
 
-## Deploy on Vercel
+```bash
+npx prisma migrate dev --name init
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Запустити сервер у режимі розробки
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run start:dev
+```
 
-## API Routes
+У консолі має з’явитися щось на кшталт:
 
-This directory contains example API routes for the headless API app.
+- `[Prisma] Connected to PostgreSQL`
+- `Backend is running on http://localhost:3000`
 
-For more details, see [route.js file convention](https://nextjs.org/docs/app/api-reference/file-conventions/route).
+---
+
+## Перевірка роботи
+
+У **іншому** терміналі (сервер має бути запущений):
+
+**Життєздатність сервісу:**
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Очікувана відповідь: `{"status":"ok","timestamp":"..."}` (статус 200).
+
+**Перевірка підключення до БД:**
+
+```bash
+curl http://localhost:3000/api/health/db
+```
+
+Очікувана відповідь при успіху: `{"database":"ok","timestamp":"..."}` (статус 200).  
+При помилці підключення — 503 і JSON з `"database":"error"` та `"message":"..."`.
+
+**Документація API (Swagger):** після запуску сервера доступна за адресою [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+
+---
+
+## Скрипти
+
+| Команда | Опис |
+|--------|------|
+| `npm run start:dev` | Запуск у dev-режимі (`nest start --watch`, перезапуск при змінах, перевірка типів) |
+| `npm run build` | Збірка в `dist/` (`nest build`) |
+| `npm run start` | Запуск зібраного додатку (`nest start`) |
+| `npm run prisma:generate` | Генерація Prisma Client |
+
+---
+
+## Структура та документація
+
+- Джерела правди: **docs/architecture.md**, **docs/api-plan.md**, **docs/auth-spec.md**, **docs/auth-config.md**, **docs/modules/*.md**.
+- Модулі API: Auth, Users, Placement Test, Courses, Course Materials, Progress & Quizzes, Subscriptions & Billing, Lesson Requests (порядок реалізації — у `docs/api-plan.md`).
