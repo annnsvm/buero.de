@@ -84,6 +84,8 @@ curl http://localhost:3000/api/health/db
 Очікувана відповідь при успіху: `{"database":"ok","timestamp":"..."}` (статус 200).  
 При помилці підключення — 503 і JSON з `"database":"error"` та `"message":"..."`.
 
+**Документація API (Swagger):** після запуску сервера доступна за адресою [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+
 ---
 
 ## Скрипти
@@ -92,7 +94,7 @@ curl http://localhost:3000/api/health/db
 |--------|------|
 | `npm run start:dev` | Запуск у dev-режимі (`nest start --watch`, перезапуск при змінах, перевірка типів) |
 | `npm run build` | Збірка в `dist/` (`nest build`) |
-| `npm run start` | Запуск зі зібраного коду (`node dist/main.js`) |
+| `npm run start` | Запуск зібраного додатку (`nest start`) |
 | `npm run prisma:generate` | Генерація Prisma Client |
 
 ---
