@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node dist/main.js",
-    "build": "tsc -p tsconfig.json",
-    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "build": "nest build",
+    "start:dev": "nest start --watch",
     "prisma:generate": "prisma generate"
   },
   "dependencies": {
@@ -21,9 +21,9 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
     "@types/node": "^20",
     "prisma": "^7.4.0",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5"
   }
 }

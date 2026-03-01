@@ -90,8 +90,8 @@ curl http://localhost:3000/api/health/db
 
 | Команда | Опис |
 |--------|------|
-| `npm run start:dev` | Запуск у dev-режимі (ts-node-dev, перезапуск при змінах) |
-| `npm run build` | Збірка в `dist/` |
+| `npm run start:dev` | Запуск у dev-режимі (`nest start --watch`, перезапуск при змінах, перевірка типів) |
+| `npm run build` | Збірка в `dist/` (`nest build`) |
 | `npm run start` | Запуск зі зібраного коду (`node dist/main.js`) |
 | `npm run prisma:generate` | Генерація Prisma Client |
 
