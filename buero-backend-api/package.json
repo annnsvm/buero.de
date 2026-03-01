@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node dist/main.js",
+    "start": "nest start",
     "build": "nest build",
     "start:dev": "nest start --watch",
     "prisma:generate": "prisma generate"
@@ -13,15 +13,18 @@
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.0",
+    "cookie-parser": "^1.4.7",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
+    "@types/cookie-parser": "^1.4.8",
     "@types/node": "^20",
     "prisma": "^7.4.0",
     "typescript": "^5"
