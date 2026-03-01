@@ -14,7 +14,7 @@
 | 3 | **Courses** | CRUD курсів (teacher); список всіх курсів для студента (MVP: без фільтра за рівнем). | Auth |
 | 4 | **Course Materials** | CRUD матеріалів курсу (teacher); читання матеріалу (студент). | Auth, Courses |
 | 5 | **Progress & Quizzes** | Прогрес по матеріалах/курсах; покрокове збереження відповідей квізу; рекомендований наступний курс за рівнем. | Auth, Users, Course Materials |
-| 6 | **Subscriptions & Billing** | Checkout Session, статус підписки, Customer Portal, історія платежів; webhook Stripe. | Auth, Users |
+| 6 | **Subscriptions & Billing** | Купівля/підписка на курс (Checkout з course_id), user_course_access, Customer Portal, webhook Stripe. | Auth, Users, Courses |
 | 7 | **Lesson Requests** | Студент створює запит; вчитель приймає/відхиляє та виставляє completed/rejected. | Auth, Users |
 
 ---
@@ -64,7 +64,7 @@
 ## 5. Перетин з архітектурою
 
 - **Ролі:** студент (навчання, профіль, підписка, запити на заняття); вчитель (адмін контенту: курси, матеріали; приймає запити на заняття, виставляє completed/rejected).
-- **Доступ до контенту (MVP):** показуємо всі курси; перевірку доступу за підпискою/рівнем можна додати пізніше (docs/architecture.md, Business Rules).
+- **Доступ до контенту:** курси продаються окремо; доступ до матеріалів курсу перевіряється по user_course_access (trial, купівля, підписка на курс). Каталог — всі опубліковані курси (docs/architecture.md, Business Rules).
 - **Рівень:** тільки змінюється в процесі навчання; студент не редагує level вручну.
 - **Trial:** запис створюється після підтвердження користувачем пробного періоду (після Placement Test).
 

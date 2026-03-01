@@ -17,7 +17,8 @@ description: "Prisma та БД — buero.de (PostgreSQL)"
 - **teacher_profiles** — user_id (1-1), bio, is_active.
 - **courses** — teacher_id (nullable, «хто створив»), title, description, language, category (language | sociocultural), is_published.
 - **course_materials** — course_id, type (video, vocabulary, grammar, quiz, scenario, cultural_insight, homework, text), title, content (JSONB), order_index.
-- **subscriptions**, **payments** — Stripe; один активний subscription на user (partial unique).
+- **user_course_access** — доступ студента до курсу: trial, purchase або subscription; UNIQUE(user_id, course_id).
+- **subscriptions**, **payments** — прив'язані до курсу (course_id); один активний subscription на (user_id, course_id).
 - **stripe_webhook_events** — stripe_event_id (UNIQUE) для ідемпотентності webhook.
 - **course_progress**, **quiz_attempts** — прогрес і покрокові відповіді квізів/сценаріїв.
 - **lesson_requests** — student_id, teacher_id (після прийняття), status (pending | accepted | completed | rejected).

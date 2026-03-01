@@ -29,13 +29,13 @@
 
 **Опис**
 
-Один **глобальний** тест визначення рівня (A1–B2). Питання зберігаються в таблиці `placement_questions` (не прив'язані до курсу). Результат зберігається в `student_profiles.level`; після проходження активується **trial** (`trial_ends_at` або статус підписки `trialing`). Без проходження Placement Test та без активної підписки/trial доступ до списку курсів та контенту не надається.
+Один **глобальний** тест визначення рівня (A1–B2). Питання в `placement_questions`. Результат у `student_profiles.level`. Після проходження та підтвердження trial студент отримує доступ до **одного** курсу на обмежений період (запис у `user_course_access`: access_type = trial, trial_ends_at). Без проходження Placement Test немає trial; доступ до контенту курсу — лише по записах у user_course_access (trial, купівля або підписка на курс).
 
 **Критерії прийняття**
 
-- Мінімум 20 питань (один набір для всього Placement Test)
-- Автоматичне визначення рівня за результатами; збереження в профілі студента
-- Після тесту — активація trial; доступ до курсів згідно з політикою підписки/trial
+- Мінімум 20 питань (один Placement Test)
+- Автоматичне визначення рівня; збереження в student_profiles.level
+- Після підтвердження trial — створення user_course_access для одного курсу (наприклад рекомендованого за рівнем) з trial_ends_at
 
 ---
 
@@ -45,7 +45,7 @@
 
 **Опис**
 
-Навчання організоване як **курси** (таблиця `courses`) з **матеріалами** (таблиця `course_materials`). Курс має категорію: **language** | **sociocultural** (розділ «Integration & Life in Germany» — це курси з `category = sociocultural`, не окрема підсистема). Типи матеріалів: **video** (YouTube), **vocabulary**, **grammar**, **quiz**, **scenario**, **cultural_insight**, **homework**, **text**. Будь-який вчитель може створювати, редагувати та видаляти будь-який курс (`teacher_id` лише «хто створив», не для обмеження доступу). Доступ до списку курсів та перегляду контенту — лише при **активній підписці або trial** (див. Ф-008, модуль Courses).
+Навчання організоване як **курси** (таблиця `courses`) з **матеріалами** (таблиця `course_materials`). Курс має категорію: **language** | **sociocultural** (розділ «Integration & Life in Germany» — це курси з `category = sociocultural`, не окрема підсистема). Типи матеріалів: **video** (YouTube), **vocabulary**, **grammar**, **quiz**, **scenario**, **cultural_insight**, **homework**, **text**. Будь-який вчитель може створювати, редагувати та видаляти будь-який курс (`teacher_id` лише «хто створив», не для обмеження доступу). Доступ до **контенту** курсу (матеріали, прогрес) — лише якщо у студента є доступ до цього курсу: запис у **user_course_access** (trial з trial_ends_at > now(), купівля або активна підписка на курс). Каталог (список опублікованих курсів) можна показувати всім авторизованим; перегляд матеріалів — за перевіркою user_course_access (див. Ф-008, модуль Courses).
 
 **Приклад курсу: "Renting an Apartment in Germany"** — матеріали: лексика, граматика, відео, сценарій діалогу, cultural_insight (наприклад Anmeldung).
 
@@ -123,7 +123,7 @@
 
 **Опис**
 
-Помісячна підписка через **Stripe Checkout**; керування підпискою — **Stripe Customer Portal** (картки не зберігаються на нашому боці). Webhook `POST /webhooks/stripe`: верифікація signature; ідемпотентність через таблицю `stripe_webhook_events` (stripe_event_id). Події: checkout.session.completed, invoice.paid, customer.subscription.updated/deleted. **Trial** активується після проходження Placement Test (`trial_ends_at` у student_profiles або status trialing). Доступ до курсів та контенту — лише при активній підписці або активному trial; при скасуванні підписки доступ блокується.
+**Курси продаються окремо.** Оплата через **Stripe Checkout** (купівля курсу або підписка на курс); у сесії передається course_id. Керування підписками — **Stripe Customer Portal**. Webhook: верифікація signature; ідемпотентність через `stripe_webhook_events`. Події: checkout.session.completed, invoice.paid, customer.subscription.updated/deleted. Після успішної оплати/підписки — створення/оновлення **user_course_access** для цього курсу. Trial (доступ до одного курсу на обмежений період) надається в модулі Placement Test після підтвердження. Доступ до контенту курсу перевіряється по user_course_access; при скасуванні підписки на курс — оновлення статусу та припинення доступу до цього курсу.
 
 ---
 
@@ -184,7 +184,7 @@
 | Авторизація | JWT (access + refresh); ротація refresh токенів; blacklist токенів при logout |
 | Захист від атак | Rate limiting; CORS policy; захист від SQL injection (ORM / prepared statements); CSRF protection |
 | Платежі | Дані карт не зберігаються; Stripe webhook перевіряється через signature verification |
-| Доступ до контенту | список курсів та матеріали — лише при активній підписці або trial (architecture, модуль Courses) |
+| Доступ до контенту | матеріали курсу — лише при наявності доступу до курсу в user_course_access (trial/purchase/subscription); каталог курсів — опубліковані (architecture, модуль Courses) |
 | Сценарні відповіді | перевірка прав доступу до модуля; за потреби — неможливість «перескочити» без проходження (course_progress, level) |
 
 ---
