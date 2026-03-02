@@ -119,9 +119,9 @@ Frontend:
 
 ```mermaid
 flowchart LR
-  A[/courses/] --> B[Check access via subscriptions slice]
-  B -->|No trial/subscription| C[Render AccessGuardBanner<br/>CTA to assessment/subscription]
-  B -->|Has access| D[dispatch(fetchCoursesCatalog)]
+  A["/courses"] --> B[Check access via subscriptions slice]
+  B -->|No trial/subscription| C["Render AccessGuardBanner<br/>CTA to assessment/subscription"]
+  B -->|Has access| D["dispatch(fetchCoursesCatalog)"]
   D --> E[Render filters + SkeletonCardGrid]
   E --> F[Receive courses]
   F --> G[Render CourseCard grid]
@@ -129,6 +129,6 @@ flowchart LR
   G --> H{User changes filters/search/page}
   H -->|Yes| D
   G --> I[Click CourseCard]
-  I --> J[/courses/:courseId]
+  I --> J["/courses/:courseId"]
 ```
 

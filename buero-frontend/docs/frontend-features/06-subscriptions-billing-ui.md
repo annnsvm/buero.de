@@ -119,13 +119,13 @@ Frontend повинен враховувати, що фактичні оновл
 
 ```mermaid
 flowchart LR
-  A[User visits dashboard or courses] --> B[dispatch(fetchSubscriptionStatus)]
+  A[User visits dashboard or courses] --> B["dispatch(fetchSubscriptionStatus)"]
   B --> C[Render SkeletonSubscriptionCard/Banner]
   C --> D[Receive subscription]
   D --> E{status}
   E -->|active| F[Hide trial CTA<br/>show Manage billing]
   E -->|trialing| G[Show countdown + Upgrade CTA]
-  E -->|none/canceled| H[Show Start assessment / Subscribe CTA]
+  E -->|none/canceled| H["Show Start assessment / Subscribe CTA"]
 ```
 
 #### 7.2. Запуск Checkout

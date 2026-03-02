@@ -129,13 +129,13 @@ Error Boundary окремо для Auth не потрібен.
 
 ```mermaid
 flowchart LR
-  A[/auth?tab=login/] --> B[User fills login form]
+  A["/auth?tab=login"] --> B[User fills login form]
   B --> C[Submit]
-  C --> D[POST /auth/login]
+  C --> D["POST /auth/login"]
   D -->|201/200| E[Backend sets cookies]
-  E --> F[dispatch(fetchCurrentUser)]
-  F --> G[Update user/auth slices]
-  G --> H[Redirect to /assessment or dashboard]
+  E --> F["dispatch(fetchCurrentUser)"]
+  F --> G["Update user/auth slices"]
+  G --> H["Redirect to /assessment or dashboard"]
   D -->|401/400| I[Show form error]
 ```
 

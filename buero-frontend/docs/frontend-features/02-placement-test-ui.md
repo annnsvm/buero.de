@@ -125,12 +125,12 @@ Frontend послідовно:
 
 ```mermaid
 flowchart LR
-  A[/assessment/] --> B[dispatch(fetchPlacementQuestions)]
+  A["/assessment"] --> B["dispatch(fetchPlacementQuestions)"]
   B --> C[Render questions + progress bar]
   C --> D[User selects answers]
   D --> E[Click Submit test]
-  E --> F[POST /api/placement-test/submit]
-  F -->|Success| G[Set resultLevel + redirect to /results]
+  E --> F["POST /api/placement-test/submit"]
+  F -->|Success| G["Set resultLevel + redirect to /results"]
   F -->|Error| H[Show error + keep answers]
 ```
 
@@ -138,10 +138,10 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A[/results/] --> B[Show level + CTA Activate trial]
+  A["/results"] --> B[Show level + CTA Activate trial]
   B --> C[Click Activate trial]
-  C --> D[POST /api/placement-test/confirm-trial]
-  D -->|Success| E[Update subscriptions/user slices<br/>Redirect to /dashboard/trial or /courses]
+  C --> D["POST /api/placement-test/confirm-trial"]
+  D -->|Success| E["Update subscriptions/user slices<br/>Redirect to /dashboard/trial or /courses"]
   D -->|Error| F[Show error toast]
 ```
 

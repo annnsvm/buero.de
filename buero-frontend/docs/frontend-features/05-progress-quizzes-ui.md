@@ -146,7 +146,7 @@ Thunks:
 
 ```mermaid
 flowchart LR
-  A[/profile/] --> B[dispatch(fetchOverallProgress)]
+  A["/profile"] --> B["dispatch(fetchOverallProgress)"]
   B --> C[Show SkeletonProgressCards]
   C --> D[Receive data]
   D --> E[Render ProgressOverview + RecommendedNext]

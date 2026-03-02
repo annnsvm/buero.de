@@ -134,19 +134,19 @@ Thunks:
 
 ```mermaid
 flowchart LR
-  A[/courses/:courseId/] --> B[Check access]
+  A["/courses/:courseId"] --> B[Check access]
   B -->|Forbidden| C[Render AccessGuardBanner]
-  B -->|Allowed| D[dispatch(fetchCourseLearningData)]
+  B -->|Allowed| D["dispatch(fetchCourseLearningData)"]
   D --> E[Render SkeletonSidebar + SkeletonLessonContent]
   E --> F[Receive course + materials + progress]
   F --> G[Render sidebar + lesson content]
 
   G --> H{User selects another lesson}
-  H -->|Yes| I[Update currentMaterialId<br/>GET material details if needed]
+  H -->|Yes| I["Update currentMaterialId<br/>GET material details if needed"]
   I --> G
 
   G --> J[Click Mark as complete]
-  J --> K[POST /courses/:courseId/materials/:id/complete]
+  J --> K["POST /courses/:courseId/materials/:id/complete"]
   K --> L[Update progress + UI]
 ```
 

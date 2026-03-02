@@ -92,12 +92,12 @@ Frontend не розділяє це на кілька endpoint’ів — дер
 
 ```mermaid
 flowchart LR
-  A[/settings/account or /profile#account/] --> B[GET /api/users/me (from user slice or refetch)]
+  A["/settings/account or /profile#account"] --> B["GET /api/users/me (from user slice or refetch)"]
   B --> C[Render AccountSettingsForm with initial values]
-  C --> D[User edits language/timezone]
+  C --> D["User edits language/timezone"]
   D --> E[Submit]
-  E --> F[PATCH /api/users/me]
-  F -->|Success| G[Update user slice + i18n + toast]
+  E --> F["PATCH /api/users/me"]
+  F -->|Success| G["Update user slice + i18n + toast"]
   F -->|Validation error| H[Map field errors into form]
   F -->|Other error| I[Show error toast]
 ```

@@ -36,19 +36,19 @@
 
 ```mermaid
 flowchart LR
-  A[Home /] --> B{Click CTA<br/>Start assessment}
-  B -->|Not logged in| C[Auth flow<br/>(/auth or modal)]
-  C --> D[Logged in]
+  A["Home /"] --> B{"Click CTA<br/>Start assessment"}
+  B -->|Not logged in| C["Auth flow<br/>(/auth or modal)"]
+  C --> D["Logged in"]
   B -->|Already logged in| D
 
-  D --> E[/assessment<br/>load questions]
-  E --> F[Student answers<br/>RHF + Zod]
-  F --> G[POST /api/placement-test/submit]
-  G --> H[/results<br/>show level + CTA]
-  H --> I{Activate trial?}
-  I -->|Yes| J[POST /api/placement-test/confirm-trial]
-  J --> K[/dashboard/trial or /courses]
-  I -->|No| L[Stay on /results<br/>or go to /]
+  D --> E["/assessment<br/>load questions"]
+  E --> F["Student answers<br/>RHF + Zod"]
+  F --> G["POST /api/placement-test/submit"]
+  G --> H["/results<br/>show level + CTA"]
+  H --> I{"Activate trial?"}
+  I -->|Yes| J["POST /api/placement-test/confirm-trial"]
+  J --> K["/dashboard/trial or /courses"]
+  I -->|No| L["Stay on /results<br/>or go to /"]
 ```
 
 ---
@@ -81,7 +81,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A[/dashboard/trial/] --> B[Click Upgrade CTA]
+  A["/dashboard/trial"] --> B[Click Upgrade CTA]
   B --> C[POST /api/subscriptions/checkout]
   C --> D[Redirect to Stripe Checkout]
   D --> E{Payment success?}
@@ -131,7 +131,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A[/dashboard or /results/] --> B[Go to /courses]
+  A["/dashboard or /results"] --> B[Go to /courses]
   B --> C[Check content access<br/>trial/subscription]
   C -->|No access| D[Redirect to trial/subscription CTA]
   C -->|Has access| E[GET /api/courses<br/>with filters]
@@ -139,7 +139,7 @@ flowchart LR
   F --> G{User updates filters/search?}
   G -->|Yes| E
   F --> H[Click course card]
-  H --> I[/courses/:courseId]
+  H --> I["/courses/:courseId"]
 ```
 
 ---
@@ -180,7 +180,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A[/courses/:courseId/] --> B[Check access]
+  A["/courses/:courseId"] --> B[Check access]
   B -->|Forbidden| C[Redirect to subscriptions/trial]
   B -->|Allowed| D[GET course + materials + progress]
   D --> E[Render sidebar + main content]
@@ -234,7 +234,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A[/profile/] --> B[ProtectedRoute<br/>check auth]
+  A["/profile"] --> B[ProtectedRoute<br/>check auth]
   B -->|Not logged in| C[Redirect to /auth or / with modal]
   B -->|Logged in| D[GET /api/users/me + /api/progress/me]
   D --> E[Render overview + my courses + settings]
@@ -279,7 +279,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  A[/settings/account/] --> B[ProtectedRoute]
+  A["/settings/account"] --> B[ProtectedRoute]
   B --> C[Init form from user slice]
   C --> D[User edits fields]
   D --> E[Submit]
@@ -320,14 +320,14 @@ flowchart LR
 ```mermaid
 flowchart LR
   subgraph StudentFlow
-    A[/profile or /teachers/] --> B[Click Request a lesson]
+    A["/profile or /teachers"] --> B[Click Request a lesson]
     B --> C[Open form<br/>preferred_time + message]
     C --> D[POST /api/lesson-requests]
     D --> E[Success toast + refresh<br/>GET /api/lesson-requests/me]
   end
 
   subgraph TeacherFlow
-    F[/teacher view/] --> G[GET /api/lesson-requests/me<br/>(pending + accepted)]
+    F["/teacher view"] --> G["GET /api/lesson-requests/me<br/>(pending + accepted)"]
     G --> H[Render list of requests]
     H --> I[Accept -> PATCH /accept]
     H --> J[Reject -> PATCH /reject]
