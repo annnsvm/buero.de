@@ -6,7 +6,11 @@
     "start": "nest start",
     "build": "nest build",
     "start:dev": "nest start --watch",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "prisma:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -26,7 +30,9 @@
     "@nestjs/cli": "^11.0.0",
     "@types/cookie-parser": "^1.4.8",
     "@types/node": "^20",
+    "dotenv": "^16.6.1",
     "prisma": "^7.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
