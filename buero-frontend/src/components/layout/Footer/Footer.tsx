@@ -23,10 +23,11 @@ const Footer = () => {
             >
               Courses
             </Link>
-            <Link
-              to={ROUTES.AUTH}
-            >
+            <Link to={`${ROUTES.HOME}#login`} aria-label="Sign in">
               Sign in
+            </Link>
+            <Link to={`${ROUTES.HOME}#signup`} aria-label="Sign up">
+              Sign up
             </Link>
           </nav>
         </div>

@@ -36,7 +36,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 const handleLogout = () => {
   store.dispatch(logout());
-  window.location.href = ROUTES.AUTH;
+  window.location.href = ROUTES.HOME;
 };
 
 apiInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {

@@ -132,7 +132,6 @@ src/
     HomePage/
     AssessmentPage/
     ResultsPage/
-    AuthPage/
     TrialDashboardPage/
     SubscribedDashboardPage/
     TeacherDirectoryPage/
@@ -208,7 +207,7 @@ createRoot(rootElement).render(
   - `HomePage/HomePage.tsx`
   - `AssessmentPage/AssessmentPage.tsx`
   - `ResultsPage/ResultsPage.tsx`
-  - `AuthPage/AuthPage.tsx`
+  - (auth — лише модалки, окремої AuthPage немає)
   - `TrialDashboardPage/TrialDashboardPage.tsx`
   - `SubscribedDashboardPage/SubscribedDashboardPage.tsx`
   - `TeacherDirectoryPage/TeacherDirectoryPage.tsx`
@@ -310,7 +309,7 @@ createRoot(rootElement).render(
 - **Lazy-loading з коробки.** Кожна сторінка підключається через `lazy(() => import(...))`, тому бандл ділиться на чанки по сторінках без додаткового коду в `App`.
 - **Централізований errorElement.** Для всього дерева або окремого маршруту можна задати `errorElement` (наприклад, 404 або fallback при помилці рендеру).
 - **Підготовка до data API.** У майбутньому можна додати `loader`/`action` для даних і дій без зміни підходу до роутингу.
-- **Guards як обгортки.** Замість окремого «роуту перевірки» використовуємо компоненти `PublicGuard` / `PrivateGuard`: вони обгортають `element` дочірнього маршруту і роблять редірект за умовою (наприклад, неавторизований користувач → `/auth`).
+- **Guards як обгортки.** Замість окремого «роуту перевірки» використовуємо компоненти `PublicGuard` / `PrivateGuard`: вони обгортають `element` дочірнього маршруту і роблять редірект за умовою (наприклад, неавторизований користувач → `/` з відкриттям login-модалки).
 
 ### 4.2. Як це працює зараз
 
@@ -318,18 +317,17 @@ createRoot(rootElement).render(
 - **Де підключається:** у `App.tsx` — `<RouterProvider router={router} />`. Історія й зміна URL керуються цим провайдером.
 - **Структура маршрутів:**
   - Один кореневий маршрут з `path: "/"`, `element: <Suspense><SharedLayout /></Suspense>`, `errorElement: <NotFoundPage />`.
-  - У `children` — усі сторінки: `index: true` (HomePage), `path: "assessment"`, `path: "auth"`, `path: "courses/:courseId"` тощо. Константи шляхів зберігаються в `src/helpers/routes.ts` (`ROUTES`, `getCoursePath(courseId)`).
+  - У `children` — усі сторінки: `index: true` (HomePage), `path: "assessment"`, `path: "courses/:courseId"` тощо. Окремої сторінки `/auth` немає; авторизація — лише модалки (Header/Footer посилають на `/#login`, `/#signup`). Константи шляхів у `src/helpers/routes.ts` (`ROUTES`, `getCoursePath(courseId)`).
   - `SharedLayout` рендерить Header, Footer і `<Outlet />`; у `<Outlet />` потрапляє відповідна дочірня сторінка.
-- **Guards:** для захищених маршрутів `element` обгорнуто в `<PrivateGuard>` (редирект на `/auth`, якщо не залогінений); для публічних, де не має бути залогіненого користувача, — `<PublicGuard>`. Реалізація guards у `src/components/guards/`.
+- **Guards:** для захищених маршрутів `element` обгорнуто в `<PrivateGuard>` (редирект на `/` з відкриттям login-модалки, якщо не залогінений); для публічних — `<PublicGuard>`. Реалізація guards у `src/components/guards/`.
 
 ### 4.3. Таблиця роутів
 
 | Route | Page | Role/Access | Опис | Guard | ErrorBoundary |
 |-------|------|-------------|------|-------|---------------|
 | `/` | `HomePage` | public | Landing, hero, benefits, CTA на assessment/trial. | — | Global |
-| `/assessment` | `AssessmentPage` | authenticated (student) або public+soft-guard | Старт та проходження Placement Test. | AuthGuard (redirect на `/auth` або inline login modal) | PlacementTest boundary (локальний) |
+| `/assessment` | `AssessmentPage` | authenticated (student) або public+soft-guard | Старт та проходження Placement Test. | AuthGuard (redirect на `/` або inline login modal) | PlacementTest boundary (локальний) |
 | `/results` | `ResultsPage` | authenticated (student) | Показ рівня A1–B2, CTA на trial/dashboard/courses. | AuthGuard | Global |
-| `/auth` | `AuthPage` | public | Login/Register/Reset. | Redirect, якщо вже logged-in (до `/dashboard/...`). | Global |
 | `/dashboard/trial` | `TrialDashboardPage` | student with trial | Дашборд триалу: прогрес placement, CTA до першого курсу, banner trial. | ProtectedRoute + `requireTrial` | Dashboard boundary |
 | `/dashboard/subscribed` | `SubscribedDashboardPage` | student with active subscription | Основний дашборд студента з курсами, прогресом. | ProtectedRoute + `requireActiveSubscription` | Dashboard boundary |
 | `/teachers` | `TeacherDirectoryPage` | student/teacher (optional MVP) | Список вчителів, CTA на lesson request. | ProtectedRoute (optional) | Global |
@@ -344,7 +342,7 @@ createRoot(rootElement).render(
 - **ProtectedRoute**:
   - читає `auth`/`currentUser` з Redux.
   - якщо користувач не завантажений → показує `Loader`.
-  - якщо користувача немає → редірект на `/auth` (або `/` з login modal).
+  - якщо користувача немає → редірект на `/` з відкриттям login-модалки.
 - **Access guards** (`requireTrial`, `requireActiveSubscription`, `requireContentAccess`):
   - перевіряють `subscriptions` slice та/або поле `trial_ends_at`.
   - при відсутності доступу:

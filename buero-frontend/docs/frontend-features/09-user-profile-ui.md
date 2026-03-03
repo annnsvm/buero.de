@@ -132,7 +132,7 @@ Persist:
 ```mermaid
 flowchart LR
   A["/profile"] --> B[ProtectedRoute<br/>check auth]
-  B -->|Not logged in| C[Redirect to /auth or /]
+  B -->|Not logged in| C[Redirect to / with login modal]
   B -->|Logged in| D[Fetch user + progress + subscription]
   D --> E[Render ProfileOverview + MyCourses + Settings + SubscriptionSummary]
 

@@ -17,7 +17,7 @@
 3. Натискає **CTA**: «Start assessment» / «Start free trial» (для нових — assessment).
 4. Якщо неавторизований:
    - або відкривається модалка login/register;
-   - або редірект на `/auth` з поверненням після успіху.
+   - або відкриття login-модалки з поверненням після успіху.
 5. Після авторизації користувач потрапляє на `/assessment` (**AssessmentPage**).
 6. Frontend завантажує питання через `GET /api/placement-test/questions`.
 7. Студент відповідає на всі питання (RHF + Zod).
@@ -37,7 +37,7 @@
 ```mermaid
 flowchart LR
   A["Home /"] --> B{"Click CTA<br/>Start assessment"}
-  B -->|Not logged in| C["Auth flow<br/>(/auth or modal)"]
+  B -->|Not logged in| C["Auth flow<br/>(login modal)"]
   C --> D["Logged in"]
   B -->|Already logged in| D
 
@@ -235,7 +235,7 @@ flowchart LR
 ```mermaid
 flowchart LR
   A["/profile"] --> B[ProtectedRoute<br/>check auth]
-  B -->|Not logged in| C[Redirect to /auth or / with modal]
+  B -->|Not logged in| C[Redirect to / with login modal]
   B -->|Logged in| D[GET /api/users/me + /api/progress/me]
   D --> E[Render overview + my courses + settings]
 

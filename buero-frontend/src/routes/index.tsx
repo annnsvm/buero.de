@@ -9,7 +9,6 @@ import PrivateGuard from "../components/guards/PrivateGuard/PrivateGuard";
 const HomePage = lazy(() => import("../pages/HomePage/HomePage"));
 const AssessmentPage = lazy(() => import("../pages/AssessmentPage/AssessmentPage"));
 const ResultsPage = lazy(() => import("../pages/ResultsPage/ResultsPage"));
-const AuthPage = lazy(() => import("../pages/AuthPage/AuthPage"));
 const TrialDashboardPage = lazy(
   () => import("../pages/TrialDashboardPage/TrialDashboardPage")
 );
@@ -58,14 +57,6 @@ export const router = createBrowserRouter([
           <PrivateGuard>
             <ResultsPage />
           </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.AUTH,
-        element: (
-          <PublicGuard>
-            <AuthPage />
-          </PublicGuard>
         ),
       },
       {

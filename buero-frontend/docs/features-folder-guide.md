@@ -116,7 +116,7 @@ export { RegisterForm } from "./components/RegisterForm";
 export { loginSchema, registerSchema } from "./validation/authSchemas";
 ```
 
-**Сторінка** (`AuthPage`) імпортує компоненти фічі; стейт (auth slice) — з Redux:
+**Модалки** (Sign In, Sign Up, Reset password) імпортують компоненти фічі; стейт (auth slice) — з Redux:
 
 ```tsx
 import { LoginForm, RegisterForm } from "@/features/auth";
@@ -124,7 +124,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectIsAuthenticated } from "@/redux/slices/auth";
 ```
 
-Так папка `features/auth` містить лише UI та валідацію авторизації; Redux залишається в `src/redux/`.
+Папка `features/auth` містить лише UI та валідацію авторизації; Redux залишається в `src/redux/`. Окремої сторінки AuthPage немає.
 
 ---
 
