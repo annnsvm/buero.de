@@ -10,6 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
   type?: 'button' | 'submit' | 'reset';
   variant?: ButtonVariant;
+  styleType?: 'default' | 'mobile';
 }
 
 export type { ButtonProps };

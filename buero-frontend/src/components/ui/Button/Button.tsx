@@ -11,6 +11,7 @@ const Button = ({
   className = '',
   type = 'button',
   variant = 'outline',
+  styleType='default',
   ...rest
 }: ButtonProps) => {
   const combinedClassName = [BASE_CLASSES, VARIANT_CLASSES[variant], className]
@@ -20,7 +21,7 @@ const Button = ({
   return (
     <button
       type={type}
-      className={combinedClassName}
+      className={styleType === 'mobile' ? className : combinedClassName}
       disabled={disabled || isLoading}
       aria-busy={isLoading}
       {...rest}

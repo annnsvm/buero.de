@@ -253,3 +253,9 @@
     width: 100%;
   }
 }
+
+@layer utilities {
+  .no-scroll {
+    overflow: hidden;
+  }
+}
