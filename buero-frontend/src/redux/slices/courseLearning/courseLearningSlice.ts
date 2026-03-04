@@ -1,11 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 export type CourseLearningState = {
   course: unknown | null;
   materials: unknown[];
   currentMaterialId: string | null;
   progress: unknown[];
-  status: "idle" | "loading" | "error";
+  status: 'idle' | 'loading' | 'error';
   error: string | null;
 };
 
@@ -14,12 +14,12 @@ const initialState: CourseLearningState = {
   materials: [],
   currentMaterialId: null,
   progress: [],
-  status: "idle",
+  status: 'idle',
   error: null,
 };
 
 const courseLearningSlice = createSlice({
-  name: "courseLearning",
+  name: 'courseLearning',
   initialState,
   reducers: {
     setCurrentMaterialId: (state, action: { payload: string | null }) => {
@@ -31,5 +31,4 @@ const courseLearningSlice = createSlice({
 });
 
 export const courseLearningReducer = courseLearningSlice.reducer;
-export const { setCurrentMaterialId, clearCourseLearning } =
-  courseLearningSlice.actions;
+export const { setCurrentMaterialId, clearCourseLearning } = courseLearningSlice.actions;

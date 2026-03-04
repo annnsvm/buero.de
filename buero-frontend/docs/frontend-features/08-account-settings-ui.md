@@ -101,4 +101,3 @@ flowchart LR
   F -->|Validation error| H[Map field errors into form]
   F -->|Other error| I[Show error toast]
 ```
-

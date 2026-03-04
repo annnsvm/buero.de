@@ -1,19 +1,19 @@
-import axios, { type InternalAxiosRequestConfig } from "axios";
-import { store } from "../redux/store";
-import { selectAccessToken } from "../redux/slices/auth/authSelectors";
-import { setAccessToken, logout } from "../redux/slices/auth/authSlice";
-import { ROUTES } from "../helpers/routes";
+import axios, { type InternalAxiosRequestConfig } from 'axios';
+import { store } from '../redux/store';
+import { selectAccessToken } from '../redux/slices/auth/authSelectors';
+import { setAccessToken, logout } from '../redux/slices/auth/authSlice';
+import { ROUTES } from '../helpers/routes';
 
 const baseURL: string =
-  (typeof import.meta !== "undefined" &&
+  (typeof import.meta !== 'undefined' &&
     (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL) ||
-  "http://localhost:3001";
+  'http://localhost:3001';
 
 export const apiInstance = axios.create({
   baseURL,
   withCredentials: true,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
@@ -56,7 +56,7 @@ apiInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh");
+    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh');
     if (isRefreshRequest) {
       handleLogout();
       return Promise.reject(error);
@@ -79,7 +79,7 @@ apiInstance.interceptors.response.use(
     isRefreshing = true;
 
     return apiInstance
-      .post<{ accessToken?: string }>("/auth/refresh", {}, { withCredentials: true })
+      .post<{ accessToken?: string }>('/auth/refresh', {}, { withCredentials: true })
       .then((res) => {
         const newToken = res.data?.accessToken ?? null;
         if (newToken) {
@@ -96,5 +96,5 @@ apiInstance.interceptors.response.use(
       .finally(() => {
         isRefreshing = false;
       });
-  }
+  },
 );

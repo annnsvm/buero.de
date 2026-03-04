@@ -105,7 +105,7 @@ Actions/Thunks:
 
 ### 5. API
 
- Докладно `docs/auth-spec.md`, однак роути наступні
+Докладно `docs/auth-spec.md`, однак роути наступні
 
 - `POST /auth/register` — створює користувача.
 - `POST /auth/login` — встановлює `access_token` / `refresh_token` у cookie.
@@ -235,4 +235,3 @@ flowchart LR
 - Фокус-трап: при відкритті фокус усередині модалки (перший фокусований елемент); Tab не виводить фокус за межі модалки; Escape закриває.
 - Кнопка закриття: `aria-label="Close"` (або аналог із i18n).
 - Помилки валідації: `aria-live="polite"` для області з повідомленням про помилку; `aria-invalid` та `aria-describedby` на інпути при помилці.
-

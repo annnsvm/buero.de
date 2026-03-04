@@ -136,4 +136,3 @@ flowchart LR
   B -->|Success| C[window.location = checkoutUrl]
   B -->|Error| D[Show error toast]
 ```
-

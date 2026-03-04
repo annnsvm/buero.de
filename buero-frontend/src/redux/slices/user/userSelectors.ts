@@ -1,4 +1,4 @@
-import type { RootState } from "../../store";
+import type { RootState } from '../../store';
 
 export const selectCurrentUser = (state: RootState) => state.user.currentUser;
 export const selectUserStatus = (state: RootState) => state.user.status;

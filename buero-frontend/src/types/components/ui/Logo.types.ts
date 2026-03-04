@@ -1,8 +1,8 @@
-import type { ImgHTMLAttributes } from "react";
+import type { ImgHTMLAttributes } from 'react';
 
 interface LogoProps extends ImgHTMLAttributes<HTMLImageElement> {
   width?: number;
   height?: number;
 }
 
-export type {LogoProps}
+export type { LogoProps };

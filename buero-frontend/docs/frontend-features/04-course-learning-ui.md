@@ -149,4 +149,3 @@ flowchart LR
   J --> K["POST /courses/:courseId/materials/:id/complete"]
   K --> L[Update progress + UI]
 ```
-

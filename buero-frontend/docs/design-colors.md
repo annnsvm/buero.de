@@ -4,39 +4,39 @@
 
 ## Текст (Text)
 
-| Токен (CSS-змінна) | Призначення |
-|--------------------|-------------|
-| `--color-text-primary` | Основний текст (заголовки, параграфи) |
-| `--color-text-secondary` | Другорядний текст (підписи, мітки, placeholder) |
-| `--color-text-inverse` | Текст на темному фоні |
+| Токен (CSS-змінна)       | Призначення                                       |
+| ------------------------ | ------------------------------------------------- |
+| `--color-text-primary`   | Основний текст (заголовки, параграфи)             |
+| `--color-text-secondary` | Другорядний текст (підписи, мітки, placeholder)   |
+| `--color-text-inverse`   | Текст на темному фоні                             |
 | `--color-text-on-accent` | Текст на кнопках/акцентному фоні (наприклад, CTA) |
 
 ## Фон (Surface)
 
-| Токен | Призначення |
-|-------|-------------|
-| `--color-surface-background` | Фон сторінки / основного контейнера |
-| `--color-surface-section` | Фон секцій, блоків, альтернативний фон |
-| `--color-surface-card` | Фон карток |
-| `--color-surface-overlay` | Фон оверлеїв, модалок, dropdown |
+| Токен                        | Призначення                            |
+| ---------------------------- | -------------------------------------- |
+| `--color-surface-background` | Фон сторінки / основного контейнера    |
+| `--color-surface-section`    | Фон секцій, блоків, альтернативний фон |
+| `--color-surface-card`       | Фон карток                             |
+| `--color-surface-overlay`    | Фон оверлеїв, модалок, dropdown        |
 
 ## Межі (Border)
 
-| Токен | Призначення |
-|-------|-------------|
-| `--color-border-subtle` | Найменш помітні межі |
+| Токен                    | Призначення                      |
+| ------------------------ | -------------------------------- |
+| `--color-border-subtle`  | Найменш помітні межі             |
 | `--color-border-default` | Стандартні межі (інпути, картки) |
-| `--color-border-strong` | Підкреслені межі, роздільники |
+| `--color-border-strong`  | Підкреслені межі, роздільники    |
 
 ## Акценти (Accent)
 
-| Токен | Призначення |
-|-------|-------------|
-| `--color-accent-primary` | Основний акцент (CTA, лінки, активні стани) |
-| `--color-accent-primary-hover` | Hover для primary |
-| `--color-accent-secondary` | Другорядний акцент (secondary-кнопки) |
-| `--color-accent-secondary-hover` | Hover для secondary |
-| `--color-accent-danger` | Небезпечні дії, помилки |
+| Токен                            | Призначення                                 |
+| -------------------------------- | ------------------------------------------- |
+| `--color-accent-primary`         | Основний акцент (CTA, лінки, активні стани) |
+| `--color-accent-primary-hover`   | Hover для primary                           |
+| `--color-accent-secondary`       | Другорядний акцент (secondary-кнопки)       |
+| `--color-accent-secondary-hover` | Hover для secondary                         |
+| `--color-accent-danger`          | Небезпечні дії, помилки                     |
 
 ## Де визначено
 
@@ -52,14 +52,14 @@
 
 У Tailwind v4 змінні з `@theme { --color-... }` стають кольорами теми. Клас будується так: **префікс утиліти** + **ім’я кольору** (все після `--color-`).
 
-| Токен | Текст | Фон | Бордер | Ring |
-|-------|--------|-----|--------|------|
-| `--color-text-primary` | `text-text-primary` | `bg-text-primary` | `border-text-primary` | `ring-text-primary` |
-| `--color-text-secondary` | `text-text-secondary` | — | — | — |
-| `--color-surface-background` | — | `bg-surface-background` | — | — |
-| `--color-surface-section` | — | `bg-surface-section` | — | — |
-| `--color-border-default` | — | — | `border-border-default` | — |
-| `--color-accent-primary` | `text-accent-primary` | `bg-accent-primary` | `border-accent-primary` | `ring-accent-primary` |
+| Токен                        | Текст                 | Фон                     | Бордер                  | Ring                  |
+| ---------------------------- | --------------------- | ----------------------- | ----------------------- | --------------------- |
+| `--color-text-primary`       | `text-text-primary`   | `bg-text-primary`       | `border-text-primary`   | `ring-text-primary`   |
+| `--color-text-secondary`     | `text-text-secondary` | —                       | —                       | —                     |
+| `--color-surface-background` | —                     | `bg-surface-background` | —                       | —                     |
+| `--color-surface-section`    | —                     | `bg-surface-section`    | —                       | —                     |
+| `--color-border-default`     | —                     | —                       | `border-border-default` | —                     |
+| `--color-accent-primary`     | `text-accent-primary` | `bg-accent-primary`     | `border-accent-primary` | `ring-accent-primary` |
 
 **Приклади класів:**
 
@@ -74,18 +74,16 @@
 <section class="bg-surface-section">...</section>
 
 <!-- Картка з межею -->
-<div class="bg-surface-card border border-border-default rounded-xl">...</div>
+<div class="bg-surface-card border-border-default rounded-xl border">...</div>
 
 <!-- Кнопка primary -->
-<button class="bg-accent-primary text-text-on-accent hover:bg-accent-primary-hover">
-  CTA
-</button>
+<button class="bg-accent-primary text-text-on-accent hover:bg-accent-primary-hover">CTA</button>
 
 <!-- Лінк-акцент -->
 <a href="#" class="text-accent-primary hover:text-accent-primary-hover">Детальніше</a>
 
 <!-- Focus ring -->
-<input class="border-border-default focus:ring-2 focus:ring-accent-primary" />
+<input class="border-border-default focus:ring-accent-primary focus:ring-2" />
 ```
 
 Для **hover** використовуй відповідні токени з `-hover`: `hover:bg-accent-primary-hover`, `hover:border-border-strong` тощо.
@@ -95,7 +93,9 @@
 Якщо клас з теми не підходить (наприклад, потрібен кастомний CSS), використовуй arbitrary value з `var()`:
 
 ```html
-<div class="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]">
+<div
+  class="border border-[var(--color-border-default)] bg-[var(--color-surface-card)] text-[var(--color-text-primary)]"
+>
   Контент
 </div>
 ```

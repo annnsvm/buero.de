@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+coverage
+*.log
+
+# Build artifacts
+*.min.js
+
+# Env and config
+.env
+.env.*
+

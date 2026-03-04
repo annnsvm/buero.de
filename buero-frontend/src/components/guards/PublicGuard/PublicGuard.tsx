@@ -1,4 +1,4 @@
-import { PublicGuardProps } from "@/types/components/guards/Guards.types";
+import { PublicGuardProps } from '@/types/components/guards/Guards.types';
 
 const PublicGuard = ({ children }: PublicGuardProps) => {
   return <>{children}</>;

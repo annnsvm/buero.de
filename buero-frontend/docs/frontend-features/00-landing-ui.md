@@ -119,4 +119,3 @@ flowchart LR
   E -->|Level but no access| G[CTA Activate trial / Subscribe]
   E -->|Has access| H[CTA Go to dashboard<br/>or Browse courses]
 ```
-

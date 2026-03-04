@@ -1,5 +1,5 @@
-import { VARIANT_CLASSES } from "@/helpers/buttoVariantClasses";
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { VARIANT_CLASSES } from '@/helpers/buttoVariantClasses';
+import { ButtonHTMLAttributes, ReactNode } from 'react';
 
 type ButtonVariant = keyof typeof VARIANT_CLASSES;
 
@@ -8,10 +8,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   disabled?: boolean;
   className?: string;
-  type?: "button" | "submit" | "reset";
+  type?: 'button' | 'submit' | 'reset';
   variant?: ButtonVariant;
 }
 
-export type {
-  ButtonProps
-}
+export type { ButtonProps };

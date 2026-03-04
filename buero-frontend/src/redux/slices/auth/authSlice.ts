@@ -1,21 +1,21 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 export type AuthState = {
   isAuthenticated: boolean;
   accessToken: string | null;
-  status: "idle" | "loading" | "error";
+  status: 'idle' | 'loading' | 'error';
   error: string | null;
 };
 
 const initialState: AuthState = {
   isAuthenticated: false,
   accessToken: null,
-  status: "idle",
+  status: 'idle',
   error: null,
 };
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
     setAccessToken: (state, action: { payload: string | null }) => {

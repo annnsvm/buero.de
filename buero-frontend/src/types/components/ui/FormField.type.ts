@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 type FormFieldProps = {
   label: string;
@@ -7,4 +7,4 @@ type FormFieldProps = {
   children: ReactNode;
 };
 
-export type {FormFieldProps}
+export type { FormFieldProps };

@@ -144,4 +144,3 @@ flowchart LR
   D -->|Success| E["Update subscriptions/user slices<br/>Redirect to /dashboard/trial or /courses"]
   D -->|Error| F[Show error toast]
 ```
-

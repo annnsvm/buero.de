@@ -144,4 +144,3 @@ flowchart LR
   I --> J[POST /api/users/me/avatar]
   J --> K[Update avatarUrl in user slice + UI]
 ```
-

@@ -1,12 +1,9 @@
 /// <reference types="vite/client" />
-import { Component, ReactNode, type ErrorInfo } from "react";
-import { ROUTES } from "../helpers/routes";
-import { AppErrorBoundaryProps, AppErrorBoundaryState } from "@/types/errors/AppError.types";
+import { Component, ReactNode, type ErrorInfo } from 'react';
+import { ROUTES } from '../helpers/routes';
+import { AppErrorBoundaryProps, AppErrorBoundaryState } from '@/types/errors/AppError.types';
 
-export class AppErrorBoundary extends Component<
-  AppErrorBoundaryProps,
-  AppErrorBoundaryState
-> {
+export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
   constructor(props: AppErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -20,7 +17,7 @@ export class AppErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("AppErrorBoundary caught an error:", error, errorInfo);
+    console.error('AppErrorBoundary caught an error:', error, errorInfo);
   }
 
   handleReload = (): void => {
@@ -46,8 +43,7 @@ export class AppErrorBoundary extends Component<
               Something went wrong
             </h1>
             <p className="mb-6 text-[var(--color-text-muted)]">
-              An unexpected error occurred. Please try again or return to the
-              home page.
+              An unexpected error occurred. Please try again or return to the home page.
             </p>
             {import.meta.env.DEV && this.state.error && (
               <pre className="mb-6 max-h-32 overflow-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-background-alt)] p-3 text-left text-xs text-[var(--color-text-muted)]">
@@ -59,7 +55,7 @@ export class AppErrorBoundary extends Component<
             <button
               type="button"
               onClick={this.handleReload}
-              className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2"
+              className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:outline-none"
               aria-label="Reload the page"
             >
               Reload
@@ -67,7 +63,7 @@ export class AppErrorBoundary extends Component<
             <button
               type="button"
               onClick={this.handleGoHome}
-              className="rounded-lg border-2 border-[var(--color-primary)] bg-transparent px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2"
+              className="rounded-lg border-2 border-[var(--color-primary)] bg-transparent px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 focus:outline-none"
               aria-label="Go to home page"
             >
               Go home

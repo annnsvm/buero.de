@@ -1,15 +1,8 @@
-import { ContainerProps } from "@/types/components/layout/Container.types";
+import { ContainerProps } from '@/types/components/layout/Container.types';
 
-
-const Container = ({
-  children,
-  className = "",
-  as: Tag = "div",
-}: ContainerProps) => {
+const Container = ({ children, className = '', as: Tag = 'div' }: ContainerProps) => {
   return (
-    <Tag
-      className={`mx-auto w-full max-w-7xl px-5 mobile:px-15 tablet:px-20 ${className}`}
-    >
+    <Tag className={`mobile:px-15 tablet:px-20 mx-auto w-full max-w-7xl px-5 ${className}`}>
       {children}
     </Tag>
   );

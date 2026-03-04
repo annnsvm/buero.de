@@ -1,10 +1,7 @@
-export {
-  progressQuizzesReducer,
-  setCurrentQuizAttemptId,
-} from "./progressQuizzesSlice";
-export { fetchOverallProgressThunk } from "./progressQuizzesThunks";
+export { progressQuizzesReducer, setCurrentQuizAttemptId } from './progressQuizzesSlice';
+export { fetchOverallProgressThunk } from './progressQuizzesThunks';
 export {
   selectOverallProgress,
   selectCourseProgressById,
   selectProgressQuizzesStatus,
-} from "./progressQuizzesSelectors";
+} from './progressQuizzesSelectors';

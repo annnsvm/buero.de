@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 type UiState = {
   globalLoading: boolean;
@@ -9,7 +9,7 @@ const initialState: UiState = {
 };
 
 const uiSlice = createSlice({
-  name: "ui",
+  name: 'ui',
   initialState,
   reducers: {
     setGlobalLoading: (state, action: { payload: boolean }) => {

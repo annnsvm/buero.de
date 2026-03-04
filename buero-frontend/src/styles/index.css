@@ -1,38 +1,37 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ========== Шрифти (public/fonts) ========== */
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/Inter_18pt-Regular.ttf") format("truetype");
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/Inter_18pt-Medium.ttf") format("truetype");
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/Inter_18pt-SemiBold.ttf") format("truetype");
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Sora";
-  src: url("/fonts/Sora-SemiBold.ttf") format("truetype");
+  font-family: 'Sora';
+  src: url('/fonts/Sora-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
-
 
 @theme {
   /* Base */
@@ -53,9 +52,9 @@
   --color-neutral-darker: #2f312d;
   --color-neutral: #2e302c;
   --color-neutral-lighter: #6b6d69;
-  --color-neutral-lightest: ##5A5A5A;
+  --color-neutral-lightest: ##5a5a5a;
 
-  --color-sienna: #E76E50;
+  --color-sienna: #e76e50;
 
   /*
    * Semantic tokens — Варіант 2 (рольові назви).
@@ -112,18 +111,19 @@
   --opacity-white-20: rgba(255, 255, 255, 0.2);
 
   /* Шрифти: Inter — основний текст, Sora — заголовки */
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-heading: "Sora", "Inter", system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Sora', 'Inter', system-ui, sans-serif;
 
-  --breakpoint-mobile: 20rem;  
-  --breakpoint-tablet: 40rem;  
-  --breakpoint-desktop: 90rem;  
+  --breakpoint-mobile: 20rem;
+  --breakpoint-tablet: 40rem;
+  --breakpoint-desktop: 90rem;
 }
 
 @keyframes skeleton-shimmer {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -163,44 +163,81 @@
     @apply bg-[var(--color-background)] font-sans text-[var(--color-foreground)];
   }
 
-  h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote, pre, hr, dl, dd {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  ul,
+  ol,
+  figure,
+  blockquote,
+  pre,
+  hr,
+  dl,
+  dd {
     margin: 0;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading);
     font-size: inherit;
     font-weight: 600;
   }
 
-  ul, ol {
+  ul,
+  ol {
     padding-left: 1.5em;
     list-style: inherit;
   }
 
-  img, svg, video, canvas, audio, iframe, embed, object {
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
     display: block;
     max-width: 100%;
     vertical-align: middle;
   }
 
-  img, video {
+  img,
+  video {
     height: auto;
   }
 
-  button, input, select, textarea {
+  button,
+  input,
+  select,
+  textarea {
     font: inherit;
     color: inherit;
     margin: 0;
     padding: 0;
   }
 
-  button, [type="button"], [type="reset"], [type="submit"] {
+  button,
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
     cursor: pointer;
     -webkit-appearance: button;
   }
 
-  button:focus-visible, [type="button"]:focus-visible, [type="reset"]:focus-visible, [type="submit"]:focus-visible {
+  button:focus-visible,
+  [type='button']:focus-visible,
+  [type='reset']:focus-visible,
+  [type='submit']:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }

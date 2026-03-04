@@ -40,18 +40,18 @@ src/features/
 У проєкті є загальний barrel **`src/features/index.ts`**:
 
 ```ts
-export * as auth from "./auth";
-export * as landing from "./landing";
-export * as placementTest from "./placement-test";
+export * as auth from './auth';
+export * as landing from './landing';
+export * as placementTest from './placement-test';
 // ...
 ```
 
 **Приклад імпорту:**
 
 ```ts
-import { auth, landing, coursesCatalog } from "@/features";
+import { auth, landing, coursesCatalog } from '@/features';
 // або
-import { auth } from "@/features";
+import { auth } from '@/features';
 ```
 
 Поки у кожної фічі в `index.ts` лише `export {}`, такі імпорти дають порожні об’єкти. Коли в фічі з’являться компоненти, їх реекспортують з `features/<name>/index.ts`.
@@ -60,20 +60,20 @@ import { auth } from "@/features";
 
 ```ts
 // src/features/auth/index.ts
-export { LoginForm, RegisterForm } from "./components";
-export { loginSchema, registerSchema } from "./validation/authSchemas";
+export { LoginForm, RegisterForm } from './components';
+export { loginSchema, registerSchema } from './validation/authSchemas';
 ```
 
 Тоді в місці використання:
 
 ```tsx
-import { LoginForm, RegisterForm } from "@/features/auth";
+import { LoginForm, RegisterForm } from '@/features/auth';
 ```
 
 Або імпорт напряму з папки фічі:
 
 ```tsx
-import { LoginForm } from "@/features/auth/components/LoginForm";
+import { LoginForm } from '@/features/auth/components/LoginForm';
 ```
 
 ---
@@ -111,17 +111,17 @@ src/features/auth/
 **`features/auth/index.ts`** (реекспорт):
 
 ```ts
-export { LoginForm } from "./components/LoginForm";
-export { RegisterForm } from "./components/RegisterForm";
-export { loginSchema, registerSchema } from "./validation/authSchemas";
+export { LoginForm } from './components/LoginForm';
+export { RegisterForm } from './components/RegisterForm';
+export { loginSchema, registerSchema } from './validation/authSchemas';
 ```
 
 **Модалки** (Sign In, Sign Up, Reset password) імпортують компоненти фічі; стейт (auth slice) — з Redux:
 
 ```tsx
-import { LoginForm, RegisterForm } from "@/features/auth";
-import { useDispatch, useSelector } from "react-redux";
-import { selectIsAuthenticated } from "@/redux/slices/auth";
+import { LoginForm, RegisterForm } from '@/features/auth';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectIsAuthenticated } from '@/redux/slices/auth';
 ```
 
 Папка `features/auth` містить лише UI та валідацію авторизації; Redux залишається в `src/redux/`. Окремої сторінки AuthPage немає.

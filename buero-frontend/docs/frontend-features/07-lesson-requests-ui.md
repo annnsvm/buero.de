@@ -139,4 +139,3 @@ flowchart LR
   E -->|Success| F[Update list + show toast]
   E -->|Error| G[Show error + optionally refetch]
 ```
-

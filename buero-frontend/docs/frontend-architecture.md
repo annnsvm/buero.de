@@ -323,19 +323,19 @@ createRoot(rootElement).render(
 
 ### 4.3. Таблиця роутів
 
-| Route | Page | Role/Access | Опис | Guard | ErrorBoundary |
-|-------|------|-------------|------|-------|---------------|
-| `/` | `HomePage` | public | Landing, hero, benefits, CTA на assessment/trial. | — | Global |
-| `/assessment` | `AssessmentPage` | authenticated (student) або public+soft-guard | Старт та проходження Placement Test. | AuthGuard (redirect на `/` або inline login modal) | PlacementTest boundary (локальний) |
-| `/results` | `ResultsPage` | authenticated (student) | Показ рівня A1–B2, CTA на trial/dashboard/courses. | AuthGuard | Global |
-| `/dashboard/trial` | `TrialDashboardPage` | student with trial | Дашборд триалу: прогрес placement, CTA до першого курсу, banner trial. | ProtectedRoute + `requireTrial` | Dashboard boundary |
-| `/dashboard/subscribed` | `SubscribedDashboardPage` | student with active subscription | Основний дашборд студента з курсами, прогресом. | ProtectedRoute + `requireActiveSubscription` | Dashboard boundary |
-| `/teachers` | `TeacherDirectoryPage` | student/teacher (optional MVP) | Список вчителів, CTA на lesson request. | ProtectedRoute (optional) | Global |
-| `/settings/account` | `AccountSettingsPage` | authenticated | Налаштування акаунту: мова, timezone, email (частково), password reset link. | ProtectedRoute | AccountSettings boundary |
-| `/courses` | `CoursesCatalogPage` | student with trial/subscription | Каталог курсів з фільтрами, пошуком. | ProtectedRoute + `requireContentAccess` | Catalog boundary |
-| `/courses/:courseId` | `CoursePage` | student with trial/subscription | Learning view: sidebar lessons, main content, progress. | ProtectedRoute + `requireContentAccess` | CoursePage boundary |
-| `/profile` або `/me` | `UserProfilePage` | authenticated | Мій прогрес, курси, profile settings, avatar. | ProtectedRoute | Profile boundary |
-| `*` | `NotFoundPage` | public | 404 з CTA на `/` або `/courses`. | — | Global |
+| Route                   | Page                      | Role/Access                                   | Опис                                                                         | Guard                                              | ErrorBoundary                      |
+| ----------------------- | ------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------- |
+| `/`                     | `HomePage`                | public                                        | Landing, hero, benefits, CTA на assessment/trial.                            | —                                                  | Global                             |
+| `/assessment`           | `AssessmentPage`          | authenticated (student) або public+soft-guard | Старт та проходження Placement Test.                                         | AuthGuard (redirect на `/` або inline login modal) | PlacementTest boundary (локальний) |
+| `/results`              | `ResultsPage`             | authenticated (student)                       | Показ рівня A1–B2, CTA на trial/dashboard/courses.                           | AuthGuard                                          | Global                             |
+| `/dashboard/trial`      | `TrialDashboardPage`      | student with trial                            | Дашборд триалу: прогрес placement, CTA до першого курсу, banner trial.       | ProtectedRoute + `requireTrial`                    | Dashboard boundary                 |
+| `/dashboard/subscribed` | `SubscribedDashboardPage` | student with active subscription              | Основний дашборд студента з курсами, прогресом.                              | ProtectedRoute + `requireActiveSubscription`       | Dashboard boundary                 |
+| `/teachers`             | `TeacherDirectoryPage`    | student/teacher (optional MVP)                | Список вчителів, CTA на lesson request.                                      | ProtectedRoute (optional)                          | Global                             |
+| `/settings/account`     | `AccountSettingsPage`     | authenticated                                 | Налаштування акаунту: мова, timezone, email (частково), password reset link. | ProtectedRoute                                     | AccountSettings boundary           |
+| `/courses`              | `CoursesCatalogPage`      | student with trial/subscription               | Каталог курсів з фільтрами, пошуком.                                         | ProtectedRoute + `requireContentAccess`            | Catalog boundary                   |
+| `/courses/:courseId`    | `CoursePage`              | student with trial/subscription               | Learning view: sidebar lessons, main content, progress.                      | ProtectedRoute + `requireContentAccess`            | CoursePage boundary                |
+| `/profile` або `/me`    | `UserProfilePage`         | authenticated                                 | Мій прогрес, курси, profile settings, avatar.                                | ProtectedRoute                                     | Profile boundary                   |
+| `*`                     | `NotFoundPage`            | public                                        | 404 з CTA на `/` або `/courses`.                                             | —                                                  | Global                             |
 
 ### 4.4. ProtectedRoute / Guards
 
@@ -554,4 +554,3 @@ Tailwind breakpoints (`sm`, `md`, `lg`, `xl`):
   - `chore: configure tailwind and eslint`
 
 Коментарі та назви комітів — англійською; документація — українською з технічними термінами англійською.
-

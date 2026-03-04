@@ -1,12 +1,12 @@
-import { LogoProps } from "@/types/components/ui/Logo.types";
+import { LogoProps } from '@/types/components/ui/Logo.types';
 
-const LOGO_SRC = "/images/home/logo.png";
+const LOGO_SRC = '/images/home/logo.png';
 
 const Logo = ({
   width = 70,
   height = 28,
-  alt = "buero.de",
-  className = "",
+  alt = 'buero.de',
+  className = '',
   ...rest
 }: LogoProps) => {
   return (

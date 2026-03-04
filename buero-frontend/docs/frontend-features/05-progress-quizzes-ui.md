@@ -171,4 +171,3 @@ flowchart LR
   I --> J[POST /api/quiz/attempts/:attemptId/complete]
   J --> K[Show ResultSummary + update course_progress]
 ```
-

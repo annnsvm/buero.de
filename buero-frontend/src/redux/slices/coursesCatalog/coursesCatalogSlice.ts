@@ -1,11 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 export type CoursesCatalogState = {
   items: unknown[];
   totalCount: number;
   filters: { level?: string; category?: string; search?: string };
   page: number;
-  status: "idle" | "loading" | "error";
+  status: 'idle' | 'loading' | 'error';
   error: string | null;
 };
 
@@ -14,12 +14,12 @@ const initialState: CoursesCatalogState = {
   totalCount: 0,
   filters: {},
   page: 1,
-  status: "idle",
+  status: 'idle',
   error: null,
 };
 
 const coursesCatalogSlice = createSlice({
-  name: "coursesCatalog",
+  name: 'coursesCatalog',
   initialState,
   reducers: {
     setFilters: (state, action) => {

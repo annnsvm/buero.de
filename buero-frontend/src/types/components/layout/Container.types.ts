@@ -1,9 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 type ContainerProps = {
   children: ReactNode;
   className?: string;
-  as?: "div" | "section" | "main";
+  as?: 'div' | 'section' | 'main';
 };
 
-export type {ContainerProps};
+export type { ContainerProps };

@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 export type SubscriptionsState = {
   subscription: {
@@ -7,19 +7,19 @@ export type SubscriptionsState = {
     trialEndsAt: string | null;
   } | null;
   payments: unknown[];
-  status: "idle" | "loading" | "error";
+  status: 'idle' | 'loading' | 'error';
   error: string | null;
 };
 
 const initialState: SubscriptionsState = {
   subscription: null,
   payments: [],
-  status: "idle",
+  status: 'idle',
   error: null,
 };
 
 const subscriptionsSlice = createSlice({
-  name: "subscriptions",
+  name: 'subscriptions',
   initialState,
   reducers: {},
   extraReducers: () => {},

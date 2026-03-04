@@ -1,10 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 export type ProgressQuizzesState = {
   overallProgress: unknown | null;
   courseProgressById: Record<string, unknown>;
   currentQuizAttemptId: string | null;
-  status: "idle" | "loading" | "error";
+  status: 'idle' | 'loading' | 'error';
   error: string | null;
 };
 
@@ -12,12 +12,12 @@ const initialState: ProgressQuizzesState = {
   overallProgress: null,
   courseProgressById: {},
   currentQuizAttemptId: null,
-  status: "idle",
+  status: 'idle',
   error: null,
 };
 
 const progressQuizzesSlice = createSlice({
-  name: "progressQuizzes",
+  name: 'progressQuizzes',
   initialState,
   reducers: {
     setCurrentQuizAttemptId: (state, action: { payload: string | null }) => {

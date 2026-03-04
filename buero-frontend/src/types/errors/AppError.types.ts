@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 type AppErrorBoundaryProps = {
   children: ReactNode;
@@ -9,7 +9,4 @@ type AppErrorBoundaryState = {
   error: Error | null;
 };
 
-export type {
-  AppErrorBoundaryProps,
-  AppErrorBoundaryState
-}
+export type { AppErrorBoundaryProps, AppErrorBoundaryState };

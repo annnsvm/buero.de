@@ -2,4 +2,4 @@ type SpinnerProps = {
   className?: string;
 };
 
-export type{SpinnerProps}
+export type { SpinnerProps };

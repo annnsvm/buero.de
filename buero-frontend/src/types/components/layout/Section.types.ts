@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 type SectionProps = {
   children: ReactNode;
 };
 
-export type {SectionProps}
+export type { SectionProps };

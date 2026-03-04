@@ -1,8 +1,8 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
 // TODO: fetchCourseLearningData(courseId), completeMaterial when API is ready
 
 export const fetchCourseLearningThunk = createAsyncThunk(
-  "courseLearning/fetch",
-  async (_courseId: string) => ({ course: null, materials: [], progress: [] })
+  'courseLearning/fetch',
+  async (_courseId: string) => ({ course: null, materials: [], progress: [] }),
 );

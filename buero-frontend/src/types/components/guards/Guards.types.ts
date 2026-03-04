@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 type PrivateGuardProps = {
   children: ReactNode;
@@ -8,8 +8,4 @@ type PublicGuardProps = {
   children: ReactNode;
 };
 
-
-export type {
-  PrivateGuardProps,
-  PublicGuardProps
-}
+export type { PrivateGuardProps, PublicGuardProps };
