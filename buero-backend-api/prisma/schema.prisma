@@ -1,3 +1,6 @@
+// Buero.de — Database Schema (docs/architecture.md §3, §4, §8)
+// NestJS backend, Prisma ORM, PostgreSQL
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -5,5 +8,330 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // URL for Migrate: prisma.config.ts (Prisma 7)
+}
+
+// ─── Enums (Architecture §3) ─────────────────────────────────────────────────
+
+enum Role {
+  student
+  teacher
+}
+
+enum Language {
+  en
+  de
+}
+
+enum Level {
+  A1
+  A2
+  B1
+  B2
+}
+
+enum CourseCategory {
+  language
+  sociocultural
+}
+
+enum CourseMaterialType {
+  video
+  vocabulary
+  grammar
+  quiz
+  scenario
+  cultural_insight
+  homework
+  text
+}
+
+enum UserCourseAccessType {
+  trial
+  purchase
+  subscription
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  incomplete
+  trialing
+}
+
+enum LessonRequestStatus {
+  pending
+  accepted
+  completed
+  rejected
+}
+
+// ─── Users & Auth ───────────────────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  passwordHash       String    @map("password_hash")
+  role               Role
+  language           Language  @default(en)
+  stripeCustomerId   String?   @map("stripe_customer_id")
+  deletedAt          DateTime? @map("deleted_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  refreshTokens      RefreshToken[]
+  studentProfile     StudentProfile?
+  teacherProfile     TeacherProfile?
+  coursesCreated     Course[]           @relation("CourseCreator")
+  userCourseAccess   UserCourseAccess[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+  courseProgress     CourseProgress[]
+  quizAttempts       QuizAttempt[]
+  lessonRequestsAsStudent LessonRequest[] @relation("LessonRequestStudent")
+  lessonRequestsAsTeacher LessonRequest[] @relation("LessonRequestTeacher")
+  placementResults   PlacementResult[]
+
+  @@index([email])
+  @@index([stripeCustomerId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model StudentProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique @map("user_id")
+  level       Level?
+  timezone    String    @default("Europe/Berlin")
+  trialEndsAt DateTime? @map("trial_ends_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
+
+model TeacherProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  bio       String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_profiles")
+}
+
+// ─── Courses & Materials ────────────────────────────────────────────────────
+
+model Course {
+  id           String         @id @default(uuid())
+  teacherId    String?        @map("teacher_id")
+  title        String
+  description  String?
+  language     Language
+  category     CourseCategory
+  isPublished  Boolean        @default(false) @map("is_published")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  teacher            User?                @relation("CourseCreator", fields: [teacherId], references: [id], onDelete: SetNull)
+  materials          CourseMaterial[]
+  userCourseAccess   UserCourseAccess[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+  courseProgress     CourseProgress[]
+
+  @@index([teacherId])
+  @@index([category])
+  @@map("courses")
+}
+
+model CourseMaterial {
+  id          String             @id @default(uuid())
+  courseId    String             @map("course_id")
+  type        CourseMaterialType
+  title       String
+  content     Json               // JSON/JSONB: scenario nodes, video youtube_video_id, etc.
+  orderIndex  Int                @map("order_index")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  course        Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseProgress CourseProgress[]
+  quizAttempts  QuizAttempt[]
+
+  @@index([courseId])
+  @@map("course_materials")
+}
+
+// ─── Access & Billing ───────────────────────────────────────────────────────
+
+model UserCourseAccess {
+  id             String               @id @default(uuid())
+  userId         String               @map("user_id")
+  courseId       String               @map("course_id")
+  accessType     UserCourseAccessType @map("access_type")
+  trialEndsAt    DateTime?            @map("trial_ends_at")
+  subscriptionId String?              @map("subscription_id")
+  paymentId      String?              @map("payment_id")
+  createdAt      DateTime            @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  payment      Payment?      @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("user_course_access")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @map("user_id")
+  courseId             String             @map("course_id")
+  stripeCustomerId     String             @map("stripe_customer_id")
+  stripeSubscriptionId String             @unique @map("stripe_subscription_id")
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime?          @map("current_period_start")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
+  canceledAt           DateTime?          @map("canceled_at")
+  cancellationReason   String?             @map("cancellation_reason")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course            Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userCourseAccess  UserCourseAccess[]
+  payments          Payment[]
+
+  @@index([userId])
+  @@index([courseId])
+  @@map("subscriptions")
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  courseId         String?  @map("course_id")
+  subscriptionId   String?  @map("subscription_id")
+  stripeInvoiceId  String   @unique @map("stripe_invoice_id")
+  amount           Decimal  @db.Decimal(10, 2)
+  currency         String
+  status           String
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  subscription     Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  userCourseAccess UserCourseAccess[]
+
+  @@map("payments")
+}
+
+model StripeWebhookEvent {
+  id            String   @id @default(uuid())
+  stripeEventId String   @unique @map("stripe_event_id")
+  processedAt   DateTime @default(now()) @map("processed_at")
+
+  @@map("stripe_webhook_events")
+}
+
+// ─── Progress & Quizzes ────────────────────────────────────────────────────
+
+model CourseProgress {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  courseId         String    @map("course_id")
+  courseMaterialId String?   @map("course_material_id")
+  completedAt      DateTime @map("completed_at")
+  score            Decimal?  @db.Decimal(5, 2)
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseMaterial CourseMaterial? @relation(fields: [courseMaterialId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, courseId, courseMaterialId])
+  @@index([userId, courseId])
+  @@map("course_progress")
+}
+
+model QuizAttempt {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  courseMaterialId String    @map("course_material_id")
+  score            Decimal?  @db.Decimal(5, 2)
+  answersSnapshot  Json?     @map("answers_snapshot") // JSONB for resume
+  completedAt      DateTime? @map("completed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseMaterial CourseMaterial @relation(fields: [courseMaterialId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("quiz_attempts")
+}
+
+// ─── Lesson Requests ────────────────────────────────────────────────────────
+
+model LessonRequest {
+  id            String              @id @default(uuid())
+  studentId     String              @map("student_id")
+  teacherId     String?             @map("teacher_id")
+  preferredTime String?             @map("preferred_time") // text for MVP
+  message       String?
+  status        LessonRequestStatus
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+
+  student User? @relation("LessonRequestStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher User? @relation("LessonRequestTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@map("lesson_requests")
+}
+
+// ─── Placement Test ────────────────────────────────────────────────────────
+
+model PlacementQuestion {
+  id           String   @id @default(uuid())
+  level        Level?
+  questionData Json     @map("question_data") // JSONB: text, options, correct answer
+  orderIndex   Int      @map("order_index")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("placement_questions")
+}
+
+model PlacementResult {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  level       Level
+  rawScore    Int?     @map("raw_score")
+  completedAt DateTime @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("placement_results")
 }
