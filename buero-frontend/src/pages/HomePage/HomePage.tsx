@@ -1,8 +1,10 @@
-const HomePage = () => {
+import { Hero } from "@/features/landing/Hero/Hero";
+import React from "react";
+
+const HomePage: React.FC = () => {
   return (
     <div>
-      <h1>HomePage (Landing)</h1>
-      <p>Hero, benefits, testimonials, CTA to assessment.</p>
+      <Hero />
     </div>
   );
 };

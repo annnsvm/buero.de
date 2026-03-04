@@ -15,5 +15,9 @@ export const ROUTES = Object.freeze({
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
 
+const HEADER_LIGHT_PATHS: readonly string[] = [ROUTES.HOME];
+
+export const isHeaderLightByPath = (pathname: string): boolean =>
+  HEADER_LIGHT_PATHS.some((p) => p === pathname || (p !== "/" && pathname.startsWith(p)));
 
 export const getCoursePath = (courseId: string): string => `/courses/${courseId}`;

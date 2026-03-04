@@ -53,7 +53,9 @@
   --color-neutral-darker: #2f312d;
   --color-neutral: #2e302c;
   --color-neutral-lighter: #6b6d69;
-  --color-neutral-lightest: #f5f5f4;
+  --color-neutral-lightest: ##5A5A5A;
+
+  --color-sienna: #E76E50;
 
   /*
    * Semantic tokens — Варіант 2 (рольові назви).
@@ -63,7 +65,7 @@
   --color-text-primary: var(--color-neutral-darkest);
   --color-text-secondary: var(--color-neutral-darker);
   --color-text-inverse: var(--color-white);
-  --color-text-on-accent: var(--color-white);
+  --color-text-on-accent: var(--color-sienna);
 
   /* Surface */
   --color-surface-background: var(--color-white);
@@ -83,7 +85,7 @@
   --color-accent-secondary-hover: var(--color-torea-bay-darkest);
   --color-accent-danger: var(--color-cinnabar-darkest);
 
-  /* Aliases (зворотна сумісність з існуючими компонентами) */
+  /* Aliases */
   --color-primary: var(--color-accent-primary);
   --color-primary-foreground: var(--color-text-on-accent);
   --color-primary-darkest: var(--color-accent-primary-hover);
@@ -112,6 +114,10 @@
   /* Шрифти: Inter — основний текст, Sora — заголовки */
   --font-sans: "Inter", system-ui, sans-serif;
   --font-heading: "Sora", "Inter", system-ui, sans-serif;
+
+  --breakpoint-mobile: 20rem;  
+  --breakpoint-tablet: 40rem;  
+  --breakpoint-desktop: 90rem;  
 }
 
 @keyframes skeleton-shimmer {

@@ -13,7 +13,7 @@ const Container = ({
 }: ContainerProps) => {
   return (
     <Tag
-      className={`mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 ${className}`}
+      className={`mx-auto w-full max-w-7xl px-5 mobile:px-15 tablet:px-20 ${className}`}
     >
       {children}
     </Tag>

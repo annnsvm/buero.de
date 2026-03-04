@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Container from "../Container/Container";
 
 type SectionProps = {
   children: ReactNode;
@@ -9,10 +8,8 @@ const Section = ({
   children,
 }: SectionProps) => {
   return (
-    <section>
-      <Container >
+    <section className="py-16 tablet: py-28">
         {children}
-      </Container>
     </section>
   );
 };
