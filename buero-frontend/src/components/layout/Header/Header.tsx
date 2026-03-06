@@ -26,9 +26,9 @@ const Header = () => {
           >
             <Logo width={70} height={28} />
           </Link>
-          <HeaderNavBar pathname={pathname} isLight={isLight} className="hidden min-[980px]:flex" />
-          <HeaderAuthTrialBar isLight={isLight} className="hidden min-[980px]:flex" />
-          <HeaderMobileMenu isOpen={isOpen} setIsOpen={setIsOpen} isLight={isLight} pathname={pathname} className="flex min-[980px]:hidden"/>
+          <HeaderNavBar pathname={pathname} isLight={isLight} className="hidden min-[1024px]:flex" />
+          <HeaderAuthTrialBar isLight={isLight} className="hidden min-[1024px]:flex" />
+          <HeaderMobileMenu isOpen={isOpen} setIsOpen={setIsOpen} isLight={isLight} pathname={pathname} className="flex min-[1024px]:hidden"/>
         </div>
       </Container>
     </header>
