@@ -106,11 +106,11 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({ setIsOpen, isOpen, 
                         <HeaderNavBar
                             pathname={pathname}
                             isLight={isLight}
-                            className="flex flex-col items-center gap-6 min-[980px]:hidden fs-18"
+                            className="flex flex-col items-center gap-6 min-[1024px]:hidden fs-18"
                         />
                     </div>
 
-                    <div className="mt-6 flex flex-col gap-4 min-[980px]:hidden">
+                    <div className="mt-6 flex flex-col gap-4 min-[1024px]:hidden">
                         <HeaderAuthTrialBar
                             isLight={isLight}
                             className="flex flex-col gap-4 w-full max-w-[280px] mx-auto"

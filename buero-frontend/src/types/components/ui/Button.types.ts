@@ -1,4 +1,4 @@
-import { VARIANT_CLASSES } from '@/helpers/buttoVariantClasses';
+import { VARIANT_CLASSES } from '@/components/ui/Button/variantClasses';
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 
 type ButtonVariant = keyof typeof VARIANT_CLASSES;

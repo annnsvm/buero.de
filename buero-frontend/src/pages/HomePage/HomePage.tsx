@@ -3,7 +3,7 @@ import React from 'react';
 
 const HomePage: React.FC = () => {
   return (
-    <div>
+    <div aria-label="Home Page">
       <Hero />
     </div>
   );

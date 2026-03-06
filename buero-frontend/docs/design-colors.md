@@ -1,6 +1,10 @@
 # Design Colors — семантичні кольори
 
-У проєкті використовується **рольова (семантична)** назва кольорів: кожен токен описує **призначення** кольору в інтерфейсі, а не відтінок.
+У проєкті використовується **двошаровий підхід**:
+1. **Primitive** — базові кольори палітри (Neutrals, Burnt Siena, Dawn Pink, Cod Gray, Soapstone).
+2. **Semantic** — рольові токени (text-primary, surface-background, accent-primary тощо).
+
+Кожен семантичний токен описує **призначення** кольору в інтерфейсі.
 
 ## Текст (Text)
 
@@ -38,11 +42,23 @@
 | `--color-accent-secondary-hover` | Hover для secondary                         |
 | `--color-accent-danger`          | Небезпечні дії, помилки                     |
 
+## Primitive Palette (index.css)
+
+| Палітра | Відтінки |
+|---------|----------|
+| **Neutrals** | white, lightest, lighter, light, base, dark, darker, darkest |
+| **Burnt Siena** | lightest, lighter, light, base, dark, darker, darkest |
+| **Dawn Pink** | lightest, lighter, light, base, dark, darker, darkest |
+| **Cod Gray** | lightest, lighter, light, base, dark, darker, darkest |
+| **Soapstone** | lightest, lighter, light, base, dark, darker, darkest |
+
+Приклад: `--color-burnt-siena-base`, `--color-neutral-dark`, `--color-soapstone-base`.
+
 ## Де визначено
 
 - **Тема:** `src/styles/index.css` (блок `@theme`).
-- Базові кольори (Cinnabar, Torea Bay, neutrals) залишаються примітивами; семантичні токени посилаються на них.
-- Для зворотної сумісності старі змінні (`--color-primary`, `--color-background` тощо) залишені як alias на нові семантичні.
+- Primitive-кольори — базові; семантичні токени посилаються на них.
+- Aliases (`--color-primary`, `--color-background`, `--color-white`) — для зворотної сумісності.
 
 ## Використання в Tailwind CSS
 

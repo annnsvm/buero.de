@@ -34,89 +34,142 @@
 }
 
 @theme {
-  /* Base */
-  --color-white: #ffffff;
-  --color-black: #000000;
+  /* ========== Primitive Colors ========== */
 
-  /* Cinnabar (основний акцент, CTA) */
-  --color-cinnabar: #e34234;
-  --color-cinnabar-darkest: #b53529;
-  --color-cinnabar-lightest: #fde8e6;
+  /* Neutrals — базові сірі, текст, межі */
+  --color-neutral-white: #ffffff; /* Hero, HeaderNavBar (light), Button outline */
+  --color-neutral-lightest: #f2f2f2; /* skeleton-shine */
+  --color-neutral-lighter: #d8d8d8; /* border-default */
+  --color-neutral-light: #b2b2b2;
+  --color-neutral-base: #808080; /* text-secondary */
+  --color-neutral-dark: #4d4d4d; /* text-primary */
+  --color-neutral-darker: #1a1a1a; /* border-strong */
+  --color-neutral-darkest: #010101; /* opacity tokens */
 
-  /* Torea Bay (синій акцент) */
-  --color-torea-bay: #1e3a5f;
-  --color-torea-bay-darkest: #0f1d2e;
+  /* Burnt Siena — основний акцент, CTA, лінки */
+  --color-burnt-siena-lightest: #fcf0ed;
+  --color-burnt-siena-lighter: #fae2dc; /* Scheme 4: фон секцій */
+  --color-burnt-siena-light: #ee9984;
+  --color-burnt-siena-base: #e76e50; /* CTA, primary buttons, accent */
+  --color-burnt-siena-dark: #b85840; /* hover, secondary accent */
+  --color-burnt-siena-darker: #5c2c20;
+  --color-burnt-siena-darkest: #452118;
 
-  /* Neutrals */
-  --color-neutral-darkest: #1c201b;
-  --color-neutral-darker: #2f312d;
-  --color-neutral: #2e302c;
-  --color-neutral-lighter: #6b6d69;
-  --color-neutral-lightest: ##5a5a5a;
+  /* Dawn Pink — альтернативні фони, секції */
+  --color-dawn-pink-lightest: #fefdfc;
+  --color-dawn-pink-lighter: #fdfbfa;
+  --color-dawn-pink-light: #f8f2ee;
+  --color-dawn-pink-base: #f5ede8; /* surface-section, Header (scrolled) */
+  --color-dawn-pink-dark: #c4bdb9;
+  --color-dawn-pink-darker: #625e5c;
+  --color-dawn-pink-darkest: #494745;
 
-  --color-sienna: #e76e50;
+  /* Cod Gray — темні фони, текст */
+  --color-cod-gray-lightest: #e6e6e6;
+  --color-cod-gray-lighter: #cecece;
+  --color-cod-gray-light: #535353;
+  --color-cod-gray-base: #0a0a0a; /* color-black */
+  --color-cod-gray-dark: #080808;
+  --color-cod-gray-darker: #040404;
+  --color-cod-gray-darkest: #030303;
 
-  /*
-   * Semantic tokens — Варіант 2 (рольові назви).
-   * Text — колір тексту; Surface — фони; Border — межі; Accent — акценти/CTA.
-   */
+  /* Soapstone — основні фони, картки */
+  --color-soapstone-lightest: #fffefe; /* surface-overlay */
+  --color-soapstone-lighter: #fffefe;
+  --color-soapstone-light: #fffcfb;
+  --color-soapstone-base: #fffcfa; /* surface-background, surface-card, body */
+  --color-soapstone-dark: #ccc9c8;
+  --color-soapstone-darker: #666464;
+  --color-soapstone-darkest: #4c4b4b;
+
+  /* ========== Semantic Tokens (role-based) ========== */
+  /* Scheme 1 default: Text Neutral Dark, Background Soapstone, Accent Burnt Siena, Foreground White */
+
+  /* Background */
+  --color-btn-primary: var(--color-burnt-siena-light);
+
   /* Text */
-  --color-text-primary: var(--color-neutral-darkest);
-  --color-text-secondary: var(--color-neutral-darker);
-  --color-text-inverse: var(--color-white);
-  --color-text-on-accent: var(--color-sienna);
+  --color-text-primary: var(--color-neutral-dark);
+  /* Header (scrolled), Input labels, mobile menu hamburger (dark), body */
+  --color-text-secondary: var(--color-neutral-base);
+  /* Placeholders, підписи, мітки */
+  --color-text-inverse: var(--color-neutral-white);
+  /* Hero outline — текст на темному фоні */
+  --color-text-on-accent: var(--color-neutral-white);
+  /* LinkBtn primary, Button solid, AppErrorBoundary — текст на CTA */
 
   /* Surface */
-  --color-surface-background: var(--color-white);
-  --color-surface-section: var(--color-neutral-lightest);
-  --color-surface-card: var(--color-white);
-  --color-surface-overlay: var(--color-neutral-lightest);
+  --color-surface-background: var(--color-soapstone-base);
+  /* body, AppErrorBoundary, сторінки */
+  --color-surface-section: var(--color-dawn-pink-base);
+  /* Header (scrolled), секції, skeleton, background-alt */
+  --color-surface-card: var(--color-soapstone-base);
+  /* Картки, HeaderMobileMenu hamburger (light) */
+  --color-surface-overlay: var(--color-soapstone-lightest);
+  /* Модалки, dropdown, overlay */
 
   /* Border */
-  --color-border-subtle: #262e2a;
+  --color-border-subtle: var(--opacity-neutral-darkest-15);
+  /* Найменш помітні межі */
   --color-border-default: var(--color-neutral-lighter);
+  /* Button outlineDark, Input, картки */
   --color-border-strong: var(--color-neutral-darker);
+  /* Роздільники, підкреслені межі  */
 
   /* Accent */
-  --color-accent-primary: var(--color-cinnabar);
-  --color-accent-primary-hover: var(--color-cinnabar-darkest);
-  --color-accent-secondary: var(--color-torea-bay);
-  --color-accent-secondary-hover: var(--color-torea-bay-darkest);
-  --color-accent-danger: var(--color-cinnabar-darkest);
+  --color-accent-primary: var(--color-burnt-siena-base);
+  /* CTA, Button, Spinner, focus ring */
+  --color-accent-primary-hover: var(--color-burnt-siena-dark);
+  --color-accent-secondary: var(--color-burnt-siena-dark);
+  /* Secondary buttons */
+  --color-accent-secondary-hover: var(--color-burnt-siena-darker);
+  --color-accent-danger: var(--color-burnt-siena-dark);
+  /* Помилки, небезпечні дії */
 
-  /* Aliases */
+  /* Aliases (backward compatibility + shorthand) */
   --color-primary: var(--color-accent-primary);
   --color-primary-foreground: var(--color-text-on-accent);
   --color-primary-darkest: var(--color-accent-primary-hover);
   --color-secondary: var(--color-accent-secondary);
   --color-secondary-foreground: var(--color-text-on-accent);
   --color-text: var(--color-text-primary);
+  /* Input */
   --color-text-muted: var(--color-text-secondary);
+  /* AppErrorBoundary */
   --color-muted: var(--color-text-secondary);
   --color-border: var(--color-border-default);
   --color-background: var(--color-surface-background);
   --color-background-alt: var(--color-surface-section);
+  /* AppErrorBoundary pre */
   --color-foreground: var(--color-text-primary);
+  /* body, AppErrorBoundary */
   --color-primary-hover: var(--color-accent-primary-hover);
   --color-secondary-hover: var(--color-accent-secondary-hover);
   --color-error: var(--color-accent-primary);
   --color-error-border: var(--color-accent-primary-hover);
   --color-skeleton: var(--color-surface-section);
   --color-skeleton-shine: var(--color-neutral-lightest);
+  /* Skeleton animation */
+  --color-white: var(--color-neutral-white);
+  /* (light), Button outline */
+  --color-black: var(--color-cod-gray-base);
 
-  /* Opacity */
-  --opacity-neutral-darkest-60: rgba(28, 32, 27, 0.6);
-  --opacity-neutral-darkest-15: rgba(28, 32, 27, 0.15);
+  /* Opacity (Neutral Darkest #010101 = rgba(1,1,1)) */
+  --opacity-neutral-darkest-60: rgba(1, 1, 1, 0.6);
+  /* overlay backdrop */
+  --opacity-neutral-darkest-15: rgba(1, 1, 1, 0.15);
+  /* outline hover, Button solid hover */
   --opacity-white-60: rgba(255, 255, 255, 0.6);
+  /*  outline border, Button outline */
   --opacity-white-20: rgba(255, 255, 255, 0.2);
 
   /* Шрифти: Inter — основний текст, Sora — заголовки */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-heading: 'Sora', 'Inter', system-ui, sans-serif;
 
-  --breakpoint-mobile: 20rem;
-  --breakpoint-tablet: 40rem;
-  --breakpoint-desktop: 90rem;
+  /* Tailwind responsive: sm:=tablet, md:=desktop */
+  --breakpoint-sm: 30rem;
+  --breakpoint-md: 64rem;
 }
 
 @keyframes skeleton-shimmer {
@@ -252,10 +305,21 @@
     border-spacing: 0;
     width: 100%;
   }
+
+  ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 @layer utilities {
   .no-scroll {
     overflow: hidden;
   }
+
+  @keyframes bounce-x {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
 }

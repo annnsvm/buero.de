@@ -1,4 +1,4 @@
-import { VARIANT_CLASSES } from '@/helpers/buttoVariantClasses';
+import { VARIANT_CLASSES } from '@/components/ui/Button/variantClasses';
 import { ButtonProps } from '@/types/components/ui/Button.types';
 
 const BASE_CLASSES =
@@ -11,7 +11,7 @@ const Button = ({
   className = '',
   type = 'button',
   variant = 'outline',
-  styleType='default',
+  styleType = 'default',
   ...rest
 }: ButtonProps) => {
   const combinedClassName = [BASE_CLASSES, VARIANT_CLASSES[variant], className]
