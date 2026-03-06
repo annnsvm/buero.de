@@ -317,4 +317,9 @@
   .no-scroll {
     overflow: hidden;
   }
+
+  @keyframes bounce-x {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
 }
