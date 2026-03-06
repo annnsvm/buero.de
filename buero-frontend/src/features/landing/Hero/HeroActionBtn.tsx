@@ -4,7 +4,7 @@ import React from 'react';
 
 const HeroActionBtn: React.FC = () => {
   return (
-    <ul className="flex flex-wrap gap-3 sm:gap-4" aria-label="Hero Links">
+    <ul className="flex flex-wrap gap-5 flex-col items-center sm:gap-4 sm:flex-row md:items-start" aria-label="Hero Links">
       <li>
         <LinkBtn to={'/'} variant="primary" className="flex items-center gap-3">
           <span>Get started</span>
