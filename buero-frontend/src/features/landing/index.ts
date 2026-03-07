@@ -4,5 +4,5 @@
  * Components: Hero, WhyBuro, BeyondClassroom, etc.
  */
 
-export { default as Hero } from './Hero/Hero';
-export { default as WhyBuro } from './WhyBuro/WhyBuro';
+export { default as Hero } from './Hero';
+export { default as WhyBuro } from './WhyBuro';
