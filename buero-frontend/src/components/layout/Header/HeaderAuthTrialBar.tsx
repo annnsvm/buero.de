@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '../../Button';
+import Button from '../../ui/Button';
 import { HeaderNavAuthTrialProps } from '@/types/components/layout/Header.types';
 
 const HeaderAuthTrialBar: React.FC<HeaderNavAuthTrialProps> = ({
