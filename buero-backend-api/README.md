@@ -88,6 +88,17 @@ curl http://localhost:3000/api/health/db
 
 ---
 
+## Модулі та ендпоінти
+
+| Модуль   | Базовий шлях      | Опис |
+|----------|-------------------|------|
+| Health   | `/api/health`     | Перевірка життєздатності сервісу та БД (`GET /`, `GET /db`). |
+| Courses  | `/api/courses`    | CRUD курсів: список опублікованих (фільтри `category`, `language`), один по id, створення, оновлення, видалення. |
+
+У Swagger UI (`/api-docs`) всі ендпоінти задокументовані з прикладами запитів та відповідей.
+
+---
+
 ## Скрипти
 
 | Команда | Опис |
@@ -96,6 +107,7 @@ curl http://localhost:3000/api/health/db
 | `npm run build` | Збірка в `dist/` (`nest build`) |
 | `npm run start` | Запуск зібраного додатку (`nest start`) |
 | `npm run prisma:generate` | Генерація Prisma Client |
+| `npm run prisma:seed`     | Опційно: заповнення БД для перевірки (наприклад placement_questions) |
 
 ---
 

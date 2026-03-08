@@ -1,3 +1,4 @@
+import { CoursesModule } from './courses/courses.module';
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
@@ -14,6 +15,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     }),
     PrismaModule,
     HealthModule,
+    CoursesModule,
     UserModule,
     AuthModule,
     JwtModule.registerAsync({
