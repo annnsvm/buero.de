@@ -114,5 +114,5 @@ curl http://localhost:3000/api/health/db
 
 ## Структура та документація
 
-- Джерела правди: **docs/architecture.md**, **docs/api-plan.md**, **docs/auth-spec.md**, **docs/auth-config.md**, **docs/modules/*.md**.
+- Джерела правди (у корені репозиторію): **docs/architecture.md**, **docs/api-plan.md**, **docs/auth-spec.md**, **docs/auth-config.md**, **docs/modules/*.md**.
 - Модулі API: Auth, Users, Placement Test, Courses, Course Materials, Progress & Quizzes, Subscriptions & Billing, Lesson Requests (порядок реалізації — у `docs/api-plan.md`).

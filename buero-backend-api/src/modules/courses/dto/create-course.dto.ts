@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
-import { CourseCategory, Language } from '../../generated/prisma/enums';
+import { CourseCategory, Language } from '../../../generated/prisma/enums';
 
 export class CreateCourseDto {
   @ApiProperty({ example: 'German A1 Basics', description: 'Назва курсу' })

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsNotEmpty, IsObject, IsString, MaxLength } from 'class-validator';
-import { CourseMaterialType } from '../../generated/prisma/enums';
+import { CourseMaterialType } from '../../../generated/prisma/enums';
 
 export class CreateCourseMaterialDto {
   @ApiProperty({

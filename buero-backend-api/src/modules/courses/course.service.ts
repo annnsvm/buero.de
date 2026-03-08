@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CourseCategory, Language } from '../generated/prisma/enums';
-import { PrismaService } from '../prisma/prisma.service';
+import { CourseCategory, Language } from '../../generated/prisma/enums';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ListCoursesQueryDto } from './dto/list-courses-query.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
