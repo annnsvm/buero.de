@@ -7,6 +7,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { UserModule } from "./modules/user/user.module";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PrismaModule } from "./prisma/prisma.module";
       }),
       inject: [ConfigService],
     }),
+    SubscriptionsModule,
   ],
 })
 export class AppModule {}

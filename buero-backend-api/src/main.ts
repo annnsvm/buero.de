@@ -6,10 +6,20 @@ import { AppModule } from "./app.module";
 import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
+import { json } from "express";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  // Body parser with raw body preserved for Stripe webhook signature verification
+  app.use(
+    json({
+      verify: (req: any, _res, buf: Buffer) => {
+        if (req.originalUrl?.includes("webhooks/stripe")) req.rawBody = buf;
+      },
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -34,6 +44,9 @@ async function bootstrap() {
     "DATABASE_URL",
     "JWT_ACCESS_SECRET",
     "JWT_REFRESH_SECRET",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "STRIPE_PRICE_ID",
   ] as const;
   const optionalEnv = [
     "PORT",
@@ -76,6 +89,8 @@ async function bootstrap() {
     .setVersion("1.0")
     .addTag("auth", "Реєстрація, логін, refresh, logout")
     .addTag("users", "Профіль поточного користувача")
+    .addTag("subscriptions", "Підписки та Checkout, Customer Portal")
+    .addTag("payments", "Історія платежів")
     .addTag("health", "Перевірка стану сервера")
     .addBearerAuth(
       { type: "http", scheme: "bearer", bearerFormat: "JWT", in: "header" },
