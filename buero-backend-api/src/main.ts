@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { ClassSerializerInterceptor, ValidationPipe } from "@nestjs/common";
+import { ClassSerializerInterceptor, Logger, ValidationPipe } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
@@ -8,6 +8,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 
 async function bootstrap() {
+  const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
@@ -28,6 +29,32 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const configService = app.get(ConfigService);
+
+  const requiredEnv = [
+    "DATABASE_URL",
+    "JWT_ACCESS_SECRET",
+    "JWT_REFRESH_SECRET",
+  ] as const;
+  const optionalEnv = [
+    "PORT",
+    "NODE_ENV",
+    "JWT_ACCESS_EXPIRES_IN",
+    "JWT_REFRESH_EXPIRES_IN",
+    "COOKIE_DOMAIN",
+    "COOKIE_SECURE",
+    "CORS_ORIGIN",
+  ] as const;
+
+  const missing = requiredEnv.filter((key) => !configService.get(key));
+  if (missing.length) {
+    logger.error(`Missing required env: ${missing.join(", ")}`);
+    throw new Error(`Missing required env: ${missing.join(", ")}`);
+  }
+  requiredEnv.forEach((key) => logger.log(`Env ${key}: configured`));
+  optionalEnv.forEach((key) => {
+    const value = configService.get(key);
+    logger.log(`Env ${key}: ${value != null && value !== "" ? "configured" : "default/empty"}`);
+  });
 
   const port = configService.get<number>("PORT") ?? 3000;
   const corsOrigin = configService.get<string>("CORS_ORIGIN");
@@ -60,8 +87,8 @@ async function bootstrap() {
   SwaggerModule.setup("api-docs", app, document);
 
   await app.listen(port);
-  // eslint-disable-next-line no-console
-  console.log(`Backend is running on http://localhost:${port}`);
+  logger.log(`Backend is running on http://localhost:${port}`);
+  logger.log(`Swagger docs: http://localhost:${port}/api-docs`);
 }
 
 bootstrap();
