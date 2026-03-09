@@ -1,10 +1,10 @@
 import { Text } from '@/components/layout'
 import { Icon } from '@/components/ui'
 import { ICON_NAMES } from '@/helpers/iconNames';
-import { PropositionsListProps } from '@/types/features/home/Propositions.types';
-import React from 'react'
+import { LinkBtnPops } from '@/types/components/ui/LinkBtn.types';
+import React from 'react';
 
-const PropositionsList: React.FC<PropositionsListProps> = ({className=""}) => {
+const PropositionsList: React.FC<LinkBtnPops> = ({ className = '' }) => {
   return (
     <ul className={`flex flex-col gap-4 ${className}`}>
       <li className="flex items-center gap-4">
@@ -53,6 +53,6 @@ const PropositionsList: React.FC<PropositionsListProps> = ({className=""}) => {
       </li>
     </ul>
   );
-}
+};
 
 export default PropositionsList;
