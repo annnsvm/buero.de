@@ -1,10 +1,11 @@
-import { CoursesModule } from './courses/courses.module';
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import type { StringValue } from "ms";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UserModule } from "./modules/user/user.module";
+import { CoursesModule } from './modules/courses/courses.module';
+import { CourseMaterialsModule } from './modules/course-materials/course-materials.module';
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 
@@ -16,6 +17,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     PrismaModule,
     HealthModule,
     CoursesModule,
+    CourseMaterialsModule,
     UserModule,
     AuthModule,
     JwtModule.registerAsync({
