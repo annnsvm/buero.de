@@ -8,18 +8,18 @@ const WhyBuro: React.FC = () => {
     <Section>
       <Container>
         <SectionTitle label="WHY BÜRO.DE">WHY BÜRO.DE</SectionTitle>
-        <Title isHome className="mb-6 sm:max-w-[700px] md:max-w-[869px]">
+        <Title isHome className="mb-6 sm:max-w-[700px] lg:max-w-[869px]">
           Not just language. A complete guide to German life
         </Title>
         <Text
           label="Buro explanation"
-          className="mb-5 sm:max-w-[700px] md:max-w-[869px]"
+          className="mb-5 sm:max-w-[700px] lg:max-w-[869px]"
         >
           We bridge the gap between knowing the words and living the life. Every lesson brings you
           closer to feeling at home.
         </Text>
         <ul
-          className="mt-12 grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 md:grid-cols-4"
+          className="mt-12 grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 lg:grid-cols-4"
           aria-label="Why Buro Features"
         >
           <List iconName={ICON_NAMES.BOOK_A} title="Structured Curriculum">

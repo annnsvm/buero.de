@@ -2,7 +2,7 @@ import { TitleProps } from '@/types/components/layout/Title.types'
 import React from 'react'
 
 const titleStyle =
-  'font-[family-name:var(--font-heading)] text-[1.75rem] sm:text-[2rem] md:text-[3.75rem] font-bold leading-[1.2] tracking-[-0.6px]';
+  'font-[family-name:var(--font-heading)] text-[1.75rem] sm:text-[2rem] lg:text-[3.75rem] font-bold leading-[1.2] tracking-[-0.6px]';
 
 const Title: React.FC<TitleProps> = ({isHome, className="", children}) => {
   return (

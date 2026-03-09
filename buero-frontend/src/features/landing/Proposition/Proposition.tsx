@@ -10,9 +10,9 @@ import { ICON_NAMES } from '@/helpers/iconNames';
 const Proposition: React.FC = () => {
   return (
     <Section aria-label="Proposition Section" className="bg-[var(--color-surface-section)] py-16">
-      <Container className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,600px)_minmax(0,600px)] lg:justify-between">
-        <PropositionImg className="order-2 lg:order-1" />
-        <div className="order-1 flex w-full max-w-[600px] flex-col lg:order-2 lg:pt-7">
+      <Container className="flex flex-col-reverse gap-8 lg:flex-row lg:justify-between">
+        <PropositionImg />
+        <div className="flex w-full flex-col lg:w-[600px] lg:pt-7">
           <SectionTitle label="Our Proposition" className="mb-4">
             BEYOND THE CLASSROOM
           </SectionTitle>

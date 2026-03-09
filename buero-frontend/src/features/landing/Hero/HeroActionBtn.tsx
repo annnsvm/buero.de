@@ -6,7 +6,7 @@ import React from 'react';
 const HeroActionBtn: React.FC = () => {
   return (
     <ul
-      className="flex flex-col flex-wrap items-center gap-5 sm:flex-row sm:gap-4 md:items-start"
+      className="flex flex-col flex-wrap items-center gap-5 sm:flex-row sm:gap-4 lg:items-start"
       aria-label="Hero Links"
     >
       <li>

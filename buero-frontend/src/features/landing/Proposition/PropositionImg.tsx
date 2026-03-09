@@ -4,7 +4,7 @@ import React from 'react'
 const PropositionImg: React.FC<PropositionImgProps> = ({className}) => {
   return (
     <div
-      className={`min-w-0 h-full w-full max-w-[600px] overflow-hidden rounded-lg aspect-[4/3] lg:aspect-auto lg:self-stretch ${className}`}
+      className={`min-w-0 h-full w-full lg:w-[600px] overflow-hidden rounded-lg aspect-[4/3] lg:aspect-auto lg:self-stretch ${className}`}
     >
       <img
         src="/images/home/learn.webp"
