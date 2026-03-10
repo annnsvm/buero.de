@@ -1,3 +1,9 @@
-import type { RootState } from '../../store';
+import { GlobalModalState } from "@/types/components/modal/GlobalModalType.types";
+import { RootState } from "@/types/redux/store.types";
 
-export const selectGlobalLoading = (state: RootState): boolean => state.ui.globalLoading;
+const selectGlobalLoading = (state: RootState): boolean => state.ui.globalLoading;
+
+const selectGlobalModal = (state: RootState): GlobalModalState => state.ui.globalModal;
+
+export { selectGlobalLoading, selectGlobalModal };
+

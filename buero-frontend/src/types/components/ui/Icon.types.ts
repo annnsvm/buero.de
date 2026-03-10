@@ -5,7 +5,6 @@ type IconProps = {
   width?: number;
   height?: number;
   size?: number;
-  /** Товщина обводки (stroke-width). Впливає на іконки з stroke. */
   strokeWidth?: number;
   className?: string;
   color?: string;
