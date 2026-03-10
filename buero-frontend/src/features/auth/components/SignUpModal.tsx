@@ -1,19 +1,24 @@
-import React from 'react';
+// src/features/auth/components/SignUpModal.tsx
+
 import { useNavigate } from 'react-router-dom';
-import loginSchema from '../validation/loginSchema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAppDispatch } from '@/redux/hooks';
-import { LoginModalProps } from '@/types/features/auth/LoginModal.types';
+
+import BaseDialog from '@/components/modal/BaseDialog/BaseDialog';
+import ModalBody from '@/components/modal/ui/ModalBody';
+import ModalHeader from '@/components/modal/ui/ModalHeader';
+import ModalFooter from '@/components/modal/ui/ModalFooter';
 import { Button, FormField, Input } from '@/components/ui';
-import { loginThunk } from '@/redux/slices/auth/authThunks';
-import { LoginFormValues } from '@/types/features/auth/validation.types';
-import { BaseDialog, ModalBody, ModalFooter, ModalHeader } from '@/components/modal';
+import { useAppDispatch } from '@/redux/hooks';
+import { signUpSchema } from '@/features/auth/validation/signUpSchema';
+import { SignUpFormValues } from '@/types/features/auth/validation.types';
+import { SignUpModalProps } from '@/types/features/auth/LoginModal.types';
+import { closeGlobalModal, openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { Text } from '@/components/layout';
-import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
+import { signupThunk } from '@/redux/slices/auth/authThunks';
 import { ROUTES } from '@/helpers/routes';
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
+const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -22,8 +27,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -32,50 +37,36 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
 
   const handleClose = () => {
     handleOpenChange(false);
+    dispatch(closeGlobalModal());
   };
 
-  const handleSubmitLogin = handleSubmit(async (values) => {
+  const onSubmit = handleSubmit(async (values) => {
     const result = await dispatch(
-      loginThunk({
+      signupThunk({
         email: values.email,
         password: values.password,
         redirectTo,
       }),
     );
 
-    if (loginThunk.fulfilled.match(result)) {
+    if (signupThunk.fulfilled.match(result)) {
       handleClose();
       navigate(redirectTo ?? ROUTES.COURSES);
     } else {
-      const message = (result.payload as string) ?? 'Login failed';
+      const message = (result.payload as string) ?? 'Sign up failed';
       setError('root', { type: 'server', message });
     }
   });
 
   return (
-    <BaseDialog
-      isOpen={isOpen}
-      handleOpenChange={(open) => {
-        if (!open) {
-          handleClose();
-          return;
-        }
-        handleOpenChange(open);
-      }}
-      titleId="login-dialog-title"
-      descriptionId="login-dialog-description"
-    >
+    <BaseDialog isOpen={isOpen} handleOpenChange={handleOpenChange}>
       <ModalBody>
-        <ModalHeader
-          title="Log In"
-          description="Sign in to continue your German learning journey."
-          className="mb-8"
-        />
+        <ModalHeader title="Sign Up" description="Create a new account" className="mb-8" />
 
-        <form onSubmit={handleSubmitLogin} className="flex flex-col gap-4">
-          <FormField name="login-email" error={errors.email?.message}>
+        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <FormField name="email" error={errors.email?.message}>
             <Input
-              id="login-email"
+              id="signup-email"
               type="email"
               placeholder="Email"
               autoComplete="email"
@@ -84,22 +75,28 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
             />
           </FormField>
 
-          <FormField name="login-password" error={errors.password?.message}>
+          <FormField name="password" error={errors.password?.message}>
             <Input
-              id="login-password"
+              id="signup-password"
               type="password"
               placeholder="Password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
               {...register('password')}
             />
-          </FormField>
-
-          <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full" variant="solid">
-            Log In
+                  </FormField>
+                  
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+            isLoading={isSubmitting}
+            className="mt-2 w-full"
+            variant="solid"
+          >
+            Sign Up
           </Button>
         </form>
-
         <ModalFooter>
           <button
             type="button"
@@ -107,14 +104,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
             onClick={() => {
               dispatch(
                 openGlobalModal({
-                  type: 'signup',
+                  type: 'login',
                   redirectTo,
                 }),
               );
             }}
           >
-            <Text label={'Switch to Sign Up'} className="text-[1.125rem]">
-              Don&apos;t have an account? Sign Up
+            <Text label={'Switch to Log In'} className="text-[1.125rem]">
+              Already have an account? Log In
             </Text>
           </button>
         </ModalFooter>
@@ -123,4 +120,4 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
   );
 };
 
-export default LoginModal;
+export default SignUpModal;

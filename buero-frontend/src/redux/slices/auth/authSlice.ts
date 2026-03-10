@@ -1,6 +1,6 @@
 import { AuthState } from '@/types/redux/auth.types';
 import { createSlice } from '@reduxjs/toolkit';
-import { loginThunk } from './authThunks';
+import { loginThunk, signupThunk } from './authThunks';
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -20,7 +20,7 @@ const authSlice = createSlice({
       state.error = null;
     },
   },
-  extraReducers: builder => 
+  extraReducers: (builder) =>
     builder
       .addCase(loginThunk.pending, (state) => {
         state.status = 'loading';
@@ -33,7 +33,20 @@ const authSlice = createSlice({
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.status = 'error';
-        state.error = action.payload as string;
+        state.error = (action.payload as string) ?? 'Login failed';
+      })
+      .addCase(signupThunk.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(signupThunk.fulfilled, (state) => {
+        state.status = 'idle';
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(signupThunk.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = (action.payload as string) ?? 'Sign up failed';
       }),
 });
 

@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { store } from '../redux/store';
-import { logout } from '../redux/slices/auth/authSlice';
 import { ROUTES } from '../helpers/routes';
 
 const baseURL: string =
@@ -34,7 +33,7 @@ const processQueue = (error: unknown, token?: unknown) => {
 };
 
 const handleLogout = () => {
-  store.dispatch(logout());
+  store.dispatch({ type: 'auth/logout' });
   window.location.href = ROUTES.HOME;
 };
 

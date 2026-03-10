@@ -1,7 +1,8 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
 import { ROUTES } from '../helpers/routes';
+import { ModalProvider } from '../components/modal';
 import SharedLayout from '../components/layout/SharedLayout/SharedLayout';
 import PublicGuard from '../components/guards/PublicGuard/PublicGuard';
 import PrivateGuard from '../components/guards/PrivateGuard/PrivateGuard';
@@ -26,90 +27,100 @@ const PageFallback = () => <div>Loading...</div>;
 
 export const router = createBrowserRouter([
   {
-    path: ROUTES.HOME,
+    path: '/',
     element: (
-      <Suspense fallback={<PageFallback />}>
-        <SharedLayout />
-      </Suspense>
+      <ModalProvider>
+        <Outlet />
+      </ModalProvider>
     ),
     errorElement: <NotFoundPage />,
     children: [
-      { index: true, element: <HomePage /> },
       {
-        path: ROUTES.ASSESSMENT,
+        path: ROUTES.HOME,
         element: (
-          <PublicGuard>
-            <AssessmentPage />
-          </PublicGuard>
+          <Suspense fallback={<PageFallback />}>
+            <SharedLayout />
+          </Suspense>
         ),
-      },
-      {
-        path: ROUTES.RESULTS,
-        element: (
-          <PrivateGuard>
-            <ResultsPage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.TRIAL_DASHBOARD,
-        element: (
-          <PrivateGuard>
-            <TrialDashboardPage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.SUBSCRIBED_DASHBOARD,
-        element: (
-          <PrivateGuard>
-            <SubscribedDashboardPage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.TEACHERS,
-        element: (
-          <PrivateGuard>
-            <TeacherDirectoryPage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.SETTINGS_ACCOUNT,
-        element: (
-          <PrivateGuard>
-            <AccountSettingsPage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.COURSES,
-        element: (
-          <PrivateGuard>
-            <CoursesCatalogPage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.COURSE,
-        element: (
-          <PrivateGuard>
-            <CoursePage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.PROFILE,
-        element: (
-          <PrivateGuard>
-            <UserProfilePage />
-          </PrivateGuard>
-        ),
-      },
-      {
-        path: ROUTES.NOT_FOUND,
-        element: <NotFoundPage />,
+        children: [
+          { index: true, element: <HomePage /> },
+          {
+            path: ROUTES.ASSESSMENT,
+            element: (
+              <PublicGuard>
+                <AssessmentPage />
+              </PublicGuard>
+            ),
+          },
+          {
+            path: ROUTES.RESULTS,
+            element: (
+              <PrivateGuard>
+                <ResultsPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.TRIAL_DASHBOARD,
+            element: (
+              <PrivateGuard>
+                <TrialDashboardPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.SUBSCRIBED_DASHBOARD,
+            element: (
+              <PrivateGuard>
+                <SubscribedDashboardPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.TEACHERS,
+            element: (
+              <PrivateGuard>
+                <TeacherDirectoryPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.SETTINGS_ACCOUNT,
+            element: (
+              <PrivateGuard>
+                <AccountSettingsPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.COURSES,
+            element: (
+              <PrivateGuard>
+                <CoursesCatalogPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.COURSE,
+            element: (
+              <PrivateGuard>
+                <CoursePage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.PROFILE,
+            element: (
+              <PrivateGuard>
+                <UserProfilePage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.NOT_FOUND,
+            element: <NotFoundPage />,
+          },
+        ],
       },
     ],
   },

@@ -4,4 +4,6 @@ type LoginModalProps = {
   redirectTo?: string;
 };
 
-export type { LoginModalProps };
+type SignUpModalProps = LoginModalProps;
+
+export type { LoginModalProps, SignUpModalProps };

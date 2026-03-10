@@ -13,4 +13,12 @@ type LoginPayload = {
   redirectTo?: string;
 };
 
-export type { AuthStatus,AuthState, LoginPayload };
+type SignUpPayload = {
+  email: string;
+  password: string;
+  role?: 'student' | 'teacher';
+  language?: 'en' | 'de';
+  redirectTo?: string;
+};
+
+export type { AuthStatus, AuthState, LoginPayload, SignUpPayload };
