@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 type FormFieldProps = {
-  label: string;
+  label?: string;
   name: string;
   error?: string;
   children: ReactNode;

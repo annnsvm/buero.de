@@ -10,7 +10,7 @@ const Button = ({
   disabled,
   className = '',
   type = 'button',
-  variant = 'outline',
+  variant = 'primary',
   styleType = 'default',
   ...rest
 }: ButtonProps) => {

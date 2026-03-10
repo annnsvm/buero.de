@@ -6,8 +6,8 @@ import { ROUTES } from '../helpers/routes';
 const baseURL: string =
   (typeof import.meta !== 'undefined' &&
     (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL) ||
-  'http://localhost:3000'; 
-  
+  'http://localhost:3000/api'; 
+
 export const apiInstance = axios.create({
   baseURL,
   withCredentials: true,

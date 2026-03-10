@@ -1,9 +1,9 @@
 import { FormFieldProps } from '@/types/components/ui/FormField.type';
 
-const FormField = ({ label, name, error, children }: FormFieldProps) => {
+const FormField = ({ label ="", name, error, children }: FormFieldProps) => {
   return (
-    <div className="w-full">
-      <label htmlFor={name}>{label}</label>
+    <div className="w-full flex flex-col relative">
+      {label && <label htmlFor={name}>{label}</label>}
       {children}
       {error && <p role="alert">{error}</p>}
     </div>

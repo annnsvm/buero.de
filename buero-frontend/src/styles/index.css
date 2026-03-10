@@ -163,6 +163,8 @@
   /*  outline border, Button outline */
   --opacity-white-20: rgba(255, 255, 255, 0.2);
 
+  --opacity-neutral-darkest-5:  rgba(1, 1, 1, 0.05);
+
   /* Шрифти: Inter — основний текст, Sora — заголовки */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-heading: 'Sora', 'Inter', system-ui, sans-serif;
@@ -207,13 +209,11 @@
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
     tab-size: 4;
-    @apply antialiased;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    @apply bg-[var(--color-background)] font-sans text-[var(--color-foreground)];
   }
 
   h1,
@@ -331,4 +331,5 @@
   .grid-rows-content {
     grid-auto-rows: min-content;
   }
+
 }

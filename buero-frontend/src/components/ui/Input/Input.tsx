@@ -5,21 +5,9 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
 };
 
-const Input = ({ label, error, id, ...rest }: InputProps) => {
+const Input = ({ error, id, className, ...rest }: InputProps) => {
   return (
-    <div>
-      {label && (
-        <label htmlFor={id} className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-          {label}
-        </label>
-      )}
-      <input id={id} aria-invalid={!!error} aria-describedby={error} {...rest} />
-      {error && (
-        <p id={`${id}-error`} role="alert">
-          {error}
-        </p>
-      )}
-    </div>
+      <input id={id} aria-invalid={!!error} aria-describedby={error} {...rest} className={`${className} outline-none`}/>
   );
 };
 
