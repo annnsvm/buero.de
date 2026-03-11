@@ -88,6 +88,18 @@ curl http://localhost:3000/api/health/db
 
 ---
 
+## Модулі та ендпоінти
+
+| Модуль   | Базовий шлях      | Опис |
+|----------|-------------------|------|
+| Health   | `/api/health`     | Перевірка життєздатності сервісу та БД (`GET /`, `GET /db`). |
+| Courses         | `/api/courses`                    | CRUD курсів: список опублікованих (фільтри `category`, `language`), один по id, створення, оновлення, видалення. |
+| Course Materials| `/api/courses/:courseId/materials`| CRUD матеріалів курсу: список за order_index, один по id, створення, оновлення, видалення. 404, якщо курс не знайдено. |
+
+У Swagger UI (`/api-docs`) всі ендпоінти задокументовані з прикладами запитів та відповідей.
+
+---
+
 ## Скрипти
 
 | Команда | Опис |
@@ -96,10 +108,11 @@ curl http://localhost:3000/api/health/db
 | `npm run build` | Збірка в `dist/` (`nest build`) |
 | `npm run start` | Запуск зібраного додатку (`nest start`) |
 | `npm run prisma:generate` | Генерація Prisma Client |
+| `npm run prisma:seed`     | Опційно: заповнення БД для перевірки (наприклад placement_questions) |
 
 ---
 
 ## Структура та документація
 
-- Джерела правди: **docs/architecture.md**, **docs/api-plan.md**, **docs/auth-spec.md**, **docs/auth-config.md**, **docs/modules/*.md**.
+- Джерела правди (у корені репозиторію): **docs/architecture.md**, **docs/api-plan.md**, **docs/auth-spec.md**, **docs/auth-config.md**, **docs/modules/*.md**.
 - Модулі API: Auth, Users, Placement Test, Courses, Course Materials, Progress & Quizzes, Subscriptions & Billing, Lesson Requests (порядок реалізації — у `docs/api-plan.md`).

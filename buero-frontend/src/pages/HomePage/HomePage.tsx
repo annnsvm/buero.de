@@ -1,5 +1,5 @@
 
-import { Hero, WhyBuro } from '@/features/landing';
+import { CallToAction, Hero, Proposition, WhyBuro } from '@/features/landing';
 import React from 'react';
 
 const HomePage: React.FC = () => {
@@ -7,6 +7,8 @@ const HomePage: React.FC = () => {
     <div aria-label="Home Page">
       <Hero />
       <WhyBuro />
+      <Proposition />
+      <CallToAction />
     </div>
   );
 };

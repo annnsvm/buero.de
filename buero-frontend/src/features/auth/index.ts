@@ -5,4 +5,7 @@
  * Redux: окремо в src/redux/slices/auth
  */
 
-export {};
+export { default as LoginModal } from './components/LoginModal';
+export { default as LoginSchema } from './validation/loginSchema'
+export { default as SignUpModal } from './components/SignUpModal';
+

@@ -7,11 +7,11 @@ import HeroStatistic from './HeroStatistic';
 const Hero: React.FC = () => {
   return (
     <Section>
-      <div className="relative sm:h-auto w-full overflow-hidden">
+      <div className="relative w-full overflow-hidden sm:h-auto">
         <HeroBackground />
-        <Container className="relative z-10 flex justify-center pt-40 pb-32 text-[var(--color-white)] md:pt-46 md:pb-36">
+        <Container className="relative z-10 flex justify-center pt-40 pb-32 text-[var(--color-white)] lg:pt-46 lg:pb-36">
           <div
-            className="flex w-full max-w-[640px] flex-col gap-12 sm:gap-18 md:gap-20"
+            className="flex w-full max-w-[640px] flex-col gap-12 sm:gap-18 lg:gap-20"
             aria-label="Hero Content"
           >
             <HeroTitle>

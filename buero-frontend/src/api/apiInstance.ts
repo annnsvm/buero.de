@@ -1,13 +1,11 @@
-import axios, { type InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import { store } from '../redux/store';
-import { selectAccessToken } from '../redux/slices/auth/authSelectors';
-import { setAccessToken, logout } from '../redux/slices/auth/authSlice';
 import { ROUTES } from '../helpers/routes';
 
 const baseURL: string =
   (typeof import.meta !== 'undefined' &&
     (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL) ||
-  'http://localhost:3001';
+  'http://localhost:3000/api'; 
 
 export const apiInstance = axios.create({
   baseURL,
@@ -23,7 +21,7 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown, token?: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -35,17 +33,11 @@ const processQueue = (error: unknown, token: string | null = null) => {
 };
 
 const handleLogout = () => {
-  store.dispatch(logout());
+  store.dispatch({ type: 'auth/logout' });
   window.location.href = ROUTES.HOME;
 };
 
-apiInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = selectAccessToken(store.getState());
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+apiInstance.interceptors.request.use((config) => config);
 
 apiInstance.interceptors.response.use(
   (response) => response,
@@ -78,23 +70,17 @@ apiInstance.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    return apiInstance
-      .post<{ accessToken?: string }>('/auth/refresh', {}, { withCredentials: true })
-      .then((res) => {
-        const newToken = res.data?.accessToken ?? null;
-        if (newToken) {
-          store.dispatch(setAccessToken(newToken));
-        }
-        processQueue(null, newToken);
-        return apiInstance(originalRequest);
-      })
-      .catch((err) => {
-        processQueue(err, null);
-        handleLogout();
-        return Promise.reject(err);
-      })
-      .finally(() => {
-        isRefreshing = false;
-      });
+    try {
+      await apiInstance.post('/auth/refresh', {}, { withCredentials: true });
+
+      processQueue(null);
+      return apiInstance(originalRequest);
+    } catch (err) {
+      processQueue(err);
+      handleLogout();
+      return Promise.reject(err);
+    } finally {
+      isRefreshing = false;
+    }
   },
 );

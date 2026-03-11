@@ -5,21 +5,19 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
 };
 
-const Input = ({ label, error, id, ...rest }: InputProps) => {
+const Input = ({ error, id, className = '', ...rest }: InputProps) => {
+  const borderClass = error
+    ? 'border-2 border-[var(--color-error)] focus-visible:ring-[var(--color-error)]'
+    : 'border border-[var(--color-border-default)]';
+
   return (
-    <div>
-      {label && (
-        <label htmlFor={id} className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-          {label}
-        </label>
-      )}
-      <input id={id} aria-invalid={!!error} aria-describedby={error} {...rest} />
-      {error && (
-        <p id={`${id}-error`} role="alert">
-          {error}
-        </p>
-      )}
-    </div>
+    <input
+      id={id}
+      aria-invalid={!!error}
+      aria-describedby={error ? `${id}-error` : undefined}
+      {...rest}
+      className={`w-full rounded-[12px] px-4 py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-0 ${borderClass} ${className}`.trim()}
+    />
   );
 };
 

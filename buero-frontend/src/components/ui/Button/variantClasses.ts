@@ -1,5 +1,5 @@
 const VARIANT_CLASSES = {
-  outline:
+  primary:
     'border-[var(--opacity-white-60)] text-[var(--color-white)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]',
   outlineDark:
     'border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]',

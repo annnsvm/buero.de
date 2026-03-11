@@ -19,7 +19,7 @@ const Header = () => {
       }`}
     >
       <Container>
-        <div className="flex items-center justify-between gap-6 px-8 py-12 text-lg md:px-16">
+        <div className="flex items-center justify-between gap-6 px-8 py-12 text-lg lg:px-16">
           <Link
             to={ROUTES.HOME}
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
@@ -30,15 +30,15 @@ const Header = () => {
           <HeaderNavBar
             pathname={pathname}
             isLight={isLight}
-            className="hidden min-[1024px]:flex"
+            className="hidden lg:flex"
           />
-          <HeaderAuthTrialBar isLight={isLight} className="hidden min-[1024px]:flex" />
+          <HeaderAuthTrialBar isLight={isLight} className="hidden lg:flex" />
           <HeaderMobileMenu
             isOpen={isOpen}
             setIsOpen={setIsOpen}
             isLight={isLight}
             pathname={pathname}
-            className="flex min-[1024px]:hidden"
+            className="flex lg:hidden"
           />
         </div>
       </Container>

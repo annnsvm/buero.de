@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-type Variant = "primary" | "outline";
+type Variant = "primary" | "outline" | "transparent";
 
 type LinkBtnPops = {
     to?: string;

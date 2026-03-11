@@ -63,7 +63,7 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
       return;
     }
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         closeMenu();
       }
     };
@@ -125,11 +125,11 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             <HeaderNavBar
               pathname={pathname}
               isLight={isLight}
-              className="fs-18 flex flex-col items-center gap-6 min-[1024px]:hidden"
+              className="fs-18 flex flex-col items-center gap-6 lg:hidden"
             />
           </div>
 
-          <div className="mt-6 flex flex-col gap-4 min-[1024px]:hidden">
+          <div className="mt-6 flex flex-col gap-4 lg:hidden">
             <HeaderAuthTrialBar
               isLight={isLight}
               className="mx-auto flex w-full max-w-[280px] flex-col gap-4"
