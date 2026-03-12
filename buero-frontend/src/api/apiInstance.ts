@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { store } from '../redux/store';
-import { ROUTES } from '../helpers/routes';
+import { API_ENDPOINTS, PUBLIC_ENDPOINT_PREFIXE } from './apiEndpoints';
+import { logout } from '@/redux/slices/auth';
 
 const baseURL: string =
   (typeof import.meta !== 'undefined' &&
     (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL) ||
-  'http://localhost:3000/api'; 
+  'http://localhost:3000/api';
 
 export const apiInstance = axios.create({
   baseURL,
@@ -14,6 +15,19 @@ export const apiInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+const refreshInstance = axios.create({
+  baseURL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const isPublicEndpoint = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return PUBLIC_ENDPOINT_PREFIXE.some((prefix) => url.startsWith(prefix));
+};
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -33,24 +47,37 @@ const processQueue = (error: unknown, token?: unknown) => {
 };
 
 const handleLogout = () => {
-  store.dispatch({ type: 'auth/logout' });
-  window.location.href = ROUTES.HOME;
+  store.dispatch(logout());
 };
 
-apiInstance.interceptors.request.use((config) => config);
+apiInstance.interceptors.request.use((config) => {
+  const state = store.getState();
+  const accessToken = state.auth?.accessToken;
+
+  if (accessToken) {
+    config.headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  return config;
+});
 
 apiInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status !== 401) {
+    if (!error.response || error.response.status !== 401) {
       return Promise.reject(error);
     }
 
-    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh');
-    if (isRefreshRequest) {
-      handleLogout();
+    const url: string | undefined = originalRequest?.url;
+
+    if (isPublicEndpoint(url)) {
+      return Promise.reject(error);
+    }
+    const state = store.getState();
+    const hasSession = Boolean(state.auth?.isAuthenticated || state.auth?.accessToken);
+    if (!hasSession) {
       return Promise.reject(error);
     }
 
@@ -71,9 +98,10 @@ apiInstance.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      await apiInstance.post('/auth/refresh', {}, { withCredentials: true });
+      await refreshInstance.post(API_ENDPOINTS.auth.refresh, {});
 
       processQueue(null);
+
       return apiInstance(originalRequest);
     } catch (err) {
       processQueue(err);

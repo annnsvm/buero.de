@@ -4,6 +4,7 @@ type AuthState = {
   isAuthenticated: boolean;
   status: AuthStatus;
   error: string | null;
+  accessToken: string | null;
 };
 
 

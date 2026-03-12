@@ -1,6 +1,8 @@
 import type { LoginPayload, SignUpPayload } from '@/types/redux/auth.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { addUser } from '../user/userSlice';
+import { setAccessToken } from './authSlice';
+import { getCookie } from '@/helpers/cookies';
 
 export const loginThunk = createAsyncThunk<void, LoginPayload>(
   'auth/login',
@@ -8,7 +10,14 @@ export const loginThunk = createAsyncThunk<void, LoginPayload>(
     try {
       const { apiInstance } = await import('@/api/apiInstance');
       const result = await apiInstance.post('/auth/login', { email, password });
-      dispatch(addUser(result.data.user));
+      if (result.data?.user) {
+        dispatch(addUser(result.data.user));
+      }
+
+      const tokenFromCookie = getCookie('access_token');
+      if (tokenFromCookie) {
+        dispatch(setAccessToken(tokenFromCookie));
+      }
       return;
     } catch (error: unknown) {
       const message =
@@ -24,10 +33,7 @@ export const loginThunk = createAsyncThunk<void, LoginPayload>(
 
 export const signupThunk = createAsyncThunk<void, SignUpPayload>(
   'auth/signup',
-  async (
-    { email, password, role = 'student', language = 'en' },
-    { dispatch, rejectWithValue },
-  ) => {
+  async ({ email, password, role = 'student', language = 'en' }, { dispatch, rejectWithValue }) => {
     try {
       const { apiInstance } = await import('@/api/apiInstance');
       const result = await apiInstance.post('/auth/register', {
@@ -36,7 +42,13 @@ export const signupThunk = createAsyncThunk<void, SignUpPayload>(
         role,
         language,
       });
-      dispatch(addUser(result.data.user));
+      if (result.data?.user) {
+        dispatch(addUser(result.data.user));
+      }
+      const tokenFromCookie = getCookie('access_token');
+      if (tokenFromCookie) {
+        dispatch(setAccessToken(tokenFromCookie));
+      }
       return;
     } catch (error: unknown) {
       const message =
