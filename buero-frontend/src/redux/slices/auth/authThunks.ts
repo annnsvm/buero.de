@@ -63,14 +63,14 @@ export const signupThunk = createAsyncThunk<void, SignUpPayload>(
   },
 );
 
-
 export const logOutThunk = createAsyncThunk<void, void>(
-  'auth/logout', async(_, {dispatch, rejectWithValue}) => 
-  {
+  'auth/logout',
+  async (_, { dispatch, rejectWithValue }) => {
     try {
       const { apiInstance } = await import('@/api/apiInstance');
       await apiInstance.post(API_ENDPOINTS.auth.logout);
       dispatch(setAccessToken(null));
+      dispatch(addUser(null));
       return;
     } catch (error) {
       const message =
@@ -81,4 +81,31 @@ export const logOutThunk = createAsyncThunk<void, void>(
             : 'Logout failed';
       return rejectWithValue(message);
     }
-  });
+  },
+);
+
+export const refreshUserThunk = createAsyncThunk<void, void>(
+  'auth/refreshUser',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const { apiInstance } = await import('@/api/apiInstance');
+      const result = await apiInstance.get(API_ENDPOINTS.users.me);
+      if (result.data?.user) {
+        dispatch(addUser(result.data.user));
+      }
+      const tokenFromCookie = getCookie('access_token');
+      if (tokenFromCookie) {
+        dispatch(setAccessToken(tokenFromCookie));
+      }
+      return;
+    } catch (error) {
+      const message =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : error instanceof Error
+            ? error.message
+            : 'Refresh failed';
+      return rejectWithValue(message);
+    }
+  },
+);

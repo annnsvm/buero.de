@@ -1,6 +1,6 @@
 import { AuthState } from '@/types/redux/auth.types';
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
-import { loginThunk, logOutThunk, signupThunk } from './authThunks';
+import { loginThunk, logOutThunk, refreshUserThunk, signupThunk } from './authThunks';
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -31,20 +31,33 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.error = null;
       })
-      .addMatcher(isAnyOf(loginThunk.fulfilled, signupThunk.fulfilled), (state) => {
-        state.status = 'idle';
-        state.isAuthenticated = true;
-        state.error = null;
-      })
       .addMatcher(
-        isAnyOf(loginThunk.pending, signupThunk.pending, logOutThunk.pending),
+        isAnyOf(loginThunk.fulfilled, signupThunk.fulfilled, refreshUserThunk.fulfilled),
+        (state) => {
+          state.status = 'idle';
+          state.isAuthenticated = true;
+          state.error = null;
+        },
+      )
+      .addMatcher(
+        isAnyOf(
+          loginThunk.pending,
+          signupThunk.pending,
+          logOutThunk.pending,
+          refreshUserThunk.pending,
+        ),
         (state) => {
           state.status = 'loading';
           state.error = null;
         },
       )
       .addMatcher(
-        isAnyOf(loginThunk.rejected, signupThunk.rejected, logOutThunk.rejected),
+        isAnyOf(
+          loginThunk.rejected,
+          signupThunk.rejected,
+          logOutThunk.rejected,
+          refreshUserThunk.rejected,
+        ),
         (state, action) => {
           state.status = 'error';
           state.error = String(action.payload);
