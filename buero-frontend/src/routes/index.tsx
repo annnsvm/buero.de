@@ -3,8 +3,8 @@ import { lazy, Suspense } from 'react';
 
 import { ROUTES } from '../helpers/routes';
 import { ModalProvider } from '../components/modal';
+import { GlobalLoader } from '@/components/ui';
 import SharedLayout from '../components/layout/SharedLayout/SharedLayout';
-import PublicGuard from '../components/guards/PublicGuard/PublicGuard';
 import PrivateGuard from '../components/guards/PrivateGuard/PrivateGuard';
 
 const HomePage = lazy(() => import('../pages/HomePage/HomePage'));
@@ -23,8 +23,6 @@ const CoursePage = lazy(() => import('../pages/CoursePage/CoursePage'));
 const UserProfilePage = lazy(() => import('../pages/UserProfilePage/UserProfilePage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'));
 
-const PageFallback = () => <div>Loading...</div>;
-
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -38,7 +36,7 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.HOME,
         element: (
-          <Suspense fallback={<PageFallback />}>
+          <Suspense fallback={<GlobalLoader />}>
             <SharedLayout />
           </Suspense>
         ),
@@ -46,11 +44,7 @@ export const router = createBrowserRouter([
           { index: true, element: <HomePage /> },
           {
             path: ROUTES.ASSESSMENT,
-            element: (
-              <PublicGuard>
-                <AssessmentPage />
-              </PublicGuard>
-            ),
+            element: <AssessmentPage />,
           },
           {
             path: ROUTES.RESULTS,
@@ -95,9 +89,7 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.COURSES,
             element: (
-              <PrivateGuard>
                 <CoursesCatalogPage />
-              </PrivateGuard>
             ),
           },
           {

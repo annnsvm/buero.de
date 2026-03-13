@@ -1,14 +1,12 @@
-// src/features/auth/components/SignUpModal.tsx
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import BaseDialog from '@/components/modal/BaseDialog/BaseDialog';
 import ModalBody from '@/components/modal/ui/ModalBody';
 import ModalHeader from '@/components/modal/ui/ModalHeader';
 import ModalFooter from '@/components/modal/ui/ModalFooter';
-import { Button, FormField, Input } from '@/components/ui';
+import { Button, FormField, Input, Spinner } from '@/components/ui';
 import { useAppDispatch } from '@/redux/hooks';
 import { signUpSchema } from '@/features/auth/validation/signUpSchema';
 import { SignUpFormValues } from '@/types/features/auth/validation.types';
@@ -17,10 +15,14 @@ import { closeGlobalModal, openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { Text } from '@/components/layout';
 import { signupThunk } from '@/redux/slices/auth/authThunks';
 import { ROUTES } from '@/helpers/routes';
+import { LOADING_STATUS } from '@/helpers/lodaingStatus';
+import { useSelector } from 'react-redux';
+import { selectAuthStatus } from '@/redux/slices/auth';
 
 const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const loadingStatus = useSelector(selectAuthStatus);
 
   const {
     register,
@@ -41,19 +43,25 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    const result = await dispatch(
-      signupThunk({
-        email: values.email,
-        password: values.password,
-        redirectTo,
-      }),
-    );
+    try {
+      await dispatch(
+        signupThunk({
+          email: values.email,
+          password: values.password,
+          redirectTo,
+        }),
+      ).unwrap();
 
-    if (signupThunk.fulfilled.match(result)) {
       handleClose();
       navigate(redirectTo ?? ROUTES.COURSES);
-    } else {
-      const message = (result.payload as string) ?? 'Sign up failed';
+    } catch (error) {
+      const message =
+        typeof error === 'string'
+          ? error
+          : error instanceof Error
+            ? error.message
+            : 'Sign up failed';
+
       setError('root', { type: 'server', message });
     }
   });
@@ -63,7 +71,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
       <ModalBody>
         <ModalHeader title="Sign Up" description="Create a new account" className="mb-8" />
 
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <form onSubmit={onSubmit} className="relative flex flex-col gap-4">
           <FormField name="email" error={errors.email?.message}>
             <Input
               id="signup-email"
@@ -84,17 +92,16 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
               className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
               {...register('password')}
             />
-                  </FormField>
-                  
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-            isLoading={isSubmitting}
-            className="mt-2 w-full"
-            variant="solid"
-          >
-            Sign Up
+          </FormField>
+
+          {errors.root && (
+            <p className="absolute bottom-16 left-3 text-sm text-[var(--color-error)]">
+              {errors.root.message}
+            </p>
+          )}
+
+          <Button type="submit" disabled={isSubmitting} className="mt-2 w-full" variant="solid">
+            {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : 'Sign Up'}
           </Button>
         </form>
         <ModalFooter>

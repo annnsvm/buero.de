@@ -5,17 +5,21 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAppDispatch } from '@/redux/hooks';
 import { LoginModalProps } from '@/types/features/auth/LoginModal.types';
-import { Button, FormField, Input } from '@/components/ui';
+import { Button, FormField, Input, Spinner } from '@/components/ui';
 import { loginThunk } from '@/redux/slices/auth/authThunks';
 import { LoginFormValues } from '@/types/features/auth/validation.types';
 import { BaseDialog, ModalBody, ModalFooter, ModalHeader } from '@/components/modal';
 import { Text } from '@/components/layout';
 import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { ROUTES } from '@/helpers/routes';
+import { useSelector } from 'react-redux';
+import { selectAuthStatus } from '@/redux/slices/auth';
+import { LOADING_STATUS } from '@/helpers/lodaingStatus';
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const loadingStatus = useSelector(selectAuthStatus);
 
   const {
     register,
@@ -35,19 +39,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
   };
 
   const handleSubmitLogin = handleSubmit(async (values) => {
-    const result = await dispatch(
-      loginThunk({
-        email: values.email,
-        password: values.password,
-        redirectTo,
-      }),
-    );
+    try {
+      await dispatch(
+        loginThunk({
+          email: values.email,
+          password: values.password,
+          redirectTo,
+        }),
+      ).unwrap();
 
-    if (loginThunk.fulfilled.match(result)) {
       handleClose();
       navigate(redirectTo ?? ROUTES.COURSES);
-    } else {
-      const message = (result.payload as string) ?? 'Login failed';
+    } catch (error) {
+      const message =
+        typeof error === 'string'
+          ? error
+          : error instanceof Error
+            ? error.message
+            : 'Login failed';
+
       setError('root', { type: 'server', message });
     }
   });
@@ -95,8 +105,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
             />
           </FormField>
 
-          <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full" variant="solid">
-            Log In
+          {errors.root && <p className="text-[var(--color-error)]">{errors.root.message}</p>}
+
+          <Button type="submit" disabled={isSubmitting} className="mt-2 w-full" variant="solid">
+            {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : 'Log In'}
           </Button>
         </form>
 

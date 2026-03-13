@@ -1,6 +1,6 @@
 import { AuthState } from '@/types/redux/auth.types';
-import { createSlice } from '@reduxjs/toolkit';
-import { loginThunk, signupThunk } from './authThunks';
+import { createSlice, isAnyOf } from '@reduxjs/toolkit';
+import { loginThunk, logOutThunk, refreshUserThunk, signupThunk } from './authThunks';
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -22,32 +22,43 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) =>
     builder
-      .addCase(loginThunk.pending, (state) => {
-        state.status = 'loading';
-        state.error = null;
-      })
-      .addCase(loginThunk.fulfilled, (state) => {
+      .addCase(logOutThunk.fulfilled, (state) => {
         state.status = 'idle';
-        state.isAuthenticated = true;
+        state.isAuthenticated = false;
         state.error = null;
       })
-      .addCase(loginThunk.rejected, (state, action) => {
-        state.status = 'error';
-        state.error = (action.payload as string) ?? 'Login failed';
-      })
-      .addCase(signupThunk.pending, (state) => {
-        state.status = 'loading';
-        state.error = null;
-      })
-      .addCase(signupThunk.fulfilled, (state) => {
-        state.status = 'idle';
-        state.isAuthenticated = true;
-        state.error = null;
-      })
-      .addCase(signupThunk.rejected, (state, action) => {
-        state.status = 'error';
-        state.error = (action.payload as string) ?? 'Sign up failed';
-      }),
+      .addMatcher(
+        isAnyOf(loginThunk.fulfilled, signupThunk.fulfilled, refreshUserThunk.fulfilled),
+        (state) => {
+          state.status = 'idle';
+          state.isAuthenticated = true;
+          state.error = null;
+        },
+      )
+      .addMatcher(
+        isAnyOf(
+          loginThunk.pending,
+          signupThunk.pending,
+          logOutThunk.pending,
+          refreshUserThunk.pending,
+        ),
+        (state) => {
+          state.status = 'loading';
+          state.error = null;
+        },
+      )
+      .addMatcher(
+        isAnyOf(
+          loginThunk.rejected,
+          signupThunk.rejected,
+          logOutThunk.rejected,
+          refreshUserThunk.rejected,
+        ),
+        (state, action) => {
+          state.status = 'error';
+          state.error = String(action.payload);
+        },
+      ),
 });
 
 export const authReducer = authSlice.reducer;

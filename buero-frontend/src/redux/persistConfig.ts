@@ -8,5 +8,5 @@ const storage = {
 export const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'user'],
+  whitelist: ['auth'],
 };
