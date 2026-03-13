@@ -1,5 +1,7 @@
 
 import { CallToAction, Hero, Proposition, WhyBuro } from '@/features/landing';
+import { TrackYourProgress } from '@/features/landing/TrackYourProgress';
+
 import React from 'react';
 
 const HomePage: React.FC = () => {
@@ -8,6 +10,7 @@ const HomePage: React.FC = () => {
       <Hero />
       <WhyBuro />
       <Proposition />
+      <TrackYourProgress />
       <CallToAction />
     </div>
   );

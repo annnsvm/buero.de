@@ -89,6 +89,12 @@ async function bootstrap() {
     .setVersion("1.0")
     .addTag("auth", "Реєстрація, логін, refresh, logout")
     .addTag("users", "Профіль поточного користувача")
+    .addTag(
+      "courses",
+      "Курси: каталог (лише опубліковані), один курс по id (з модулями та матеріалами), CRUD для вчителів. Ієрархія Course → Module → Material."
+    )
+    .addTag("course-modules", "Модулі курсу: CRUD у контексті курсу")
+    .addTag("course-materials", "Матеріали модуля: CRUD у контексті курсу та модуля")
     .addTag("subscriptions", "Підписки та Checkout, Customer Portal")
     .addTag("payments", "Історія платежів")
     .addTag("health", "Перевірка стану сервера")

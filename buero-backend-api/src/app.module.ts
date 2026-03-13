@@ -5,6 +5,7 @@ import type { StringValue } from "ms";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UserModule } from "./modules/user/user.module";
 import { CoursesModule } from './modules/courses/courses.module';
+import { CourseModulesModule } from './modules/course-modules/course-modules.module';
 import { CourseMaterialsModule } from './modules/course-materials/course-materials.module';
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -18,6 +19,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
     PrismaModule,
     HealthModule,
     CoursesModule,
+    CourseModulesModule,
     CourseMaterialsModule,
     UserModule,
     AuthModule,

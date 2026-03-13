@@ -24,7 +24,7 @@ export class CreateCourseMaterialDto {
   @IsObject()
   content!: Record<string, unknown>;
 
-  @ApiProperty({ example: 0, description: 'Порядок у курсі (order_index)' })
+  @ApiProperty({ example: 0, description: 'Порядок у модулі (order_index)' })
   @IsInt()
   order_index!: number;
 }

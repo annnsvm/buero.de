@@ -30,10 +30,20 @@ export class CourseService {
     }
   }
 
-  async findById(id: string) {
+  async findById(id: string, includeModules = true) {
     try {
       const course = await this.prisma.course.findUnique({
         where: { id },
+        include: includeModules
+          ? {
+              modules: {
+                orderBy: { orderIndex: 'asc' },
+                include: {
+                  materials: { orderBy: { orderIndex: 'asc' } },
+                },
+              },
+            }
+          : undefined,
       });
       if (!course) {
         throw new NotFoundException(`Курс з id ${id} не знайдено`);

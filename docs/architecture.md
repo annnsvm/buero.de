@@ -116,27 +116,42 @@
 | created_at   | timestamp | |
 | updated_at   | timestamp | |
 
-### 3.6 course_materials
+### 3.6 course_modules
 
-Один тип контенту для всього: відео, лексика, граматика, квіз, сценарій, культурна вставка, домашнє завдання. **Відео:** хостинг — YouTube (MVP); у `content` для type = video зберігаємо `youtube_video_id` для embed. Деталі та альтернатива (S3 для контролю та відсутності реклами) — у модулі Course Materials (04-course-materials.md).
+Курс складається з **модулів**; модуль — з матеріалів. Ієрархія: **Course → Module → Material**. Окрема таблиця для модулів (варіант A).
 
 | Column      | Type       | Notes |
 |-------------|------------|--------|
 | id          | PK         | |
 | course_id   | FK → courses | |
+| title       | string     | назва модуля |
+| order_index | int        | порядок модуля в курсі |
+| created_at  | timestamp  | |
+| updated_at  | timestamp  | |
+
+**Доступ до модулів:** окремої таблиці доступу немає. Доступ до модулів і матеріалів визначається доступом до **курсу**: наявність запису в **user_course_access** для (user_id, course_id) з активним trial, purchase або subscription. Вчитель має доступ до всіх модулів усіх курсів.
+
+### 3.7 course_materials
+
+Один тип контенту для всього: відео, лексика, граматика, квіз, сценарій, культурна вставка, домашнє завдання. Матеріал належить **модулю** (не напряму курсу). **Відео:** хостинг — YouTube (MVP); у `content` для type = video зберігаємо `youtube_video_id` для embed. Деталі — у модулі Course Materials (04-course-materials.md).
+
+| Column      | Type       | Notes |
+|-------------|------------|--------|
+| id          | PK         | |
+| module_id   | FK → course_modules | |
 | type        | enum       | `video` \| `vocabulary` \| `grammar` \| `quiz` \| `scenario` \| `cultural_insight` \| `homework` \| `text` |
 | title       | string     | |
-| content     | text/json  | для scenario — JSON з нодами та гілками; для video — мінімум `youtube_video_id` (див. 04-course-materials) |
-| order_index | int        | порядок у модулі/курсі |
+| content     | text/json  | для scenario — JSON з нодами та гілками; для video — мінімум `youtube_video_id` |
+| order_index | int        | порядок **всередині модуля** |
 | created_at  | timestamp  | |
 | updated_at  | timestamp  | |
 
 **Сценарій (type = scenario):** `content` — JSON, наприклад:
 
 - `nodes`: масив `{ id, type: "situation"|"choice"|"consequence"|"explanation", text, choices?: [{ text, nextNodeId, isCorrect, feedback }] }`.
-- Мінімум 3 гілки на сценарій (Ф-004); збереження результату проходження — у `quiz_attempts` або окремому полі в `course_progress`.
+- Мінімум 3 гілки на сценарій (Ф-004); збереження результату проходження — у `quiz_attempts` або окремому полі в `course_progress`. Курс для матеріалу визначається через `material.module.courseId`.
 
-### 3.7 user_course_access
+### 3.8 user_course_access
 
 Доступ студента до курсу: купівля, trial або підписка на цей курс. Один запис на пару (user_id, course_id). Перевірка доступу до контенту курсу — наявність активного запису (trial_ends_at > now() для trial, або активна підписка, або access_type = purchase).
 
@@ -153,7 +168,7 @@
 
 **Унікальність:** UNIQUE(user_id, course_id). Один тип доступу на курс на користувача (при купівлі після trial оновлюємо запис на purchase і заповнюємо payment_id).
 
-### 3.8 subscriptions
+### 3.9 subscriptions
 
 Підписка на **конкретний курс** (або помісячна підписка на курс). Користувач може мати кілька підписок — по одній на кожен курс.
 
@@ -174,7 +189,7 @@
 
 **Обмеження:** один активний subscription на пару (user_id, course_id): partial unique `(user_id, course_id) WHERE status IN ('active', 'trialing')`.
 
-### 3.9 payments
+### 3.10 payments
 
 | Column            | Type      | Notes |
 |-------------------|-----------|--------|
@@ -188,7 +203,7 @@
 | status            | string    | |
 | created_at        | timestamp | |
 
-### 3.10 stripe_webhook_events
+### 3.11 stripe_webhook_events
 
 Ідемпотентність обробки Stripe webhook.
 
@@ -198,7 +213,7 @@
 | stripe_event_id | string    | UNIQUE (Stripe event id) |
 | processed_at    | timestamp | |
 
-### 3.11 course_progress
+### 3.12 course_progress
 
 Прогрес по курсах/матеріалах (завершені модулі, відсоток, рекомендований крок).
 
@@ -214,7 +229,7 @@
 
 Унікальність: один запис на (user_id, course_id, course_material_id) для "пройдено матеріал", або один запис на (user_id, course_id) з оновленням прогресу — залежить від логіки (наприклад UNIQUE(user_id, course_id, course_material_id)).
 
-### 3.12 quiz_attempts
+### 3.13 quiz_attempts
 
 Результати проходження квізів та сценаріїв. **Кожна відповідь зберігається окремо** (покроково), щоб користувач міг продовжити квіз після переривання без повторного проходження.
 
@@ -230,7 +245,7 @@
 
 Окрема таблиця **quiz_attempt_answers** (опціонально): attempt_id, block_index або question_id, answer, created_at — для збереження кожної відповіді окремо; альтернатива — накопичувати в answers_snapshot.
 
-### 3.13 lesson_requests
+### 3.14 lesson_requests
 
 Запит на заняття: студент створює запит; **вчитель** приймає або відхиляє, далі виставляє статус «пройшло» або «відхилено». Вчитель після прийняття зв’язується з користувачем поза платформою.
 
@@ -247,7 +262,7 @@
 
 **Логіка:** pending → вчитель приймає (accepted, teacher_id заповнюється) → вчитель виставляє completed або rejected.
 
-### 3.14 placement_questions (один тест визначення рівня)
+### 3.15 placement_questions (один тест визначення рівня)
 
 Питання **одного** тесту визначення рівня (Placement Test). **Не прив'язані до курсу** — це єдиний глобальний тест для визначення A1–B2 при старті.
 
@@ -262,14 +277,14 @@
 
 Рівень студента визначається за кількістю правильних відповідей (MVP).
 
-### 3.15 Тести в кінці курсів
+### 3.16 Тести в кінці курсів
 
-**Усі інші тести** (у кінці кожного курсу, на підвищення рівня) **прив'язані до курсу**. Вони реалізуються як **course_materials** з **type = quiz** — тобто це матеріал курсу (course_id), а не окрема таблиця тестів.
+**Усі інші тести** (у кінці кожного курсу, на підвищення рівня) **прив'язані до курсу**. Вони реалізуються як **course_materials** з **type = quiz** — тобто матеріал модуля (module_id → course_modules.course_id), а не окрема таблиця тестів.
 
 - Питання такого тесту: або в полі **content** (JSON) цього матеріалу, або в окремій таблиці **quiz_questions** з **course_material_id** (FK → course_materials).
 - Проходження зберігається в **quiz_attempts** (course_material_id). Після успішного проходження тесту в кінці курсу можна оновлювати **student_profiles.level** (модуль Progress & Quizzes).
 
-### 3.16 placement_results (опціонально)
+### 3.17 placement_results (опціонально)
 
 Історія проходжень Placement Test. Для MVP достатньо оновлення `student_profiles.level`.
 
@@ -296,6 +311,8 @@ erDiagram
     users ||--o{ subscriptions : has
     users ||--o{ payments : has
     courses ||--o{ user_course_access : "access to"
+    courses ||--o{ course_modules : contains
+    course_modules ||--o{ course_materials : contains
     users ||--o{ course_progress : has
     users ||--o{ quiz_attempts : has
     users ||--o{ lesson_requests : "student requests"
@@ -352,9 +369,18 @@ erDiagram
         timestamp updated_at
     }
 
-    course_materials {
+    course_modules {
         uuid id PK
         uuid course_id FK
+        string title
+        int order_index
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    course_materials {
+        uuid id PK
+        uuid module_id FK
         enum type "video|vocabulary|grammar|quiz|scenario|cultural_insight|homework|text"
         string title
         text content
@@ -431,14 +457,16 @@ erDiagram
     }
 
     users ||--o{ courses : "teacher creates"
-    courses ||--o{ course_materials : contains
+    courses ||--o{ course_modules : contains
+    course_modules ||--o{ course_materials : contains
 ```
 
 **Схема зв’язків (текстом):**
 
 - **users** — ядро: студенти мають student_profiles, вчителі — teacher_profiles; один user — один профіль за роллю.
 - **courses** — належать teacher; мають **category** (`language` | `sociocultural`); кожен курс — окремий продукт (своя тема, інтеграція).
-- **course_materials** — елементи курсу (відео, квіз, сценарій тощо); сценарії з гілками в `content` (JSON). Матеріали типу **quiz** — тести в кінці курсу.
+- **course_modules** — модулі курсу; ієрархія **Course → Module → Material**. Доступ до модулів = доступ до курсу (user_course_access), окремої таблиці доступу до модулів немає.
+- **course_materials** — елементи **модуля** (відео, квіз, сценарій тощо); сценарії з гілками в `content` (JSON). Матеріали типу **quiz** — тести в кінці курсу або в модулі.
 - **user_course_access** — доступ студента до курсу: trial, purchase або subscription на цей курс; UNIQUE(user_id, course_id).
 - **subscriptions** / **payments** — підписка та платежі **прив’язані до курсу** (subscriptions.course_id, payments.course_id); один активний subscription на (user_id, course_id).
 - **course_progress** + **quiz_attempts** — прогрес і результати квізів/сценаріїв.
@@ -465,7 +493,7 @@ erDiagram
 
 ## 6. Business Rules (коротко)
 
-- **Доступ до контенту курсу:** студент має доступ до курсу тільки якщо є активний запис у **user_course_access** для (user_id, course_id): trial (trial_ends_at > now()), або purchase, або активна підписка (subscription_id → subscriptions.status = active/trialing). Список курсів (каталог) — показуємо всі опубліковані; перегляд матеріалів і прогрес — лише по курсах, до яких є доступ.
+- **Доступ до контенту курсу:** студент має доступ до курсу тільки якщо є активний запис у **user_course_access** для (user_id, course_id): trial (trial_ends_at > now()), або purchase, або активна підписка. **Доступ до модулів і матеріалів** визначається тим самим: окремої таблиці доступу до модулів немає — якщо є доступ до курсу, є доступ до всіх його модулів і матеріалів. Список курсів (каталог) — всі опубліковані; перегляд модулів/матеріалів і прогрес — лише по курсах, до яких є доступ.
 - **Placement Test** обов’язковий для визначення рівня; один глобальний тест (placement_questions); результат у `student_profiles.level`. Після підтвердження trial — створити запис **user_course_access** для **одного** курсу (наприклад рекомендованого за рівнем) з access_type = trial та trial_ends_at = now() + N днів.
 - **Рівень:** оновлюється автоматично в навчанні. Вчитель — адмін контенту: курси/матеріали; приймає запити на заняття. Будь-який вчитель може створювати/редагувати/видаляти будь-який курс. Поле `courses.teacher_id` — «хто створив», не для обмеження доступу.
 - Один активний subscription на пару (user_id, course_id). Купівля курсу (разова) створює user_course_access з access_type = purchase та payment_id.
@@ -497,7 +525,8 @@ CREATE INDEX idx_subscriptions_course_id ON subscriptions(course_id);
 CREATE UNIQUE INDEX idx_subscriptions_stripe_subscription_id ON subscriptions(stripe_subscription_id);
 CREATE INDEX idx_courses_teacher_id ON courses(teacher_id);
 CREATE INDEX idx_courses_category ON courses(category);
-CREATE INDEX idx_course_materials_course_id ON course_materials(course_id);
+CREATE INDEX idx_course_modules_course_id ON course_modules(course_id);
+CREATE INDEX idx_course_materials_module_id ON course_materials(module_id);
 CREATE INDEX idx_course_progress_user_course ON course_progress(user_id, course_id);
 CREATE INDEX idx_quiz_attempts_user ON quiz_attempts(user_id);
 CREATE INDEX idx_lesson_requests_student ON lesson_requests(student_id);
@@ -534,7 +563,7 @@ CREATE UNIQUE INDEX idx_stripe_webhook_events_event_id ON stripe_webhook_events(
 
 ## 11. Підсумок
 
-- **Ядро:** users (student/teacher), student_profiles (level), teacher_profiles, courses (category = language | sociocultural), course_materials (типи: video, quiz, scenario, …).
+- **Ядро:** users (student/teacher), student_profiles (level), teacher_profiles, courses (category = language | sociocultural), **course_modules** (модулі курсу), course_materials (типи: video, quiz, scenario, …; належать модулю).
 - **Доступ до курсу:** user_course_access (trial / purchase / subscription на кожен курс); перевірка доступу до матеріалів — по цій таблиці.
 - **Навчання:** прогрес у course_progress та quiz_attempts; сценарії з гілками — JSON у content.
 - **Білінг:** курси продаються окремо; subscriptions (з course_id) + payments (з course_id) + stripe_webhook_events; Stripe Customer Portal для керування підписками на курси.

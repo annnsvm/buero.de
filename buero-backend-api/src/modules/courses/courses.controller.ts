@@ -36,23 +36,85 @@ export class CoursesController {
 
   @Get()
   @ApiOperation({
-    summary: 'Список опублікованих курсів',
-    description: 'Повертає курси з is_published = true. Опційні фільтри: category, language.',
+    summary: 'Список опублікованих курсів (каталог)',
+    description:
+      'Повертає **лише курси з is_published = true**. Неопубліковані курси не потрапляють у відповідь — для публікації використовуй PATCH /courses/:id з body { "is_published": true }. Опційні query: category (language | sociocultural), language (en | de).',
   })
   @ApiQuery({ name: 'category', required: false, enum: ['language', 'sociocultural'] })
   @ApiQuery({ name: 'language', required: false, enum: ['en', 'de'] })
-  @ApiResponse({ status: 200, description: 'Список курсів' })
+  @ApiResponse({
+    status: 200,
+    description: 'Масив опублікованих курсів ([] якщо немає опублікованих)',
+  })
   list(@Query() query: ListCoursesQueryDto) {
     return this.courseService.findAll(query);
   }
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Один курс по id',
-    description: 'Повертає курс за ідентифікатором. 404, якщо не знайдено.',
+    summary: 'Один курс по id (з модулями та матеріалами)',
+    description:
+      'Повертає курс разом з **модулями** та **матеріалами** кожного модуля в одному запиті (дерево Course → Modules → Materials). Модулі та матеріали відсортовані за order_index. Одного запиту достатньо для відображення повної структури курсу на фронті. 404, якщо не знайдено.',
   })
   @ApiParam({ name: 'id', description: 'UUID курсу' })
-  @ApiResponse({ status: 200, description: 'Курс знайдено' })
+  @ApiResponse({
+    status: 200,
+    description: 'Курс з полем modules; кожен модуль містить materials',
+    schema: {
+      example: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        teacherId: 'u1000000-0000-0000-0000-000000000001',
+        title: 'German A1 Basics',
+        description: 'Introduction to German language.',
+        language: 'en',
+        category: 'language',
+        isPublished: true,
+        createdAt: '2025-02-16T10:00:00.000Z',
+        updatedAt: '2025-02-16T10:00:00.000Z',
+        modules: [
+          {
+            id: 'm1000000-0000-0000-0000-000000000001',
+            courseId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            title: 'Module 1: Basics',
+            orderIndex: 0,
+            createdAt: '2025-02-16T10:00:00.000Z',
+            updatedAt: '2025-02-16T10:00:00.000Z',
+            materials: [
+              {
+                id: 'mat10000-0000-0000-0000-00000000001',
+                moduleId: 'm1000000-0000-0000-0000-000000000001',
+                type: 'video',
+                title: 'Greetings',
+                content: { youtube_video_id: 'dQw4w9WgXcQ' },
+                orderIndex: 0,
+                createdAt: '2025-02-16T10:00:00.000Z',
+                updatedAt: '2025-02-16T10:00:00.000Z',
+              },
+              {
+                id: 'mat10000-0000-0000-0000-00000000002',
+                moduleId: 'm1000000-0000-0000-0000-000000000001',
+                type: 'vocabulary',
+                title: 'Basic words',
+                content: {},
+                orderIndex: 1,
+                createdAt: '2025-02-16T10:00:00.000Z',
+                updatedAt: '2025-02-16T10:00:00.000Z',
+              },
+            ],
+          },
+          {
+            id: 'm1000000-0000-0000-0000-000000000002',
+            courseId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            title: 'Module 2: Grammar',
+            orderIndex: 1,
+            createdAt: '2025-02-16T10:00:00.000Z',
+            updatedAt: '2025-02-16T10:00:00.000Z',
+            materials: [],
+          },
+        ],
+      },
+    },
+  })
   @ApiResponse({ status: 404, description: 'Курс не знайдено' })
   getById(@Param('id') id: string) {
     return this.courseService.findById(id);
@@ -101,7 +163,7 @@ export class CoursesController {
   @ApiBearerAuth('access_token')
   @ApiOperation({
     summary: 'Видалити курс',
-    description: 'Видалити курс за id. Пов’язані course_materials видаляються каскадно. 404, якщо не знайдено.',
+    description: 'Видалити курс за id. Модулі та матеріали видаляються каскадно. 404, якщо не знайдено.',
   })
   @ApiParam({ name: 'id', description: 'UUID курсу' })
   @ApiResponse({ status: 200, description: 'Курс видалено' })

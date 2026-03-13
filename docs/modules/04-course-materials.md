@@ -1,14 +1,14 @@
 # Модуль: Course Materials
 
-Матеріали курсу (відео, лексика, граматика, квіз, сценарій, культурна вставка, домашнє завдання тощо). CRUD — вчитель; читання — студент (з перевіркою доступу за потреби).
+Матеріали **модуля** курсу (відео, лексика, граматика, квіз, сценарій тощо). Ієрархія: **Course → Module → Material**. CRUD — вчитель; читання — студент з перевіркою доступу до курсу.
 
 ---
 
 ## 1. Призначення
 
-- **Вчитель:** додавати, редагувати, видаляти матеріали курсу (лише своїх курсів). Типи: video, vocabulary, grammar, quiz, scenario, cultural_insight, homework, text.
-- **Студент:** отримувати матеріали курсу для навчання (за order_index). Перевірка доступу: наявність запису в **user_course_access** для (user_id, course_id) з активним доступом (trial_ends_at > now(), купівля або активна підписка на курс).
-- Один матеріал — в контексті курсу (GET /api/courses/:courseId/materials); окремий ендпоінт GET матеріалу по id для програвача/квізу — за потреби.
+- **Вчитель:** додавати, редагувати, видаляти матеріали **модуля** (будь-якого курсу). Типи: video, vocabulary, grammar, quiz, scenario, cultural_insight, homework, text.
+- **Студент:** отримувати матеріали модуля для навчання (за order_index). Перевірка доступу: запис у **user_course_access** для (user_id, course_id) з активним trial/купівлею/підпискою; курс визначається через **модуль** (material.module.courseId).
+- Матеріали в контексті модуля: GET /api/courses/:courseId/modules/:moduleId/materials; GET матеріалу по id — для програвача/квізу.
 
 ---
 
@@ -16,8 +16,9 @@
 
 | Таблиця | Операції |
 |---------|----------|
-| course_materials | читання, створення, оновлення, видалення |
-| courses | читання (будь-який вчитель може редагувати матеріали будь-якого курсу) |
+| course_materials | читання, створення, оновлення, видалення (поле **module_id** → course_modules) |
+| course_modules | читання (перевірка, що модуль належить курсу) |
+| courses | читання (доступ до курсу = доступ до модулів і матеріалів) |
 
 ---
 
@@ -25,9 +26,9 @@
 
 **CourseMaterialService:**
 
-- Список матеріалів курсу (за course_id, order_index).
-- Один матеріал по id (з перевіркою, що курс опублікований / доступний).
-- Створення/оновлення/видалення матеріалу для **будь-якого** курсу (обмеження за вчителем не застосовується).
+- Список матеріалів **модуля** (за module_id, order_index).
+- Один матеріал по id (перевірка: матеріал належить модулю, модуль — курсу; доступ через user_course_access для course_id).
+- Створення/оновлення/видалення матеріалу в межах модуля; перевірка, що module.courseId відповідає courseId з шляху.
 - Валідація типу та content (для scenario — JSON з нодами/гілками).
 
 ---
@@ -36,11 +37,11 @@
 
 | Метод | Шлях | Опис | Роль |
 |-------|------|------|------|
-| GET | /api/courses/:courseId/materials | Список матеріалів курсу (по порядку). | авторизований |
-| GET | /api/courses/:courseId/materials/:id | Один матеріал (наприклад для відео/квізу). | авторизований |
-| POST | /api/courses/:courseId/materials | Додати матеріал до будь-якого курсу. | teacher |
-| PATCH | /api/courses/:courseId/materials/:id | Редагувати матеріал. | teacher |
-| DELETE | /api/courses/:courseId/materials/:id | Видалити матеріал. | teacher |
+| GET | /api/courses/:courseId/modules/:moduleId/materials | Список матеріалів модуля (по order_index). Перевірка доступу до курсу. | авторизований |
+| GET | /api/courses/:courseId/modules/:moduleId/materials/:id | Один матеріал (відео/квіз тощо). Перевірка: material належить module, module — course. | авторизований |
+| POST | /api/courses/:courseId/modules/:moduleId/materials | Додати матеріал до модуля (module має належати courseId). | teacher |
+| PATCH | /api/courses/:courseId/modules/:moduleId/materials/:id | Редагувати матеріал. | teacher |
+| DELETE | /api/courses/:courseId/modules/:moduleId/materials/:id | Видалити матеріал. | teacher |
 
 Деталі request/response — на етапі реалізації.
 
@@ -63,7 +64,7 @@ flowchart TB
     end
 
     subgraph Service
-        S1[listByCourse]
+        S1[listByModule]
         S2[getById]
         S3[create]
         S4[update]
@@ -72,6 +73,7 @@ flowchart TB
 
     subgraph DB["PostgreSQL"]
         CM[(course_materials)]
+        M[(course_modules)]
         C[(courses)]
     end
 
@@ -86,9 +88,11 @@ flowchart TB
     Ctrl --> S4
     Ctrl --> S5
     S1 --> CM
+    S1 --> M
     S2 --> CM
+    S2 --> M
     S3 --> CM
-    S3 --> C
+    S3 --> M
     S4 --> CM
     S5 --> CM
 ```

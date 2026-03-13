@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { Role } from 'src/generated/prisma/enums';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateCourseMaterialDto } from './dto/create-course-material.dto';
-import { UpdateCourseMaterialDto } from './dto/update-course-material.dto';
+import { CreateCourseModuleDto } from './dto/create-course-module.dto';
+import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
 
 @Injectable()
-export class CourseMaterialService {
+export class CourseModuleService {
   constructor(private readonly prisma: PrismaService) {}
 
   async assertCanAccessCourse(
@@ -21,9 +21,7 @@ export class CourseMaterialService {
     await this.ensureCourseExists(courseId);
     if (role === Role.teacher) return;
     const access = await this.prisma.userCourseAccess.findUnique({
-      where: {
-        userId_courseId: { userId, courseId },
-      },
+      where: { userId_courseId: { userId, courseId } },
     });
     if (!access) {
       throw new ForbiddenException('Немає доступу до цього курсу');
@@ -53,11 +51,11 @@ export class CourseMaterialService {
     }
   }
 
-  async findAllByModuleId(courseId: string, moduleId: string) {
+  async findAllByCourseId(courseId: string) {
     try {
-      await this.ensureModuleBelongsToCourse(moduleId, courseId);
-      return this.prisma.courseMaterial.findMany({
-        where: { moduleId },
+      await this.ensureCourseExists(courseId);
+      return this.prisma.courseModule.findMany({
+        where: { courseId },
         orderBy: { orderIndex: 'asc' },
       });
     } catch (error) {
@@ -66,37 +64,25 @@ export class CourseMaterialService {
     }
   }
 
-  async findOne(courseId: string, moduleId: string, id: string) {
+  async findOne(courseId: string, moduleId: string) {
     try {
       await this.ensureModuleBelongsToCourse(moduleId, courseId);
-      const material = await this.prisma.courseMaterial.findFirst({
-        where: { id, moduleId },
+      return this.prisma.courseModule.findUniqueOrThrow({
+        where: { id: moduleId },
       });
-      if (!material) {
-        throw new NotFoundException(
-          `Матеріал з id ${id} не знайдено або не належить модулю`,
-        );
-      }
-      return material;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw this.mapError(error);
     }
   }
 
-  async create(
-    courseId: string,
-    moduleId: string,
-    dto: CreateCourseMaterialDto,
-  ) {
+  async create(courseId: string, dto: CreateCourseModuleDto) {
     try {
-      await this.ensureModuleBelongsToCourse(moduleId, courseId);
-      return this.prisma.courseMaterial.create({
+      await this.ensureCourseExists(courseId);
+      return this.prisma.courseModule.create({
         data: {
-          moduleId,
-          type: dto.type,
+          courseId,
           title: dto.title,
-          content: dto.content as object,
           orderIndex: dto.order_index,
         },
       });
@@ -106,20 +92,13 @@ export class CourseMaterialService {
     }
   }
 
-  async update(
-    courseId: string,
-    moduleId: string,
-    id: string,
-    dto: UpdateCourseMaterialDto,
-  ) {
+  async update(courseId: string, moduleId: string, dto: UpdateCourseModuleDto) {
     try {
-      await this.findOne(courseId, moduleId, id);
-      return this.prisma.courseMaterial.update({
-        where: { id },
+      await this.ensureModuleBelongsToCourse(moduleId, courseId);
+      return this.prisma.courseModule.update({
+        where: { id: moduleId },
         data: {
-          ...(dto.type !== undefined && { type: dto.type }),
           ...(dto.title !== undefined && { title: dto.title }),
-          ...(dto.content !== undefined && { content: dto.content as object }),
           ...(dto.order_index !== undefined && { orderIndex: dto.order_index }),
         },
       });
@@ -129,13 +108,13 @@ export class CourseMaterialService {
     }
   }
 
-  async delete(courseId: string, moduleId: string, id: string) {
+  async delete(courseId: string, moduleId: string) {
     try {
-      await this.findOne(courseId, moduleId, id);
-      await this.prisma.courseMaterial.delete({
-        where: { id },
+      await this.ensureModuleBelongsToCourse(moduleId, courseId);
+      await this.prisma.courseModule.delete({
+        where: { id: moduleId },
       });
-      return { deleted: true, id };
+      return { deleted: true, id: moduleId };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw this.mapError(error);

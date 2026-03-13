@@ -138,7 +138,7 @@ model TeacherProfile {
   @@map("teacher_profiles")
 }
 
-// ─── Courses & Materials ────────────────────────────────────────────────────
+// ─── Courses, Modules & Materials ────────────────────────────────────────────
 
 model Course {
   id           String         @id @default(uuid())
@@ -152,7 +152,7 @@ model Course {
   updatedAt    DateTime       @updatedAt @map("updated_at")
 
   teacher            User?                @relation("CourseCreator", fields: [teacherId], references: [id], onDelete: SetNull)
-  materials          CourseMaterial[]
+  modules            CourseModule[]
   userCourseAccess   UserCourseAccess[]
   subscriptions      Subscription[]
   payments           Payment[]
@@ -163,21 +163,36 @@ model Course {
   @@map("courses")
 }
 
+model CourseModule {
+  id        String   @id @default(uuid())
+  courseId  String   @map("course_id")
+  title     String
+  orderIndex Int     @map("order_index")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  materials CourseMaterial[]
+
+  @@index([courseId])
+  @@map("course_modules")
+}
+
 model CourseMaterial {
   id          String             @id @default(uuid())
-  courseId    String             @map("course_id")
+  moduleId    String             @map("module_id")
   type        CourseMaterialType
   title       String
   content     Json               // JSON/JSONB: scenario nodes, video youtube_video_id, etc.
   orderIndex  Int                @map("order_index")
   createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
 
-  course        Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module        CourseModule    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   courseProgress CourseProgress[]
   quizAttempts  QuizAttempt[]
 
-  @@index([courseId])
+  @@index([moduleId])
   @@map("course_materials")
 }
 

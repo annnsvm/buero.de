@@ -90,9 +90,21 @@ CREATE TABLE "courses" (
 );
 
 -- CreateTable
-CREATE TABLE "course_materials" (
+CREATE TABLE "course_modules" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "order_index" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "course_modules_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "course_materials" (
+    "id" TEXT NOT NULL,
+    "module_id" TEXT NOT NULL,
     "type" "CourseMaterialType" NOT NULL,
     "title" TEXT NOT NULL,
     "content" JSONB NOT NULL,
@@ -244,7 +256,10 @@ CREATE INDEX "courses_teacher_id_idx" ON "courses"("teacher_id");
 CREATE INDEX "courses_category_idx" ON "courses"("category");
 
 -- CreateIndex
-CREATE INDEX "course_materials_course_id_idx" ON "course_materials"("course_id");
+CREATE INDEX "course_modules_course_id_idx" ON "course_modules"("course_id");
+
+-- CreateIndex
+CREATE INDEX "course_materials_module_id_idx" ON "course_materials"("module_id");
 
 -- CreateIndex
 CREATE INDEX "user_course_access_user_id_idx" ON "user_course_access"("user_id");
@@ -298,7 +313,10 @@ ALTER TABLE "teacher_profiles" ADD CONSTRAINT "teacher_profiles_user_id_fkey" FO
 ALTER TABLE "courses" ADD CONSTRAINT "courses_teacher_id_fkey" FOREIGN KEY ("teacher_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "course_materials" ADD CONSTRAINT "course_materials_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "courses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "course_modules" ADD CONSTRAINT "course_modules_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "courses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "course_materials" ADD CONSTRAINT "course_materials_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "course_modules"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "user_course_access" ADD CONSTRAINT "user_course_access_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
