@@ -11,7 +11,7 @@ const SuccessPurchase: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // if (countdown === 0) navigate(ROUTES.PROFILE);
+    if (countdown === 0) navigate(ROUTES.PROFILE);
 
     const timer = setTimeout(() => {
       setCountdown((prev) => prev - 1);
@@ -20,9 +20,9 @@ const SuccessPurchase: React.FC = () => {
     return () => clearTimeout(timer);
   }, [countdown, navigate]);
   return (
-    <Section className="py-5 sm:py-10 lg:py-30">
+    <Section className="pt-30 pb-10 sm:pb-20 lg:pt-35">
       <Container>
-        <div className="randed-[12px] flex flex-col items-center gap-3 sm:gap-4 lg:gap-6 border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-base)] px-6 py-10 lg:px-33 lg:py-15">
+        <div className="rounded-[12px] flex flex-col items-center gap-3 sm:gap-4 lg:gap-6 border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-base)] px-6 py-10 lg:px-33 lg:py-15">
           <div className="relative h-[120px] w-[120px] rounded-full bg-[var(--color-primary)]">
             <Icon
               name={ICON_NAMES.CHECK}
