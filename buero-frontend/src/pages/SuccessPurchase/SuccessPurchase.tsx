@@ -6,8 +6,11 @@ import { ICON_NAMES } from '@/helpers/iconNames';
 import { ROUTES } from '@/helpers/routes';
 import LinkBtn from '@/components/ui/Link';
 
+const STRIPE_RETURN_KEY = 'stripe_return';
+
 const SuccessPurchase: React.FC = () => {
   const [countdown, setCountdown] = useState(5);
+  const [allowed] = useState(() => sessionStorage.getItem(STRIPE_RETURN_KEY) === 'pending');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +22,19 @@ const SuccessPurchase: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, [countdown, navigate]);
+
+  useEffect(() => {
+    if (!allowed) {
+      navigate('/', { replace: true });
+      return;
+    }
+    sessionStorage.removeItem(STRIPE_RETURN_KEY);
+  }, [allowed, navigate]);
+
+  if (!allowed) {
+    return null;
+  }
+
   return (
     <Section className="pt-30 pb-10 sm:pb-20 lg:pt-35">
       <Container>

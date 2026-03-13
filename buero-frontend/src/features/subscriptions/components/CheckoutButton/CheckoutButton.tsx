@@ -24,6 +24,7 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
     if (createCheckoutSessionThunk.fulfilled.match(resultAction)) {
       const url = resultAction.payload.url;
       if (url) {
+        sessionStorage.setItem('stripe_return', 'pending');
         window.location.href = url;
       }
       return;
