@@ -6,7 +6,6 @@ const initialState: AuthState = {
   isAuthenticated: false,
   status: 'idle',
   error: null,
-  accessToken: null,
 };
 
 const authSlice = createSlice({
@@ -19,9 +18,6 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.error = null;
-    },
-    setAccessToken: (state, action) => {
-      state.accessToken = action.payload;
     },
   },
   extraReducers: (builder) =>
@@ -66,4 +62,4 @@ const authSlice = createSlice({
 });
 
 export const authReducer = authSlice.reducer;
-export const { resetAuthError, logout, setAccessToken } = authSlice.actions;
+export const { resetAuthError, logout } = authSlice.actions;

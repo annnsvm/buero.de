@@ -1,8 +1,6 @@
 import type { LoginPayload, SignUpPayload } from '@/types/redux/auth.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { addUser } from '../user/userSlice';
-import { setAccessToken } from './authSlice';
-import { getCookie } from '@/helpers/cookies';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import { RootState } from '@/types/redux/store.types';
 
@@ -14,11 +12,6 @@ export const loginThunk = createAsyncThunk<void, LoginPayload>(
       const result = await apiInstance.post(API_ENDPOINTS.auth.login, { email, password });
       if (result.data?.user) {
         dispatch(addUser(result.data.user));
-      }
-
-      const tokenFromCookie = getCookie('access_token');
-      if (tokenFromCookie) {
-        dispatch(setAccessToken(tokenFromCookie));
       }
       return;
     } catch (error: unknown) {
@@ -47,10 +40,6 @@ export const signupThunk = createAsyncThunk<void, SignUpPayload>(
       if (result.data?.user) {
         dispatch(addUser(result.data.user));
       }
-      const tokenFromCookie = getCookie('access_token');
-      if (tokenFromCookie) {
-        dispatch(setAccessToken(tokenFromCookie));
-      }
       return;
     } catch (error: unknown) {
       const message =
@@ -70,7 +59,6 @@ export const logOutThunk = createAsyncThunk<void, void>(
     try {
       const { apiInstance } = await import('@/api/apiInstance');
       await apiInstance.post(API_ENDPOINTS.auth.logout);
-      dispatch(setAccessToken(null));
       dispatch(addUser(null));
       return;
     } catch (error) {
@@ -94,10 +82,6 @@ export const refreshUserThunk = createAsyncThunk<void, void>(
       if (result.data?.user) {
         dispatch(addUser(result.data.user));
       }
-      const tokenFromCookie = getCookie('access_token');
-      if (tokenFromCookie) {
-        dispatch(setAccessToken(tokenFromCookie));
-      }
       return;
     } catch (error) {
       const message =
@@ -112,8 +96,8 @@ export const refreshUserThunk = createAsyncThunk<void, void>(
   {
     condition: (_, { getState }) => {
       const state = getState() as RootState;
-      const accessToken = state.auth.accessToken;
-      if (!accessToken) return false;
+      const isLoggedIn  = state.auth.isAuthenticated;
+      if (!isLoggedIn) return false;
       return true;
     },
   },

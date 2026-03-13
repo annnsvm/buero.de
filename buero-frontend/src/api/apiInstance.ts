@@ -51,13 +51,6 @@ const handleLogout = () => {
 };
 
 apiInstance.interceptors.request.use((config) => {
-  const state = store.getState();
-  const accessToken = state.auth?.accessToken;
-
-  if (accessToken) {
-    config.headers['Authorization'] = `Bearer ${accessToken}`;
-  }
-
   return config;
 });
 
@@ -76,7 +69,7 @@ apiInstance.interceptors.response.use(
       return Promise.reject(error);
     }
     const state = store.getState();
-    const hasSession = Boolean(state.auth?.isAuthenticated || state.auth?.accessToken);
+    const hasSession = Boolean(state.auth?.isAuthenticated);
     if (!hasSession) {
       return Promise.reject(error);
     }
