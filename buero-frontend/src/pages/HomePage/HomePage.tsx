@@ -12,6 +12,8 @@ const HomePage: React.FC = () => {
       <Proposition />
       <TrackYourProgress />
       <CallToAction />
+      {/* <CheckoutButton courseId="f65717d8-2b75-4e93-87f0-a810b1cf2ddc" />
+      <PortalButton /> */}
     </div>
   );
 };
