@@ -1,29 +1,14 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  Query,
-} from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { getUserIdFromRequest } from '../../helpers/user-id.helper';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProgressService } from './progress.service';
-import { CompleteMaterialDto } from './dto/complete-material.dto';
-import { CourseProgressResponseDto } from './dto/course-progress-response.dto';
 import { MyProgressResponseDto } from './dto/my-progress-response.dto';
 
 @ApiTags('progress')
 @Controller('progress')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access_token')
 export class ProgressController {
   constructor(private readonly progressService: ProgressService) {}
 
@@ -31,27 +16,23 @@ export class ProgressController {
   @ApiOperation({
     summary: 'Загальний прогрес',
     description:
-      'Загальний прогрес поточного користувача: курси, відсотки завершення, пройдені матеріали, поточний рівень (student_profiles). userId тимчасово: query userId=, body або заголовок x-user-id.',
+      'Загальний прогрес поточного користувача: курси, відсотки завершення, пройдені матеріали, поточний рівень (student_profiles). Користувач з JWT (request.user).',
   })
-  @ApiQuery({ name: 'userId', description: 'UUID користувача (тимчасово до Auth)' })
   @ApiResponse({ status: 200, description: 'Прогрес', type: MyProgressResponseDto })
-  @ApiResponse({ status: 400, description: 'userId не передано' })
+  @ApiResponse({ status: 401, description: 'Не авторизовано' })
   getMyProgress(@Req() req: Request) {
-    const userId = getUserIdFromRequest(req);
-    return this.progressService.getMyProgress(userId);
+    return this.progressService.getMyProgress(req.user!.id);
   }
 
   @Get('recommended-next')
   @ApiOperation({
     summary: 'Рекомендований наступний курс',
     description:
-      'Пропонує наступний курс за рівнем студента (student_profiles.level) та course_progress. Один курс або null.',
+      'Пропонує наступний курс за рівнем студента (student_profiles.level) та course_progress. Один курс або null. Користувач з JWT.',
   })
-  @ApiQuery({ name: 'userId', description: 'UUID користувача (тимчасово до Auth)' })
   @ApiResponse({ status: 200, description: 'Курс або null' })
-  @ApiResponse({ status: 400, description: 'userId не передано' })
+  @ApiResponse({ status: 401, description: 'Не авторизовано' })
   getRecommendedNext(@Req() req: Request) {
-    const userId = getUserIdFromRequest(req);
-    return this.progressService.getRecommendedNext(userId);
+    return this.progressService.getRecommendedNext(req.user!.id);
   }
 }
