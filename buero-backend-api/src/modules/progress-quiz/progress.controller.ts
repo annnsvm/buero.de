@@ -16,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { getUserIdFromRequest } from './user-id.helper';
+import { getUserIdFromRequest } from '../../helpers/user-id.helper';
 import { ProgressService } from './progress.service';
 import { CompleteMaterialDto } from './dto/complete-material.dto';
 import { CourseProgressResponseDto } from './dto/course-progress-response.dto';

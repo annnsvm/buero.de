@@ -111,22 +111,23 @@ export class QuizService {
       },
     });
 
-    const module = await this.prisma.courseMaterial.findUnique({
+    const materialWithModule = await this.prisma.courseMaterial.findUnique({
       where: { id: attempt.courseMaterialId },
       include: { module: true },
     });
-    if (module?.module?.courseId) {
+    if (materialWithModule?.module?.courseId) {
+      const courseId = materialWithModule.module.courseId;
       await this.prisma.courseProgress.upsert({
         where: {
           userId_courseId_courseMaterialId: {
             userId,
-            courseId: module.module.courseId,
+            courseId,
             courseMaterialId: attempt.courseMaterialId,
           },
         },
         create: {
           userId,
-          courseId: module.module.courseId,
+          courseId,
           courseMaterialId: attempt.courseMaterialId,
           completedAt,
           score: score != null ? score : null,

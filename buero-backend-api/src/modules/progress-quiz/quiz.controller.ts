@@ -7,7 +7,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { getUserIdFromRequest } from './user-id.helper';
+import { getUserIdFromRequest } from '../../helpers/user-id.helper';
 import { QuizService } from './quiz.service';
 import { CreateAttemptDto } from './dto/create-attempt.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
