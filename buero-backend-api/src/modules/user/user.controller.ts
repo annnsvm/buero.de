@@ -3,7 +3,6 @@ import {
   Get,
   Patch,
   Body,
-  Req,
   UseGuards,
   NotFoundException,
 } from "@nestjs/common";
@@ -14,19 +13,19 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from "@nestjs/swagger";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { UserService } from "./user.service";
 import { UpdateProfileDto } from "./dto/update-user.dto";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { Request } from "express";
 
 @ApiTags("users")
 @Controller("users")
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth("access_token")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get("me")
-  @ApiBearerAuth("access_token")
   @ApiOperation({
     summary: "Поточний профіль",
     description:
@@ -34,14 +33,13 @@ export class UserController {
   })
   @ApiResponse({ status: 200, description: "User та профіль" })
   @ApiResponse({ status: 401, description: "Не авторизовано" })
-  async getMe(@Req() req: Request) {
-    const profile = await this.userService.getProfile(req.user!.id);
+  async getMe(@CurrentUser("id") userId: string) {
+    const profile = await this.userService.getProfile(userId);
     if (!profile) throw new NotFoundException("Profile not found");
     return profile;
   }
 
   @Patch("me")
-  @ApiBearerAuth("access_token")
   @ApiOperation({
     summary: "Оновити профіль",
     description:
@@ -51,8 +49,8 @@ export class UserController {
   @ApiResponse({ status: 200, description: "Оновлений профіль" })
   @ApiResponse({ status: 401, description: "Не авторизовано" })
   @ApiResponse({ status: 404, description: "User не знайдено" })
-  async updateMe(@Req() req: Request, @Body() dto: UpdateProfileDto) {
-    const result = await this.userService.updateProfile(req.user!.id, dto);
+  async updateMe(@CurrentUser("id") userId: string, @Body() dto: UpdateProfileDto) {
+    const result = await this.userService.updateProfile(userId, dto);
     if (!result) throw new NotFoundException("User not found");
     return result;
   }

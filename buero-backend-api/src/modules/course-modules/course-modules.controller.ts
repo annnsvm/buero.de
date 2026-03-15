@@ -8,7 +8,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,11 +18,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request } from 'express';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Role } from 'src/generated/prisma/enums';
+import type { UserWithoutPassword } from '../user/types/user-response.type';
 import { CourseModuleService } from './course-module.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
@@ -47,18 +47,18 @@ export class CourseModulesController {
   @ApiResponse({ status: 404, description: 'Курс не знайдено' })
   @ApiResponse({ status: 401, description: 'Не авторизовано' })
   async list(
-    @Req() req: Request,
+    @CurrentUser() user: UserWithoutPassword,
     @Param('courseId') courseId: string,
   ) {
     await this.courseModuleService.assertCanAccessCourse(
-      req.user!.id,
-      req.user!.role,
+      user.id,
+      user.role,
       courseId,
     );
     return this.courseModuleService.findAllByCourseId(
       courseId,
-      req.user!.id,
-      req.user!.role,
+      user.id,
+      user.role,
     );
   }
 
@@ -77,15 +77,15 @@ export class CourseModulesController {
   @ApiResponse({ status: 404, description: 'Курс або модуль не знайдено' })
   @ApiResponse({ status: 401, description: 'Не авторизовано' })
   async getById(
-    @Req() req: Request,
+    @CurrentUser() user: UserWithoutPassword,
     @Param('courseId') courseId: string,
     @Param('moduleId') moduleId: string,
   ) {
     return this.courseModuleService.findOne(
       courseId,
       moduleId,
-      req.user!.id,
-      req.user!.role,
+      user.id,
+      user.role,
     );
   }
 
