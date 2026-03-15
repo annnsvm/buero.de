@@ -52,10 +52,11 @@ export class CourseMaterialsController {
     @Param('courseId') courseId: string,
     @Param('moduleId') moduleId: string,
   ) {
-    await this.courseMaterialService.assertCanAccessCourse(
+    await this.courseMaterialService.assertCanAccessModule(
       req.user!.id,
       req.user!.role,
       courseId,
+      moduleId,
     );
     return this.courseMaterialService.findAllByModuleId(courseId, moduleId);
   }
@@ -81,10 +82,11 @@ export class CourseMaterialsController {
     @Param('moduleId') moduleId: string,
     @Param('id') id: string,
   ) {
-    await this.courseMaterialService.assertCanAccessCourse(
+    await this.courseMaterialService.assertCanAccessModule(
       req.user!.id,
       req.user!.role,
       courseId,
+      moduleId,
     );
     return this.courseMaterialService.findOne(courseId, moduleId, id);
   }

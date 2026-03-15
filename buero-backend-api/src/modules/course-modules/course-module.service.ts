@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role } from 'src/generated/prisma/enums';
+import { Role, UserCourseAccessType } from 'src/generated/prisma/enums';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
@@ -26,6 +26,47 @@ export class CourseModuleService {
     if (!access) {
       throw new ForbiddenException('Немає доступу до цього курсу');
     }
+    if (
+      access.accessType === UserCourseAccessType.trial &&
+      access.trialEndsAt &&
+      access.trialEndsAt < new Date()
+    ) {
+      throw new ForbiddenException('Пробний період закінчився');
+    }
+  }
+
+  /** Перевірка доступу до конкретного модуля; при trial дозволений лише перший модуль. */
+  async assertCanAccessModule(
+    userId: string,
+    role: Role,
+    courseId: string,
+    moduleId: string,
+  ): Promise<void> {
+    await this.ensureCourseExists(courseId);
+    if (role === Role.teacher) return;
+    const access = await this.prisma.userCourseAccess.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+    });
+    if (!access) {
+      throw new ForbiddenException('Немає доступу до цього курсу');
+    }
+    if (access.accessType === UserCourseAccessType.trial) {
+      const firstModuleId = await this.getFirstModuleId(courseId);
+      if (firstModuleId !== null && moduleId !== firstModuleId) {
+        throw new ForbiddenException(
+          'На пробному періоді доступний лише перший модуль курсу',
+        );
+      }
+    }
+  }
+
+  private async getFirstModuleId(courseId: string): Promise<string | null> {
+    const first = await this.prisma.courseModule.findFirst({
+      where: { courseId },
+      orderBy: { orderIndex: 'asc' },
+      select: { id: true },
+    });
+    return first?.id ?? null;
   }
 
   private async ensureCourseExists(courseId: string): Promise<void> {
@@ -51,9 +92,29 @@ export class CourseModuleService {
     }
   }
 
-  async findAllByCourseId(courseId: string) {
+  async findAllByCourseId(
+    courseId: string,
+    userId?: string,
+    role?: Role,
+  ) {
     try {
       await this.ensureCourseExists(courseId);
+      if (userId && role === Role.student) {
+        const access = await this.prisma.userCourseAccess.findUnique({
+          where: { userId_courseId: { userId, courseId } },
+        });
+        if (
+          access?.accessType === UserCourseAccessType.trial
+        ) {
+          const firstModuleId = await this.getFirstModuleId(courseId);
+          if (firstModuleId) {
+            return this.prisma.courseModule.findMany({
+              where: { courseId, id: firstModuleId },
+              orderBy: { orderIndex: 'asc' },
+            });
+          }
+        }
+      }
       return this.prisma.courseModule.findMany({
         where: { courseId },
         orderBy: { orderIndex: 'asc' },
@@ -64,14 +125,23 @@ export class CourseModuleService {
     }
   }
 
-  async findOne(courseId: string, moduleId: string) {
+  async findOne(
+    courseId: string,
+    moduleId: string,
+    userId?: string,
+    role?: Role,
+  ) {
     try {
       await this.ensureModuleBelongsToCourse(moduleId, courseId);
+      if (userId && role !== undefined) {
+        await this.assertCanAccessModule(userId, role, courseId, moduleId);
+      }
       return this.prisma.courseModule.findUniqueOrThrow({
         where: { id: moduleId },
       });
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
+      if (error instanceof ForbiddenException) throw error;
       throw this.mapError(error);
     }
   }

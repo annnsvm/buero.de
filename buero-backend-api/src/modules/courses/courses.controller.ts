@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Request } from 'express';
+
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -115,9 +118,17 @@ export class CoursesController {
       },
     },
   })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access_token')
   @ApiResponse({ status: 404, description: 'Курс не знайдено' })
-  getById(@Param('id') id: string) {
-    return this.courseService.findById(id);
+  @ApiResponse({
+    status: 200,
+    description:
+      'При наявному доступі до курсу у відповіді є my_access: { access_type, trial_ends_at?, first_module_id? }',
+  })
+  @ApiResponse({ status: 401, description: 'Не авторизовано' })
+  getById(@Req() req: Request, @Param('id') id: string) {
+    return this.courseService.findById(id, true, req.user!.id);
   }
 
   @Post()
@@ -173,4 +184,36 @@ export class CoursesController {
   delete(@Param('id') id: string) {
     return this.courseService.delete(id);
   }
+
+  @Post(':id/start-trial')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.student)
+  @ApiBearerAuth('access_token')
+  @ApiOperation({
+    summary: 'Розпочати пробний період',
+    description:
+      'Тільки для студентів. Розпочати пробний період для курсу (доступ лише до першого модуля). Повертає course_id, access_type, trial_ends_at.',
+  })
+  @ApiParam({ name: 'id', description: 'UUID курсу' })
+  @ApiResponse({
+    status: 200,
+    description: 'Пробний період розпочато',
+    schema: {
+      type: 'object',
+      properties: {
+        course_id: { type: 'string', format: 'uuid', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' },
+        access_type: { type: 'string', enum: ['trial'], example: 'trial' },
+        trial_ends_at: { type: 'string', format: 'date-time', example: '2025-03-07T12:00:00.000Z' },
+      },
+      required: ['course_id', 'access_type', 'trial_ends_at'],
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Курс не опублікований або не студент' })
+  @ApiResponse({ status: 404, description: 'Курс не знайдено' })
+  @ApiResponse({ status: 409, description: 'Вже є доступ до курсу' })
+  @ApiResponse({ status: 401, description: 'Не авторизовано' })
+  @ApiResponse({ status: 403, description: 'Тільки для студентів' })
+  startTrial(@Req() req: Request, @Param('id') id: string) {
+    return this.courseService.startTrial(req.user!.id, id);
+  } 
 }

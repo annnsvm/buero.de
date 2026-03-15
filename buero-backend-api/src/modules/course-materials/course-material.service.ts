@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role } from 'src/generated/prisma/enums';
+import { Role, UserCourseAccessType } from 'src/generated/prisma/enums';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCourseMaterialDto } from './dto/create-course-material.dto';
 import { UpdateCourseMaterialDto } from './dto/update-course-material.dto';
@@ -28,6 +28,47 @@ export class CourseMaterialService {
     if (!access) {
       throw new ForbiddenException('Немає доступу до цього курсу');
     }
+    if (
+      access.accessType === UserCourseAccessType.trial &&
+      access.trialEndsAt &&
+      access.trialEndsAt < new Date()
+    ) {
+      throw new ForbiddenException('Пробний період закінчився');
+    }
+  }
+
+  /** Перевірка доступу до модуля (для матеріалів); при trial дозволений лише перший модуль. */
+  async assertCanAccessModule(
+    userId: string,
+    role: Role,
+    courseId: string,
+    moduleId: string,
+  ): Promise<void> {
+    await this.ensureCourseExists(courseId);
+    if (role === Role.teacher) return;
+    const access = await this.prisma.userCourseAccess.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+    });
+    if (!access) {
+      throw new ForbiddenException('Немає доступу до цього курсу');
+    }
+    if (access.accessType === UserCourseAccessType.trial) {
+      const firstModuleId = await this.getFirstModuleId(courseId);
+      if (firstModuleId !== null && moduleId !== firstModuleId) {
+        throw new ForbiddenException(
+          'На пробному періоді доступні лише матеріали першого модуля',
+        );
+      }
+    }
+  }
+
+  private async getFirstModuleId(courseId: string): Promise<string | null> {
+    const first = await this.prisma.courseModule.findFirst({
+      where: { courseId },
+      orderBy: { orderIndex: 'asc' },
+      select: { id: true },
+    });
+    return first?.id ?? null;
   }
 
   private async ensureCourseExists(courseId: string): Promise<void> {
@@ -145,6 +186,7 @@ export class CourseMaterialService {
   private mapError(error: unknown): never {
     if (error instanceof NotFoundException) throw error;
     if (error instanceof BadRequestException) throw error;
+    if (error instanceof ForbiddenException) throw error;
     const message = error instanceof Error ? error.message : 'Unknown error';
     throw new BadRequestException(message);
   }

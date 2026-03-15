@@ -55,7 +55,11 @@ export class CourseModulesController {
       req.user!.role,
       courseId,
     );
-    return this.courseModuleService.findAllByCourseId(courseId);
+    return this.courseModuleService.findAllByCourseId(
+      courseId,
+      req.user!.id,
+      req.user!.role,
+    );
   }
 
   @Get(':moduleId')
@@ -77,12 +81,12 @@ export class CourseModulesController {
     @Param('courseId') courseId: string,
     @Param('moduleId') moduleId: string,
   ) {
-    await this.courseModuleService.assertCanAccessCourse(
+    return this.courseModuleService.findOne(
+      courseId,
+      moduleId,
       req.user!.id,
       req.user!.role,
-      courseId,
     );
-    return this.courseModuleService.findOne(courseId, moduleId);
   }
 
   @Post()
