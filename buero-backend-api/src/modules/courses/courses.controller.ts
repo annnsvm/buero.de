@@ -9,7 +9,6 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,8 +20,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request } from 'express';
-
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -41,7 +39,7 @@ export class CoursesController {
   @ApiOperation({
     summary: 'Список опублікованих курсів (каталог)',
     description:
-      'Повертає **лише курси з is_published = true**. Неопубліковані курси не потрапляють у відповідь — для публікації використовуй PATCH /courses/:id з body { "is_published": true }. Опційні query: category (language | sociocultural), language (en | de).',
+      'Публічний каталог опублікованих курсів (is_published = true). Використовується на лендінгу. Опційні query: category (language | sociocultural), language (en | de).',
   })
   @ApiQuery({ name: 'category', required: false, enum: ['language', 'sociocultural'] })
   @ApiQuery({ name: 'language', required: false, enum: ['en', 'de'] })
@@ -127,8 +125,8 @@ export class CoursesController {
       'При наявному доступі до курсу у відповіді є my_access: { access_type, trial_ends_at?, first_module_id? }',
   })
   @ApiResponse({ status: 401, description: 'Не авторизовано' })
-  getById(@Req() req: Request, @Param('id') id: string) {
-    return this.courseService.findById(id, true, req.user!.id);
+  getById(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.courseService.findById(id, true, userId);
   }
 
   @Post()
@@ -213,7 +211,7 @@ export class CoursesController {
   @ApiResponse({ status: 409, description: 'Вже є доступ до курсу' })
   @ApiResponse({ status: 401, description: 'Не авторизовано' })
   @ApiResponse({ status: 403, description: 'Тільки для студентів' })
-  startTrial(@Req() req: Request, @Param('id') id: string) {
-    return this.courseService.startTrial(req.user!.id, id);
+  startTrial(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.courseService.startTrial(userId, id);
   } 
 }
