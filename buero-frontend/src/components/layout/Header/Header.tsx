@@ -14,9 +14,7 @@ const Header = () => {
 
   return (
     <header
-      className={`absolute top-0 right-0 left-0 z-50 transition-colors duration-200 ${
-        isLight ? 'bg-transparent' : 'bg-[var(--color-surface-section)]'
-      }`}
+      className={'absolute top-0 right-0 left-0 z-50 transition-colors duration-200 bg-transparent'}
     >
       <Container>
         <div className="flex items-center justify-between gap-6 px-8 py-12 text-lg lg:px-16">
@@ -25,7 +23,7 @@ const Header = () => {
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
             aria-label="buero.de go to home"
           >
-            <Logo width={70} height={28} />
+            <Logo width={70} height={28} isLight = {isLight}/>
           </Link>
           <HeaderNavBar
             pathname={pathname}

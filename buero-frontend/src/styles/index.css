@@ -124,6 +124,8 @@
   /* Secondary buttons */
   --color-accent-secondary-hover: var(--color-burnt-siena-darker);
   --color-accent-danger: var(--color-burnt-siena-dark);
+
+  --color-success: #f1f9f1;
   /* Помилки, небезпечні дії */
 
   /* Aliases (backward compatibility + shorthand) */

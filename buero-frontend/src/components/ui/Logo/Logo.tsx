@@ -1,17 +1,19 @@
 import { LogoProps } from '@/types/components/ui/Logo.types';
 
-const LOGO_SRC = '/images/home/logo.png';
+const LOGO_LIGHT = '/images/logo_light.webp';
+const LOGO_DARK= '/images/logo_dark.webp';
 
 const Logo = ({
   width = 70,
   height = 28,
   alt = 'buero.de',
   className = '',
+  isLight = false,
   ...rest
 }: LogoProps) => {
   return (
     <img
-      src={LOGO_SRC}
+      src={isLight ? LOGO_LIGHT : LOGO_DARK}
       alt={alt}
       width={width}
       height={height}

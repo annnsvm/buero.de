@@ -4,6 +4,8 @@ export const ROUTES = Object.freeze({
   RESULTS: '/results',
   TRIAL_DASHBOARD: '/dashboard/trial',
   SUBSCRIBED_DASHBOARD: '/dashboard/subscribed',
+  PURCHES_SUCCESS: '/purchase/success',
+  PURCHES_CANCEL: '/purchase/cancel',
   TEACHERS: '/teachers',
   SETTINGS_ACCOUNT: '/settings/account',
   COURSES: '/courses',

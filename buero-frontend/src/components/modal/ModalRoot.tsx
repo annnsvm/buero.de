@@ -1,12 +1,16 @@
 import React from 'react';
 import { ModalRootProps } from '@/types/components/modal/ModalRoot.types';
 import { LoginModal, SignUpModal } from '@/features/auth';
+import { CourseInfoModal, ContactSupportModal } from '@/features/courses-catalog';
 import { closeGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { useDispatch } from 'react-redux';
+import useModal from './context/useModal';
+import type { UiModalPayload } from '@/types/components/modal/UIModalType.types';
 
 const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
   const dispatch = useDispatch();
-
+  const { popUiModal } = useModal();
+   
   const renderGlobalModal = () => {
     if (globalModal.type === null) return null;
     if (globalModal.type === 'login') {
@@ -37,20 +41,64 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
     return null;
   };
 
-  //   const renderUiModals = () => {
-  //     if (!uiModalStack.length) return null;
+  const renderUiModalByType = (item: UiModalPayload, index: number) => {
+    const commonProps = {
+      key: `${item.type}-${index}`,
+      isOpen: true,
+      handleOpenChange: (open: boolean) => {
+        if (!open) {
+          popUiModal();
+        }
+      },
+    };
 
-  //     return uiModalStack.map((item, index) => {
-  //       const isTop = index === uiModalStack.length - 1;
-  //       return null;
-  //     });
-  //   };
+    switch (item.type) {
+      case 'courseInfo':
+        return (
+          <CourseInfoModal
+            {...commonProps}
+            courseId={item.courseId}
+            course={item.course}
+          />
+        );
+
+      case 'contactSupport':
+        return (
+          <ContactSupportModal
+            {...commonProps}
+            subject={item.subject}
+            courseId={item.courseId}
+            prefillEmail={item.prefillEmail}
+          />
+        );
+
+      case 'addVocabulary':
+      case 'addVocabularySuccess':
+      case 'confirm':
+      default:
+        return null;
+    }
+  };
+
+  const renderUiModals = () => {
+    if (!uiModalStack.length) return null;
+
+    return uiModalStack.map((item, index) => {
+      const isTop = index === uiModalStack.length - 1;
+
+      if (!isTop) return null;
+
+      return renderUiModalByType(item, index);
+    });
+  };
+
   return (
     <>
       {renderGlobalModal()}
-      {/* {renderUiModals()} */}
+      {renderUiModals()}
     </>
   );
 };
 
+// 
 export default ModalRoot;

@@ -14,6 +14,8 @@ const TrialDashboardPage = lazy(() => import('../pages/TrialDashboardPage/TrialD
 const SubscribedDashboardPage = lazy(
   () => import('../pages/SubscribedDashboardPage/SubscribedDashboardPage'),
 );
+const SuccessPurchase = lazy(() => import('../pages/SuccessPurchase/SuccessPurchase'));
+const CancelPurchase = lazy(() => import('../pages/CancelPurchase/CancelPurchase'));
 const TeacherDirectoryPage = lazy(
   () => import('../pages/TeacherDirectoryPage/TeacherDirectoryPage'),
 );
@@ -63,6 +65,22 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: ROUTES.PURCHES_SUCCESS,
+            element: (
+              <PrivateGuard>
+                <SuccessPurchase />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.PURCHES_CANCEL,
+            element: (
+              <PrivateGuard>
+                <CancelPurchase />
+              </PrivateGuard>
+            ),
+          },
+          {
             path: ROUTES.SUBSCRIBED_DASHBOARD,
             element: (
               <PrivateGuard>
@@ -88,9 +106,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ROUTES.COURSES,
-            element: (
-                <CoursesCatalogPage />
-            ),
+            element: <CoursesCatalogPage />,
           },
           {
             path: ROUTES.COURSE,

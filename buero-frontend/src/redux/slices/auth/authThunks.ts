@@ -3,6 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { addUser } from '../user/userSlice';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import { RootState } from '@/types/redux/store.types';
+import { getErrorMessage } from '@/helpers/getErrorMessage';
 
 export const loginThunk = createAsyncThunk<void, LoginPayload>(
   'auth/login',
@@ -15,12 +16,7 @@ export const loginThunk = createAsyncThunk<void, LoginPayload>(
       }
       return;
     } catch (error: unknown) {
-      const message =
-        error && typeof error === 'object' && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : error instanceof Error
-            ? error.message
-            : 'Login failed';
+      const message = getErrorMessage(error, 'Login failed');
       return rejectWithValue(message);
     }
   },
@@ -42,12 +38,7 @@ export const signupThunk = createAsyncThunk<void, SignUpPayload>(
       }
       return;
     } catch (error: unknown) {
-      const message =
-        error && typeof error === 'object' && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : error instanceof Error
-            ? error.message
-            : 'Sign up failed';
+      const message = getErrorMessage(error, 'Signup failed');
       return rejectWithValue(message);
     }
   },
@@ -62,12 +53,7 @@ export const logOutThunk = createAsyncThunk<void, void>(
       dispatch(addUser(null));
       return;
     } catch (error) {
-      const message =
-        error && typeof error === 'object' && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : error instanceof Error
-            ? error.message
-            : 'Logout failed';
+      const message = getErrorMessage(error, 'Logout failed');
       return rejectWithValue(message);
     }
   },
@@ -84,12 +70,7 @@ export const refreshUserThunk = createAsyncThunk<void, void>(
       }
       return;
     } catch (error) {
-      const message =
-        error && typeof error === 'object' && 'response' in error
-          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-          : error instanceof Error
-            ? error.message
-            : 'Refresh failed';
+      const message = getErrorMessage(error, 'Failed to refresh user');
       return rejectWithValue(message);
     }
   },

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -6,7 +6,7 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { Request } from "express";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CourseAccessResponseDto } from "./dto/course-access-response.dto";
 import { CreateCheckoutDto } from "./dto/create-checkout.dto";
@@ -15,11 +15,11 @@ import { SubscriptionsService } from "./subscriptions.service";
 @ApiTags("subscriptions")
 @Controller("subscriptions")
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth("access_token")
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   @Post("checkout")
-  @ApiBearerAuth("access_token")
   @ApiOperation({
     summary: "Створити Checkout Session (купівля курсу)",
     description:
@@ -36,14 +36,13 @@ export class SubscriptionsController {
       "Вже є доступ до курсу (купівля, підписка або активний trial)",
   })
   async createCheckoutSession(
-    @Req() req: Request,
+    @CurrentUser("id") userId: string,
     @Body() body: CreateCheckoutDto,
   ): Promise<{ url: string }> {
-    return this.subscriptionsService.createCheckoutSession(req.user!.id, body);
+    return this.subscriptionsService.createCheckoutSession(userId, body);
   }
 
   @Get("me")
-  @ApiBearerAuth("access_token")
   @ApiOperation({
     summary: "Мої курси (доступ)",
     description:
@@ -56,13 +55,12 @@ export class SubscriptionsController {
   })
   @ApiResponse({ status: 401, description: "Не авторизовано" })
   async getMyCourseAccess(
-    @Req() req: Request,
+    @CurrentUser("id") userId: string,
   ): Promise<CourseAccessResponseDto[]> {
-    return this.subscriptionsService.getMyCourseAccess(req.user!.id);
+    return this.subscriptionsService.getMyCourseAccess(userId);
   }
 
   @Post("portal")
-  @ApiBearerAuth("access_token")
   @ApiOperation({
     summary: "Stripe Customer Portal",
     description:
@@ -72,7 +70,7 @@ export class SubscriptionsController {
   @ApiResponse({ status: 400, description: "Немає Stripe customer (спочатку здійсніть покупку)" })
   @ApiResponse({ status: 401, description: "Не авторизовано" })
   @ApiResponse({ status: 404, description: "User не знайдено" })
-  async createPortalSession(@Req() req: Request): Promise<{ url: string }> {
-    return this.subscriptionsService.createPortalSession(req.user!.id);
+  async createPortalSession(@CurrentUser("id") userId: string): Promise<{ url: string }> {
+    return this.subscriptionsService.createPortalSession(userId);
   }
 }

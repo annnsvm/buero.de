@@ -7,7 +7,7 @@ import { selectIsAuthenticated } from '@/redux/slices/auth';
 import { Logout } from '@/features/auth';
 
 const HeaderAuthTrialBar: React.FC<HeaderNavAuthTrialProps> = ({
-  isLight,
+  isLight=false,
   from = '',
   className = '',
 }) => {
@@ -25,7 +25,7 @@ const HeaderAuthTrialBar: React.FC<HeaderNavAuthTrialProps> = ({
   return (
     <div className={['flex gap-2', className].join(' ')}>
       {isAuthenticate ? (
-        <Logout />
+        <Logout isLight={isLight}/>
       ) : (
         <Button
           variant={isLight ? 'primary' : 'outlineDark'}
