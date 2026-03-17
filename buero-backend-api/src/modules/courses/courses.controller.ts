@@ -39,13 +39,15 @@ export class CoursesController {
   @ApiOperation({
     summary: 'Список опублікованих курсів (каталог)',
     description:
-      'Публічний каталог опублікованих курсів (is_published = true). Використовується на лендінгу. Опційні query: category (language | sociocultural), language (en | de).',
+      'Публічний каталог опублікованих курсів (is_published = true). Використовується на лендінгу. Опційні query: category (language | sociocultural), language (en | de), tags (через кому, напр. Language,Integration), level (A1|A2|B1|B2). У відповіді є поля price, tags, level, durationHours.',
   })
   @ApiQuery({ name: 'category', required: false, enum: ['language', 'sociocultural'] })
   @ApiQuery({ name: 'language', required: false, enum: ['en', 'de'] })
+  @ApiQuery({ name: 'tags', required: false, description: 'Фільтр за тегами (через кому). Напр. Language,Integration' })
+  @ApiQuery({ name: 'level', required: false, enum: ['A1', 'A2', 'B1', 'B2'] })
   @ApiResponse({
     status: 200,
-    description: 'Масив опублікованих курсів ([] якщо немає опублікованих)',
+    description: 'Масив опублікованих курсів (поля: price, tags, level, durationHours тощо)',
   })
   list(@Query() query: ListCoursesQueryDto) {
     return this.courseService.findAll(query);
@@ -70,6 +72,10 @@ export class CoursesController {
         language: 'en',
         category: 'language',
         isPublished: true,
+        price: 29.99,
+        tags: ['Language', 'Integration'],
+        level: 'A1',
+        durationHours: 12,
         createdAt: '2025-02-16T10:00:00.000Z',
         updatedAt: '2025-02-16T10:00:00.000Z',
         modules: [
