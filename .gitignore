@@ -149,3 +149,4 @@ vite.config.ts.timestamp-*
 *.sln
 *.sw?
 .env
+buero-backend-api/docker-compose.yml
