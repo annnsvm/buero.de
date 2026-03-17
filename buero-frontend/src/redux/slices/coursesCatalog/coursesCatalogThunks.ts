@@ -1,54 +1,8 @@
-// export { fetchCoursesCatalogThunk } from './coursesCatalogSlice';
-
-// src/features/courses-catalog/coursesCatalogThunks.ts
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { apiInstance } from '@/api/apiInstance';
-import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
-// УВАГА: Ми імпортуємо ТІЛЬКИ тип з coursesCatalogSlice, використовуючи ключовое слово type!
-import type { CoursesCatalogFilters } from './coursesCatalogSlice';
 
-type FetchCoursesResponse = {
-  items: CourseCardProps[];
-  totalCount: number;
-};
+// TODO: fetchCoursesCatalog when API /courses is ready
 
-const buildQueryString = (filters: CoursesCatalogFilters, page: number, pageSize: number) => {
-  const params = new URLSearchParams();
-
-  if (filters.category) params.set('category', filters.category);
-  if (filters.level) params.set('level', filters.level);
-  if (filters.search?.trim()) params.set('search', filters.search.trim());
-
-  return params.toString();
-};
-
-export const fetchCoursesCatalogThunk = createAsyncThunk<
-  FetchCoursesResponse,
-  void,
-  // Тут краще використовувати глобальний RootState, але якщо він створює проблеми, 
-  // залиш any або створи окремий тип тільки для цього стейту.
-  { state: any; rejectValue: string } 
->('coursesCatalog/fetch', async (_, { getState, rejectWithValue }) => {
-  const { filters, page, pageSize } = (getState() as any).coursesCatalog;
-
-  const query = buildQueryString(filters, page, pageSize);
-
-  try {
-    const res = await apiInstance.get<FetchCoursesResponse>(
-      `http://localhost:3000/api/courses?${query}`,
-    );
-
-    const data = res.data;
-
-    return {
-      items: Array.isArray(data) ? data : [],
-      totalCount: Array.isArray(data) ? data.length : 0,
-    };
-  } catch (error: any) {
-    const message =
-      error.response?.data?.message || error.message || 'Network error while loading courses';
-
-    return rejectWithValue(message);
-  }
-});
+export const fetchCoursesCatalogThunk = createAsyncThunk('coursesCatalog/fetch', async () => ({
+  items: [],
+  totalCount: 0,
+}));
