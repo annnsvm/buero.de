@@ -34,6 +34,7 @@ const ICON_NAMES = {
   X: 'icon-x',
   X_TWITTER: 'icon-X',
   YOUTUBE: 'icon-youtube',
+  ADD_RECORD: "icon-add-record",
 } as const;
 
 const SPRITE_URL = '/icons/sprite.svg';

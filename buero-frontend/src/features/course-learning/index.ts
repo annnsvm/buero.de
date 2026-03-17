@@ -5,4 +5,4 @@
  * Redux: окремо в src/redux/slices/courseLearning
  */
 
-export {};
+export {default as MaterialWindow} from './MaterialWindow';

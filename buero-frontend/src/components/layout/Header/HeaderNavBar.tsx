@@ -30,7 +30,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
         Courses
       </NavLink>
       {isAuthenticated && (
-        <NavLink to={ROUTES.PROFILE} className={getClass(isProfileActive)}>
+        <NavLink to={ROUTES.MY_LEARNING} className={getClass(isProfileActive)}>
           My learning
         </NavLink>
       )}

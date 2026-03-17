@@ -1,24 +1,24 @@
 import type { FC } from 'react';
 import Icon from '@/components/ui/Icon';
 import { useModal } from '@/components/modal';
-import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 
-// export type CourseCardProps = {
-//   id: string;
-//   title: string;
-//   category: string;
-//   levelLabel: string;
-//   badge?: string;
-//   imageUrl: string;
-//   description: string;
-//   price: string;
-//   lessonsCount: number;
-//   durationHours: number;
-//   tags: string[];
-//   rating?: number;
-//   isAdded?: boolean;
-//   onClick?: () => void;
-// };
+export type CourseCardProps = {
+  id: string;
+  title: string;
+  category: string;
+  levelLabel: string;
+  badge?: string;
+  imageUrl: string;
+  description: string;
+  price: string;
+  lessonsCount: number;
+  durationHours: number;
+  tags: string[];
+  rating?: number;
+  isAdded?: boolean;
+  hasTrial?: boolean;
+  onClick?: () => void;
+};
 // const CourseCard: FC<CourseCardProps> = ({
 //   id,
 //   title,

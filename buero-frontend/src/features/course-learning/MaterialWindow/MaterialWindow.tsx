@@ -1,12 +1,11 @@
-// LearningPage.tsx
 import React from 'react';
 import { BookOpen, CircleHelp, FileText, Flame, SkipForward, Trophy } from 'lucide-react';
 
 import { Container, Text, Title } from '@/components/layout';
-import { lessonContent } from './LearningPage.data';
+import { lessonContent } from './MaterialWindow.data';
 import type { LearningPageProps } from '@/types/features/learning/LearningPage.types';
 
-const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) => {
+const MaterialWindow: React.FC<LearningPageProps> = ({ lesson = lessonContent }) => {
   return (
     <main className="flex-1 bg-[var(--color-soapstone-base)] py-4 sm:py-6 lg:py-8">
       <Container className="max-w-5xl">
@@ -21,7 +20,9 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
                 <p className="truncate text-sm font-semibold text-[#1b1b1b] sm:text-base lg:text-lg">
                   {lesson.courseTitle}
                 </p>
-                <p className="text-xs text-[#6f6865] sm:text-sm lg:text-[15px]">{lesson.progressText}</p>
+                <p className="text-xs text-[#6f6865] sm:text-sm lg:text-[15px]">
+                  {lesson.progressText}
+                </p>
               </div>
             </div>
 
@@ -96,7 +97,9 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
         </section>
 
         <section className="mt-6 rounded-[20px] bg-[var(--color-neutral-white)] p-4 shadow-sm sm:mt-8 sm:rounded-[22px] sm:p-5 md:mt-10 md:p-6">
-          <h2 className="text-xl font-semibold text-[#56504c] sm:text-2xl md:text-[2rem]">Lesson Notes</h2>
+          <h2 className="text-xl font-semibold text-[#56504c] sm:text-2xl md:text-[2rem]">
+            Lesson Notes
+          </h2>
 
           <textarea
             placeholder="Take your notes here..."
@@ -115,11 +118,13 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
         </div>
 
         <section className="mt-6 rounded-[20px] border border-dashed border-[#e87753] p-5 sm:mt-8 sm:rounded-[22px] sm:p-7 md:mt-10 md:p-10">
-          <Title className="text-[1.75rem] sm:text-[2rem] lg:text-[2.5rem]">Need clarification?</Title>
+          <Title className="text-[1.75rem] sm:text-[2rem] lg:text-[2.5rem]">
+            Need clarification?
+          </Title>
 
           <Text label="Clarification description" className="mt-3 max-w-3xl text-[#5f5854] sm:mt-4">
-            Book a 1-on-1 session with our instructors if something feels unclear. Get
-            personalized guidance and answers to your specific questions.
+            Book a 1-on-1 session with our instructors if something feels unclear. Get personalized
+            guidance and answers to your specific questions.
           </Text>
 
           <button
@@ -135,4 +140,4 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
   );
 };
 
-export default LearningPage;
+export default MaterialWindow;

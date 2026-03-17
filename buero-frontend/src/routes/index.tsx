@@ -21,7 +21,9 @@ const TeacherDirectoryPage = lazy(
 );
 const AccountSettingsPage = lazy(() => import('../pages/AccountSettingsPage/AccountSettingsPage'));
 const CoursesCatalogPage = lazy(() => import('../pages/CoursesCatalogPage/CoursesCatalogPage'));
+const MyLearningPage = lazy(() => import('../pages/MyLearningPage/MyLearningPage'));
 const CoursePage = lazy(() => import('../pages/CoursePage/CoursePage'));
+const CourseManagmentPage = lazy(() => import('../pages/CourseManagmentPage/CourseManagmentPage'));
 const UserProfilePage = lazy(() => import('../pages/UserProfilePage/UserProfilePage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'));
 
@@ -89,10 +91,10 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: ROUTES.TEACHERS,
+            path: ROUTES.COURSE_MANAGEMENT,
             element: (
               <PrivateGuard>
-                <TeacherDirectoryPage />
+                <CourseManagmentPage />
               </PrivateGuard>
             ),
           },
@@ -107,6 +109,22 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.COURSES,
             element: <CoursesCatalogPage />,
+          },
+          {
+            path: ROUTES.MY_LEARNING,
+            element: (
+              <PrivateGuard>
+                <MyLearningPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.TEACHERS,
+            element: (
+              <PrivateGuard>
+                <TeacherDirectoryPage />
+              </PrivateGuard>
+            ),
           },
           {
             path: ROUTES.COURSE,
