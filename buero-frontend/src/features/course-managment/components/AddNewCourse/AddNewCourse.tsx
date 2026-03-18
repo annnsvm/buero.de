@@ -8,7 +8,7 @@ import { ROUTES } from '@/helpers/routes';
 const AddNewCourse: React.FC<AddNewCourseProps> = ({ type }) => {
   const navigation = useNavigate();
   const handleClick = () => {
-    navigation(ROUTES.COURSE_MANAGEMENT)
+    navigation(ROUTES.TEACHER_COURSES_CREATE);
   };
   return type === 'button' ? (
     <Button type="button" variant="solid" onClick={handleClick}>

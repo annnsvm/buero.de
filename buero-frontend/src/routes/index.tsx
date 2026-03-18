@@ -99,6 +99,22 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: ROUTES.TEACHER_COURSES_CREATE,
+            element: (
+              <PrivateGuard>
+                <CourseManagmentPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.TEACHER_COURSES_EDIT,
+            element: (
+              <PrivateGuard>
+                <CourseManagmentPage />
+              </PrivateGuard>
+            ),
+          },
+          {
             path: ROUTES.SETTINGS_ACCOUNT,
             element: (
               <PrivateGuard>

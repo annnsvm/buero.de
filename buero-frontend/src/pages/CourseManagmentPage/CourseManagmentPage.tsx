@@ -1,9 +1,10 @@
-import React from 'react'
+import React from 'react';
+import { CourseManagementWorkspace } from '@/features/course-managment';
 
 const CourseManagmentPage: React.FC = () => {
   return (
-    <div>CourseManagmentPage</div>
-  )
-}
+    <CourseManagementWorkspace />
+  );
+};
 
 export default CourseManagmentPage

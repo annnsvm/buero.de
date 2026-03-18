@@ -7,6 +7,8 @@ export const ROUTES = Object.freeze({
   PURCHES_SUCCESS: '/purchase/success',
   PURCHES_CANCEL: '/purchase/cancel',
   COURSE_MANAGEMENT: '/course-management',
+  TEACHER_COURSES_CREATE: '/teacher/courses/create',
+  TEACHER_COURSES_EDIT: '/teacher/courses/:courseId/edit',
   TEACHERS: '/teachers',
   SETTINGS_ACCOUNT: '/settings/account',
   COURSES: '/courses',
@@ -24,3 +26,5 @@ export const isHeaderLightByPath = (pathname: string): boolean =>
   HEADER_LIGHT_PATHS.some((p) => p === pathname || (p !== '/' && pathname.startsWith(p)));
 
 export const getCoursePath = (courseId: string): string => `/courses/${courseId}`;
+export const getTeacherCourseEditPath = (courseId: string): string =>
+  `/teacher/courses/${courseId}/edit`;

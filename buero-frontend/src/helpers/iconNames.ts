@@ -35,6 +35,8 @@ const ICON_NAMES = {
   X_TWITTER: 'icon-X',
   YOUTUBE: 'icon-youtube',
   ADD_RECORD: "icon-add-record",
+  EDIT: 'icon-edit',
+  TRASH: 'icon-trash',
 } as const;
 
 const SPRITE_URL = '/icons/sprite.svg';
