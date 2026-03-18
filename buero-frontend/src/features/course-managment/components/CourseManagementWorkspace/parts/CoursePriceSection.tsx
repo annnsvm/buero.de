@@ -8,6 +8,7 @@ const CURRENCY_SYMBOLS: readonly CurrencySymbol[] = ['€', '$', '£'] as const;
 type Props = {
   amount: string;
   currencySymbol: CurrencySymbol;
+  error?: string;
   disabled?: boolean;
   onChangeAmount: (value: string) => void;
   onChangeCurrencySymbol: (value: CurrencySymbol) => void;
@@ -16,6 +17,7 @@ type Props = {
 const CoursePriceSection: React.FC<Props> = ({
   amount,
   currencySymbol,
+  error,
   disabled,
   onChangeAmount,
   onChangeCurrencySymbol,
@@ -25,7 +27,7 @@ const CoursePriceSection: React.FC<Props> = ({
       className="rounded-2xl bg-[var(--color-surface-background)] p-6"
       aria-label="Course price"
     >
-      <div className="flex items-center justify-between items-center">
+      <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-[var(--color-text-primary)]">Course price</p>
 
         <div className="mt-4 flex items-stretch overflow-hidden">
@@ -57,6 +59,12 @@ const CoursePriceSection: React.FC<Props> = ({
           </div>
         </div>
       </div>
+
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-[var(--color-error)]">
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 };

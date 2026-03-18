@@ -1,4 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import { apiInstance } from '@/api/apiInstance';
 import { Container, Section, Text, Title } from '@/components/layout';
@@ -9,41 +12,62 @@ import CourseDetailsSection from './parts/CourseDetailsSection';
 import CourseTagsSection from './parts/CourseTagsSection';
 import CoursePriceSection, { type CurrencySymbol } from './parts/CoursePriceSection';
 import CourseCreateActions from './parts/CourseCreateActions';
+import {
+  createCourseSchema,
+  type CreateCourseFormValues,
+} from '@/features/course-managment/validation/createCourseSchema';
 
 const CourseManagementWorkspace: React.FC = () => {
   const modules: Modules[] = useMemo(() => [], []);
 
-  const [courseName, setCourseName] = useState('');
-  const [courseDescription, setCourseDescription] = useState('');
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<CreateCourseFormValues>({
+    resolver: zodResolver(createCourseSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      language: 'en',
+      category: 'language',
+      price: '',
+      tags: ['Grammar', 'Vocabulary', 'A1'],
+    },
+  });
+
+  const watchedTitle = watch('title') ?? '';
+  const watchedDescription = watch('description') ?? '';
+  const watchedTags = watch('tags') ?? [];
+  const watchedPrice = watch('price') ?? '';
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
-
-  const [tags, setTags] = useState<string[]>(['Grammar', 'Vocabulary', 'A1']);
-
-  const [priceAmount, setPriceAmount] = useState<string>('');
   const [priceCurrencySymbol, setPriceCurrencySymbol] = useState<CurrencySymbol>('€');
 
   const [createdCourseId, setCreatedCourseId] = useState<string | null>(null);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [createCourseError, setCreateCourseError] = useState<string | null>(null);
 
-  const handleCreateCourse = async () => {
+  const onSubmit = async (values: CreateCourseFormValues) => {
     setCreateCourseError(null);
-    if (!courseName.trim()) {
-      setCreateCourseError('Course name is required');
-      return;
-    }
-
     setIsCreatingCourse(true);
     try {
-      const res = await apiInstance.post<{ id: string }>(API_ENDPOINTS.courses.create, {
-        title: courseName.trim(),
-        description: courseDescription.trim() || undefined,
-        language: 'en',
-        category: 'language',
+      const payload: Record<string, unknown> = {
+        title: values.title.trim(),
+        description: values.description?.trim() || undefined,
+        language: values.language,
+        category: values.category,
         is_published: false,
-      });
+        tags: values.tags,
+      };
+
+      if (values.price?.trim()) {
+        payload.price = Number(values.price.trim());
+      }
+
+      const res = await apiInstance.post<{ id: string }>(API_ENDPOINTS.courses.create, payload);
       setCreatedCourseId(res.data.id);
     } catch (err: unknown) {
       const message =
@@ -67,14 +91,14 @@ const CourseManagementWorkspace: React.FC = () => {
           <Container className="py-6">
             <div className="flex w-full flex-col items-center gap-2 text-[var(--color-neutral-darkest)]">
               <Title className="text-center text-[2rem] sm:text-[3rem] lg:text-[3.75rem]">
-                {courseName.trim() ? courseName.trim() : 'New course'}
+                {watchedTitle.trim() ? watchedTitle.trim() : 'New course'}
               </Title>
               <Text
                 className="text-center text-[0.9rem] sm:text-[0.9rem] lg:text-[1.25rem]"
                 label="create course text"
               >
-                {courseDescription.trim()
-                  ? courseDescription.trim()
+                {watchedDescription.trim()
+                  ? watchedDescription.trim()
                   : 'Add a description to help students understand what they will learn.'}
               </Text>
             </div>
@@ -84,7 +108,7 @@ const CourseManagementWorkspace: React.FC = () => {
         <main className="min-w-0 flex-1">
           <Section className="py-8">
             <Container className="max-w-[1100px]">
-              <div className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 <CourseCoverSection
                   coverPreviewUrl={coverPreviewUrl}
                   disabled={!!createdCourseId}
@@ -99,38 +123,40 @@ const CourseManagementWorkspace: React.FC = () => {
                 />
 
                 <CourseDetailsSection
-                  courseName={courseName}
-                  courseDescription={courseDescription}
+                  courseName={watchedTitle}
+                  courseDescription={watchedDescription}
+                  nameError={errors.title?.message}
+                  descriptionError={errors.description?.message}
                   disabled={!!createdCourseId}
-                  onChangeName={setCourseName}
-                  onChangeDescription={setCourseDescription}
+                  onChangeName={(value) => setValue('title', value)}
+                  onChangeDescription={(value) => setValue('description', value)}
                 />
 
                 <CourseTagsSection
-                  tags={tags}
+                  tags={watchedTags}
                   disabled={!!createdCourseId}
-                  onChangeTags={setTags}
+                  onChangeTags={(next) => setValue('tags', next)}
                 />
 
                 <CoursePriceSection
-                  amount={priceAmount}
+                  amount={watchedPrice}
                   currencySymbol={priceCurrencySymbol}
+                  error={errors.price?.message}
                   disabled={!!createdCourseId}
-                  onChangeAmount={setPriceAmount}
+                  onChangeAmount={(value) => setValue('price', value)}
                   onChangeCurrencySymbol={setPriceCurrencySymbol}
                 />
 
-                {!isCreatingCourse && (
-                  <CourseCreateActions
-                    isCreating={isCreatingCourse}
-                    createdCourseId={createdCourseId}
-                    error={createCourseError}
-                    canCreate={!!courseName.trim() && !createdCourseId}
-                    onCreateCourse={handleCreateCourse}
-                  />
-                )}
+                <CourseCreateActions
+                  isCreating={isCreatingCourse}
+                  createdCourseId={createdCourseId}
+                  error={createCourseError}
+                  canCreate={!isCreatingCourse}
+                  onCreateCourse={handleSubmit(onSubmit)}
+                />
+
                 <input type="hidden" value={coverFile ? coverFile.name : ''} readOnly />
-              </div>
+              </form>
             </Container>
           </Section>
         </main>

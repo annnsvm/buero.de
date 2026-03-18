@@ -5,6 +5,8 @@ import { SectionTitle } from '@/components/layout';
 type Props = {
   courseName: string;
   courseDescription: string;
+  nameError?: string;
+  descriptionError?: string;
   disabled?: boolean;
   onChangeName: (value: string) => void;
   onChangeDescription: (value: string) => void;
@@ -13,6 +15,8 @@ type Props = {
 const CourseDetailsSection: React.FC<Props> = ({
   courseName,
   courseDescription,
+  nameError,
+  descriptionError,
   disabled,
   onChangeName,
   onChangeDescription,
@@ -26,6 +30,7 @@ const CourseDetailsSection: React.FC<Props> = ({
         <FormField
           label="Course name"
           name="courseName"
+          error={nameError}
           className="space-y-4 rounded-2xl bg-[var(--color-surface-background)] p-6"
         >
           <Input
@@ -39,6 +44,7 @@ const CourseDetailsSection: React.FC<Props> = ({
         <FormField
           label="Course description"
           name="courseDescription"
+          error={descriptionError}
           className="space-y-4 rounded-2xl bg-[var(--color-surface-background)] p-6"
         >
           <textarea
