@@ -2,8 +2,7 @@ import { ContainerProps } from '@/types/components/layout/Container.types';
 
 const Container = ({ children, className = '', as: Tag = 'div' }: ContainerProps) => {
   return (
-    // <Tag className={`sm:px-15 md:px-20 mx-auto w-full max-w-7xl px-5 ${className}`}>
-    <Tag className={`sm:px-15 md:px-16 mx-auto w-full max-w-7xl px-5 ${className}`}>
+    <Tag className={`mx-auto w-full max-w-[90rem] ${className}`}>
       {children}
     </Tag>
   );
