@@ -19,22 +19,12 @@ export type CourseCardProps = {
   hasTrial?: boolean;
   onClick?: () => void;
 };
-// const CourseCard: FC<CourseCardProps> = ({
-//   id,
-//   title,
-//   category,
-//   levelLabel,
-//   badge,
-//   imageUrl,
-//   description,
-//   price,
-//   lessonsCount,
-//   durationHours,
-//   tags,
-//   rating,
-//   isAdded,
-//   hasTrial = true,
-// }) => {
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "EUR", 
+  minimumFractionDigits: 2,
+});
+
 const CourseCard: FC<CourseCardProps> = (rawProps) => {
   const {
     id,
@@ -63,9 +53,19 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
   const displayDescription =
     description ||
     'Introduction to German language. Learn the basics of communication, grammar and vocabulary.';
-  const displayPrice = price || '€69,00';
+  
+  const cleanPrice = parseFloat(String(price).replace(/[^\d.,]/g, '').replace(',', '.')) || 69;
+
+    
+  const displayPrice = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EUR"
+    }).format(cleanPrice);  
+  
+  
   const displayLessonsCount = lessonsCount || 12;
   const displayDurationHours = durationHours || 10;
+  
   const displayTags =
     (tags && tags.length > 0
       ? tags
@@ -96,7 +96,6 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     });
   };
 
-  // const handleCardClick = () => openCourseInfo();
   const handleBuyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     openCourseInfo();
@@ -106,16 +105,8 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
 
   return (
     <article
-      // role="button"
       tabIndex={0}
       className="group flex flex-col overflow-hidden rounded-2xl bg-[var(--color-surface-card)] border border-[var(--color-border-default)] shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 w-full h-full min-w -[303] max-w-[405px] cursor-pointer"
-      // onClick={handleCardClick}
-      // onKeyDown={(e) => {
-      //   if (e.key === 'Enter' || e.key === ' ') {
-      //     e.preventDefault();
-      //     handleCardClick();
-      //   }
-      // }}
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden">
         <img

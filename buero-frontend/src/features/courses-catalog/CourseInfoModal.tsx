@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { BaseDialog, useModal } from '@/components/modal';
 import Icon from '@/components/ui/Icon';
+import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
 import type { CourseInfoData } from '@/types/components/modal/UIModalType.types';
-import CourseStructure from './CourseStructure'; // Перевір, щоб шлях до файлу був правильним!
+import CourseStructure from './CourseStructure';
 
 const MOCK_MODULES = [
   {
@@ -226,6 +227,11 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
           >
             Buy Course
           </button>
+          {/* <CheckoutButton
+            courseId={courseId}
+            successUrl={`${window.location.origin}/success`} 
+            cancelUrl={`${window.location.origin}/courses`}
+          /> */}
         </div>
       </div>
     </BaseDialog>

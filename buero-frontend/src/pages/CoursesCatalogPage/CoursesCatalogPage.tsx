@@ -9,6 +9,7 @@ import {
 
 import { useAppDispatch } from '@/redux/hooks';
 import {
+  selectCoursesCatalogItems,
   selectCoursesCatalogTotalCount,
   selectCoursesCatalogFilters,
 } from '@/redux/slices/coursesCatalog/coursesCatalogSelectors';
@@ -103,8 +104,7 @@ const mockCourses = [
 
 const CoursesCatalogPage: FC = () => {
   const dispatch = useAppDispatch();
-
-  // const courses = useSelector(selectCoursesCatalogItems);
+  const courses = useSelector(selectCoursesCatalogItems);
   const totalCount = useSelector(selectCoursesCatalogTotalCount);
   const filters = useSelector(selectCoursesCatalogFilters);
   const filtersRef = useRef(filters);
@@ -155,7 +155,7 @@ const CoursesCatalogPage: FC = () => {
         onFilterChange={handleFilterChange}
         totalCount={totalCount}
       />
-      <CoursesCatalogList courses={mockCourses} />
+      <CoursesCatalogList courses={courses.length > 0?courses:mockCourses} />
     </div>
   );
 };

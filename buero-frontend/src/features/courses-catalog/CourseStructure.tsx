@@ -54,7 +54,7 @@ const CourseStructure: React.FC<CourseStructureProps> = ({ modules }) => {
                 <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{mod.lessonsCount} lessons</p>
               </div>
               <Icon
-                name={expandedModules.has(mod.id) ? ICON_NAMES.CHEVRON_UP : ICON_NAMES.CHEVRON_DOWN}
+                name={expandedModules.has(mod.id) ? 'icon-chevron-up' : 'icon-chevron-down'}
                 size={20}
                 className="text-[var(--color-text-secondary)]"
               />
