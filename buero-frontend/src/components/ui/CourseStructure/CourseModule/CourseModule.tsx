@@ -10,6 +10,8 @@ const CourseModule: React.FC<ModulesProps> = ({
   onCreateMaterial,
   onSelectMaterial,
   onEditModule,
+  onRequestDeleteModule,
+  onRequestDeleteMaterial,
 }) => {
   const { id, title, orderIndex, materials } = module;
   const [isExpanded, setIsExpanded] = useState(false);
@@ -40,14 +42,32 @@ const CourseModule: React.FC<ModulesProps> = ({
               className="text-[var(--color-text-secondary)]"
             />
           </button>
-          <button
-            type="button"
-            aria-label={`Edit module ${title}`}
-            onClick={() => onEditModule(id, title)}
-            className="rounded p-1 hover:bg-[var(--color-surface-section)]"
-          >
-            <Icon name={ICON_NAMES.EDIT} size={16} className="text-[var(--color-text-secondary)]" />
-          </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              aria-label={`Edit module ${title}`}
+              onClick={() => onEditModule(id, title)}
+              className="rounded p-1 hover:bg-[var(--color-surface-section)]"
+            >
+              <Icon name={ICON_NAMES.EDIT} size={16} className="text-[var(--color-text-secondary)]" />
+            </button>
+            {onRequestDeleteModule ? (
+              <button
+                type="button"
+                aria-label={`Delete module ${title}`}
+                tabIndex={0}
+                onClick={() => onRequestDeleteModule(id, title)}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  e.preventDefault();
+                  onRequestDeleteModule(id, title);
+                }}
+                className="rounded p-1 hover:bg-[var(--color-surface-section)]"
+              >
+                <Icon name={ICON_NAMES.TRASH} size={16} className="text-[var(--color-text-secondary)]" />
+              </button>
+            ) : null}
+          </div>
         </div>
         {isExpanded ? (
           <div className="px-4 pb-4">
@@ -58,6 +78,11 @@ const CourseModule: React.FC<ModulesProps> = ({
                     key={material.id}
                     material={material}
                     onSelectMaterial={(materialId) => onSelectMaterial(id, materialId)}
+                    onRequestDeleteMaterial={
+                      onRequestDeleteMaterial
+                        ? (materialId) => onRequestDeleteMaterial(id, materialId)
+                        : undefined
+                    }
                   />
                 ))}
               </ul>

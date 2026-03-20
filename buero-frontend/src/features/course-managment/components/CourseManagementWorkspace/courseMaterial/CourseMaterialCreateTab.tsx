@@ -21,6 +21,7 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
   isSubmitting,
   onCreate,
   onUpdate,
+  onRequestDeleteMaterial,
 }) => {
   const activeModule = useMemo(
     () => modules.find((m) => m.id === activeModuleId) ?? null,
@@ -180,6 +181,20 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
       </div>
 
       {error ? <p className="mt-2 text-sm text-[var(--color-error)]">{error}</p> : null}
+
+      {activeMaterialId && onRequestDeleteMaterial ? (
+        <div className="mt-6 flex justify-center border-t border-[var(--color-border-subtle)] pt-6">
+          <Button
+            type="button"
+            variant="outlineDark"
+            onClick={onRequestDeleteMaterial}
+            disabled={isSubmitting}
+            className="!border-[var(--color-error)] !text-[var(--color-error)] hover:!border-[var(--color-error)]"
+          >
+            Delete material
+          </Button>
+        </div>
+      ) : null}
 
       <div className="mt-5 flex items-center justify-center">
         <Button

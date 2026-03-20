@@ -9,6 +9,9 @@ export type CourseStructureAsideProps = {
   onEditModule: (moduleId: string, moduleTitle: string) => void;
   onCreateMaterial: (moduleId: string) => void;
   onSelectMaterial: (moduleId: string, materialId: string) => void;
+  onRequestDeleteCourse?: () => void;
+  onRequestDeleteModule?: (moduleId: string, moduleTitle: string) => void;
+  onRequestDeleteMaterial?: (moduleId: string, materialId: string) => void;
 };
 
 export type CourseAsideActionButtonProps = {
@@ -23,6 +26,7 @@ export type CourseStructureAsideCourseHeaderProps = {
   courseTitle: string | null;
   onSelectCourse: () => void;
   onAfterClick?: () => void;
+  onRequestDeleteCourse?: () => void;
 };
 
 export type CourseStructureAsideEmptyStateProps = {

@@ -17,6 +17,7 @@ type ModuleMaterialType = {
 type ModuleMaterialProps = {
   material: ModuleMaterialType;
   onSelectMaterial: (materialId: string) => void;
+  onRequestDeleteMaterial?: (materialId: string) => void;
 };
 
 type Modules = {
@@ -31,6 +32,8 @@ type ModulesProps = {
   onCreateMaterial: (moduleId: string) => void;
   onSelectMaterial: (moduleId: string, materialId: string) => void;
   onEditModule: (moduleId: string, moduleTitle: string) => void;
+  onRequestDeleteModule?: (moduleId: string, moduleTitle: string) => void;
+  onRequestDeleteMaterial?: (moduleId: string, materialId: string) => void;
 };
 
 type CourseProps = {

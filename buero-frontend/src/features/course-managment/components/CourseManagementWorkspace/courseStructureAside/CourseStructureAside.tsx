@@ -7,6 +7,8 @@ import CourseStructureAsideCourseHeader from './CourseStructureAsideCourseHeader
 import CourseStructureAsideActionButton from './CourseStructureAsideActionButton';
 import CourseStructureAsideEmptyState from './CourseStructureAsideEmptyState';
 import { Logo } from '@/components/ui';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '@/helpers/routes';
 
 const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   modules,
@@ -17,6 +19,9 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   onEditModule,
   onCreateMaterial,
   onSelectMaterial,
+  onRequestDeleteCourse,
+  onRequestDeleteModule,
+  onRequestDeleteMaterial,
 }) => {
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const hasStructure = modules.length > 0;
@@ -33,6 +38,7 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
             courseTitle={courseTitle}
             onSelectCourse={onSelectCourse}
             onAfterClick={isMobile ? handleClose : undefined}
+            onRequestDeleteCourse={onRequestDeleteCourse}
           />
         </div>
       ) : null}
@@ -48,6 +54,8 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
               onCreateMaterial={onCreateMaterial}
               onEditModule={onEditModule}
               onSelectMaterial={onSelectMaterial}
+              onRequestDeleteModule={onRequestDeleteModule}
+              onRequestDeleteMaterial={onRequestDeleteMaterial}
             />
           ))}
         </ul>
@@ -84,9 +92,11 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
       </div>
 
       <aside className="hidden overflow-y-auto border-r border-[var(--color-border-subtle)] bg-[var(--color-neutral-white)] lg:block lg:w-[320px] lg:shrink-0">
-        <header className="px-26 py-4">
-          <Logo isLight={false} width={100} height={30} />
-        </header>
+        <div className="px-26 py-4">
+          <Link to={ROUTES.HOME}>
+            <Logo isLight={false} width={100} height={30} />
+          </Link>
+        </div>
         <div className="p-4">
           <h2 className="text-base font-bold text-[var(--color-text-primary)]">Course structure</h2>
           {renderAsideContent(false)}
@@ -103,9 +113,9 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
           />
           <div className="absolute top-0 left-0 h-full w-[320px] max-w-[85vw] translate-x-0 overflow-y-auto bg-[var(--color-neutral-white)] shadow-2xl">
             <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] p-4">
-              <header className="px-10 py-4">
+              <Link to={ROUTES.HOME} className="px-10 py-4">
                 <Logo isLight={false} width={100} height={30} />
-              </header>
+              </Link>
               <button
                 type="button"
                 onClick={handleClose}

@@ -37,6 +37,7 @@ const ICON_NAMES = {
   ADD_RECORD: "icon-add-record",
   EDIT: 'icon-edit',
   TRASH: 'icon-trash',
+  ADD_PHOTO: 'icon-add-photo',
 } as const;
 
 const SPRITE_URL = '/icons/sprite.svg';

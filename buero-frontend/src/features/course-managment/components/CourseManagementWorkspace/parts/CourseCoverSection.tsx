@@ -69,7 +69,7 @@ const CourseCoverSection: React.FC<CourseCoverSectionProps> = ({
           </>
         ) : (
           <div className="flex flex-col items-center gap-3 text-[var(--color-text-secondary)]">
-            <Icon name={ICON_NAMES.CAMERA} size={48} ariaHidden />
+            <Icon name={ICON_NAMES.ADD_PHOTO} size={180} ariaHidden />
             <p className="text-sm font-medium text-[var(--color-text-primary)]">Upload course image</p>
             <p className="text-xs">Click to choose a file</p>
           </div>

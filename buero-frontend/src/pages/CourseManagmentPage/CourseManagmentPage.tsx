@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -26,13 +26,22 @@ import {
   sumVideoDurationMinutesAcrossModules,
 } from '@/features/course-managment/helpers/courseTreeStats.helpers';
 import type {
+  CourseEntityDeleteTarget,
   CourseManagementRightTab,
   CourseModuleModalMode,
 } from '@/types/features/courseManagment/CourseManagementPage.types';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/helpers/routes';
+import ConfirmDeleteEntityModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmDeleteEntityModal';
+import {
+  buildDeleteCourseDescription,
+  buildDeleteMaterialDescription,
+  buildDeleteModuleDescription,
+} from '@/features/course-managment/helpers/courseEntityDeleteCopy.helpers';
+import { countModuleMaterialsByKind } from '@/features/course-managment/helpers/courseModuleMaterialCounts.helpers';
 
 const CourseManagmentPage: React.FC = () => {
+  const navigate = useNavigate();
   const [modules, setModules] = useState<Modules[]>([]);
 
   const {
@@ -83,6 +92,9 @@ const CourseManagmentPage: React.FC = () => {
   const [activeRightTab, setActiveRightTab] = useState<CourseManagementRightTab>('course');
   const [activeModuleIdForMaterial, setActiveModuleIdForMaterial] = useState<string | null>(null);
   const [activeMaterialIdForEdit, setActiveMaterialIdForEdit] = useState<string | null>(null);
+
+  const [deleteTarget, setDeleteTarget] = useState<CourseEntityDeleteTarget | null>(null);
+  const [isDeletingEntity, setIsDeletingEntity] = useState(false);
 
   const activeModuleTitle =
     modules.find((m) => m.id === activeModuleIdForMaterial)?.title ?? 'No module selected';
@@ -177,6 +189,129 @@ const CourseManagmentPage: React.FC = () => {
     return handleUpdateCourseSubmit(values);
   };
 
+  const handleRequestDeleteModule = useCallback((moduleId: string, moduleTitle: string) => {
+    const mod = modules.find((m) => m.id === moduleId);
+    const { videoLessons, quizzes, other } = countModuleMaterialsByKind(mod?.materials);
+    setDeleteTarget({
+      kind: 'module',
+      moduleId,
+      moduleTitle,
+      videoLessons,
+      quizzes,
+      otherMaterials: other,
+    });
+  }, [modules]);
+
+  const handleRequestDeleteMaterial = useCallback(
+    (moduleId: string, materialId: string) => {
+      const mod = modules.find((m) => m.id === moduleId);
+      const mat = mod?.materials.find((m) => m.id === materialId);
+      if (!mat) return;
+      const materialKind: 'video' | 'quiz' | 'other' =
+        mat.type === 'video' ? 'video' : mat.type === 'quiz' ? 'quiz' : 'other';
+      setDeleteTarget({
+        kind: 'material',
+        moduleId,
+        materialId,
+        title: mat.title ?? '',
+        materialKind,
+      });
+    },
+    [modules],
+  );
+
+  const handleConfirmDelete = async () => {
+    const target = deleteTarget;
+    const cid = courseId;
+    if (!target || !cid) return;
+
+    setIsDeletingEntity(true);
+    try {
+      if (target.kind === 'course') {
+        await apiInstance.delete(API_ENDPOINTS.courses.delete(cid));
+        navigate(ROUTES.COURSES);
+        setCourseId(null);
+        setModules([]);
+        setActiveModuleIdForMaterial(null);
+        setActiveMaterialIdForEdit(null);
+        setActiveRightTab('course');
+        setIsEditingCourse(false);
+        setCreateCourseError(null);
+        setCoverFile(null);
+        setCoverPreviewUrl(null);
+        reset({
+          title: '',
+          description: '',
+          language: 'en',
+          category: 'language',
+          price: '',
+          durationHours: '',
+          tags: [],
+          level: '',
+        });
+        return;
+      }
+
+      if (target.kind === 'module') {
+        await apiInstance.delete(API_ENDPOINTS.courseModules.delete(cid, target.moduleId));
+        setModules((prev) => prev.filter((m) => m.id !== target.moduleId));
+        if (activeModuleIdForMaterial === target.moduleId) {
+          setActiveModuleIdForMaterial(null);
+          setActiveMaterialIdForEdit(null);
+          setActiveRightTab('course');
+        }
+        return;
+      }
+
+      await apiInstance.delete(
+        API_ENDPOINTS.courseMaterials.delete(cid, target.moduleId, target.materialId),
+      );
+      setModules((prev) =>
+        prev.map((m) => {
+          if (m.id !== target.moduleId) return m;
+          return {
+            ...m,
+            materials: (m.materials ?? []).filter((mat) => mat.id !== target.materialId),
+          };
+        }),
+      );
+      if (activeMaterialIdForEdit === target.materialId) {
+        setActiveMaterialIdForEdit(null);
+      }
+    } finally {
+      setIsDeletingEntity(false);
+    }
+  };
+
+  const deleteModalCopy = useMemo(() => {
+    if (!deleteTarget) {
+      return { title: '', description: '' };
+    }
+    if (deleteTarget.kind === 'course') {
+      return {
+        title: 'Delete course?',
+        description: buildDeleteCourseDescription(deleteTarget.moduleCount),
+      };
+    }
+    if (deleteTarget.kind === 'module') {
+      return {
+        title: `Delete module "${deleteTarget.moduleTitle.trim() || 'Untitled'}"?`,
+        description: buildDeleteModuleDescription({
+          videoLessons: deleteTarget.videoLessons,
+          quizzes: deleteTarget.quizzes,
+          otherMaterials: deleteTarget.otherMaterials,
+        }),
+      };
+    }
+    return {
+      title: 'Delete material?',
+      description: buildDeleteMaterialDescription({
+        title: deleteTarget.title,
+        kind: deleteTarget.materialKind,
+      }),
+    };
+  }, [deleteTarget]);
+
   return (
     <div>
       <div className="flex h-[100vh] overflow-hidden bg-[var(--color-surface-section)]">
@@ -214,10 +349,21 @@ const CourseManagmentPage: React.FC = () => {
             setActiveMaterialIdForEdit(materialId);
             setActiveRightTab('material');
           }}
+          onRequestDeleteCourse={
+            courseId
+              ? () =>
+                  setDeleteTarget({
+                    kind: 'course',
+                    moduleCount: modules.length,
+                  })
+              : undefined
+          }
+          onRequestDeleteModule={courseId ? handleRequestDeleteModule : undefined}
+          onRequestDeleteMaterial={courseId ? handleRequestDeleteMaterial : undefined}
         />
 
         <div className="min-w-0 flex-1 overflow-y-auto">
-          <div className="flex w-full justify-center lg:justify-start border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)] px-4 lg:px-10 py-8 ">
+          <div className="fixed top-0 z-10 flex w-full justify-center lg:justify-start border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)] px-4 lg:px-10 py-8 ">
             <NavLink
               to={ROUTES.COURSES}
               className="text-[var(--color-text-primary)] text-[1.25rem] hover:text-[var(--color-primary)]"
@@ -225,7 +371,7 @@ const CourseManagmentPage: React.FC = () => {
               All courses
             </NavLink>
           </div>
-          <header className="shrink-0 pt-8">
+          <header className="shrink-0 pt-40">
             <Container className="px-4 sm:px-6">
               <div className="flex w-full flex-col items-center gap-2 text-[var(--color-neutral-darkest)]">
                 <Title className="text-center text-[2rem] sm:text-[3rem] lg:text-[3.75rem]">
@@ -325,6 +471,15 @@ const CourseManagmentPage: React.FC = () => {
                   activeModuleId={activeModuleIdForMaterial}
                   activeMaterialId={activeMaterialIdForEdit}
                   isSubmitting={isCreatingMaterial}
+                  onRequestDeleteMaterial={
+                    courseId && activeModuleIdForMaterial && activeMaterialIdForEdit
+                      ? () =>
+                          handleRequestDeleteMaterial(
+                            activeModuleIdForMaterial,
+                            activeMaterialIdForEdit,
+                          )
+                      : undefined
+                  }
                   onCreate={async (payload: CreateCourseMaterialModalValues) => {
                     if (!courseId || !activeModuleIdForMaterial) {
                       throw new Error('Course or module is not selected');
@@ -508,6 +663,17 @@ const CourseManagmentPage: React.FC = () => {
           });
           await fetchCourseTree(courseId);
         }}
+      />
+
+      <ConfirmDeleteEntityModal
+        isOpen={deleteTarget !== null}
+        handleOpenChange={(open) => {
+          if (!open && !isDeletingEntity) setDeleteTarget(null);
+        }}
+        title={deleteModalCopy.title}
+        description={deleteModalCopy.description}
+        isSubmitting={isDeletingEntity}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );
