@@ -6,6 +6,9 @@ export type CourseStructureAsideProps = {
   courseTitle: string | null;
   onSelectCourse: () => void;
   onCreateModule: () => void;
+  onEditModule: (moduleId: string, moduleTitle: string) => void;
+  onCreateMaterial: (moduleId: string) => void;
+  onSelectMaterial: (moduleId: string, materialId: string) => void;
 };
 
 export type CourseAsideActionButtonProps = {

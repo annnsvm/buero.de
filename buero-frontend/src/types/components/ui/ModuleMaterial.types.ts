@@ -11,10 +11,12 @@ type ModuleMaterialType = {
     | 'text';
   title?: string;
   content?: Record<string, unknown>;
+  orderIndex?: number;
 };
 
 type ModuleMaterialProps = {
   material: ModuleMaterialType;
+  onSelectMaterial: (materialId: string) => void;
 };
 
 type Modules = {
@@ -26,6 +28,9 @@ type Modules = {
 
 type ModulesProps = {
   module: Modules;
+  onCreateMaterial: (moduleId: string) => void;
+  onSelectMaterial: (moduleId: string, materialId: string) => void;
+  onEditModule: (moduleId: string, moduleTitle: string) => void;
 };
 
 type CourseProps = {

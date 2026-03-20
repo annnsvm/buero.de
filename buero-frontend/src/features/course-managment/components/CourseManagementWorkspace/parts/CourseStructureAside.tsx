@@ -13,6 +13,9 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   courseTitle,
   onSelectCourse,
   onCreateModule,
+  onEditModule,
+  onCreateMaterial,
+  onSelectMaterial,
 }) => {
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const hasStructure = modules.length > 0;
@@ -38,7 +41,13 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
       ) : (
         <ul className={isMobile ? 'space-y-2' : 'mt-4 space-y-2'}>
           {modules.map((m) => (
-            <CourseModule key={m.id} module={m} />
+            <CourseModule
+              key={m.id}
+              module={m}
+              onCreateMaterial={onCreateMaterial}
+              onEditModule={onEditModule}
+              onSelectMaterial={onSelectMaterial}
+            />
           ))}
         </ul>
       )}

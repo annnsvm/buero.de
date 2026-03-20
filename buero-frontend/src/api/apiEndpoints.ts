@@ -17,11 +17,14 @@ export const API_ENDPOINTS = {
     delete: (id: string) => `/courses/${id}`, 
   },
   courseMaterials: {
-    list: (courseId: string) => `/courses/${courseId}/materials`,
-    byId: (courseId: string, id: string) => `/courses/${courseId}/materials/${id}`, 
-    create: (courseId: string) => `/courses/${courseId}/materials`, 
-    update: (courseId: string, id: string) => `/courses/${courseId}/materials/${id}`, 
-    delete: (courseId: string, id: string) => `/courses/${courseId}/materials/${id}`, 
+    list: (courseId: string, moduleId: string) => `/courses/${courseId}/modules/${moduleId}/materials`,
+    byId: (courseId: string, moduleId: string, id: string) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${id}`,
+    create: (courseId: string, moduleId: string) => `/courses/${courseId}/modules/${moduleId}/materials`,
+    update: (courseId: string, moduleId: string, id: string) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${id}`,
+    delete: (courseId: string, moduleId: string, id: string) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${id}`,
   },
   courseModules: {
     list: (courseId: string) => `/courses/${courseId}/modules`,

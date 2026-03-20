@@ -31,6 +31,7 @@ export const createCourseSchema = z.object({
   category: categorySchema,
 
   price: z.string().trim(),
+  durationHours: z.string().trim().optional().or(z.literal('')),
 
   tags: z.array(
     z.string().trim().min(1, { message: 'Tag cannot be empty' }),
@@ -72,6 +73,17 @@ export const createCourseSchema = z.object({
       path: ['level'],
       message: 'Level is required',
     });
+  }
+
+  if (values.durationHours && values.durationHours.trim()) {
+    const duration = Number(values.durationHours.trim());
+    if (!Number.isInteger(duration) || duration < 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['durationHours'],
+        message: 'Duration must be a non-negative integer',
+      });
+    }
   }
 });
 
