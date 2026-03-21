@@ -64,6 +64,20 @@ export const flattenMaterialsInOrder = (course: ApiCourseWithTree): FlatMaterial
   return out;
 };
 
+/** Наступний матеріал типу `video` після поточного (у межах курсу, між модулями). */
+export const findNextVideoMaterialId = (
+  flat: FlatMaterialRef[],
+  currentMaterialId: string | null,
+): string | null => {
+  if (!flat.length || !currentMaterialId) return null;
+  const idx = flat.findIndex((r) => r.material.id === currentMaterialId);
+  if (idx < 0) return null;
+  for (let i = idx + 1; i < flat.length; i++) {
+    if (String(flat[i].material.type).toLowerCase() === 'video') return flat[i].material.id;
+  }
+  return null;
+};
+
 const youtubeEmbedUrl = (material: ApiCourseMaterial): string => {
   if (material.type !== 'video' || !material.content || typeof material.content !== 'object') {
     return '';

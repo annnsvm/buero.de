@@ -5,7 +5,15 @@ import { Container, Text, Title } from '@/components/layout';
 import { lessonContent } from './MaterialWindow.data';
 import type { LearningPageProps } from '@/types/features/learning/LearningPage.types';
 
-const MaterialWindow: React.FC<LearningPageProps> = ({ lesson = lessonContent }) => {
+const MaterialWindow: React.FC<LearningPageProps> = ({
+  lesson = lessonContent,
+  hasNextVideoLesson = false,
+  onNextVideoLesson,
+}) => {
+  const handleNextVideoLessonClick = () => {
+    if (!hasNextVideoLesson || !onNextVideoLesson) return;
+    onNextVideoLesson();
+  };
   return (
     <article className="flex-1 bg-[var(--color-surface-section)] py-31" aria-label={lesson.title}>
       <Container className="max-w-5xl px-6 lg:px-12">
@@ -91,10 +99,17 @@ const MaterialWindow: React.FC<LearningPageProps> = ({ lesson = lessonContent })
             </button>
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 sm:w-auto"
+              onClick={handleNextVideoLessonClick}
+              disabled={!hasNextVideoLesson}
+              aria-label={
+                hasNextVideoLesson
+                  ? 'Go to next video lesson'
+                  : 'No more video lessons in this course'
+              }
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
             >
               Next lesson
-              <SkipForward className="h-4 w-4" />
+              <SkipForward className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </section>

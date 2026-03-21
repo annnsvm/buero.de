@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '@/components/ui/Icon';
 
 export type CourseLesson = {
@@ -38,6 +38,20 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
       return next;
     });
   };
+
+  useEffect(() => {
+    if (!selectedMaterialId) return;
+    const parentModule = modules.find((m) =>
+      m.lessons?.some((lesson) => lesson.id === selectedMaterialId),
+    );
+    if (!parentModule) return;
+    setExpandedModules((prev) => {
+      if (prev.has(parentModule.id)) return prev;
+      const next = new Set(prev);
+      next.add(parentModule.id);
+      return next;
+    });
+  }, [selectedMaterialId, modules]);
 
   return (
     <div className="mt-6">

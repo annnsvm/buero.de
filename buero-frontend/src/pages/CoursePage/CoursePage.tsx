@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 
 import { apiInstance } from '@/api/apiInstance';
@@ -10,6 +10,7 @@ import { ROUTES } from '@/helpers/routes';
 import {
   type ApiCourseWithTree,
   buildLearningLessonFromMaterial,
+  findNextVideoMaterialId,
   flattenMaterialsInOrder,
   mapApiModulesToCourseStructure,
 } from './coursePageMappers';
@@ -21,6 +22,7 @@ const CoursePage: React.FC = () => {
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
+  const mainScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!courseId) return;
@@ -64,6 +66,11 @@ const CoursePage: React.FC = () => {
 
   const flatMaterials = useMemo(() => (course ? flattenMaterialsInOrder(course) : []), [course]);
 
+  const nextVideoMaterialId = useMemo(
+    () => findNextVideoMaterialId(flatMaterials, selectedMaterialId),
+    [flatMaterials, selectedMaterialId],
+  );
+
   const currentLesson: LearningLesson | undefined = useMemo(() => {
     if (!course?.title) return undefined;
     const idx = flatMaterials.findIndex((r) => r.material.id === selectedMaterialId);
@@ -80,6 +87,15 @@ const CoursePage: React.FC = () => {
   const handleSelectLesson = useCallback((payload: { moduleId: string; materialId: string }) => {
     setSelectedMaterialId(payload.materialId);
   }, []);
+
+  const handleNextVideoLesson = useCallback(() => {
+    if (!nextVideoMaterialId) return;
+    setSelectedMaterialId(nextVideoMaterialId);
+  }, [nextVideoMaterialId]);
+
+  useEffect(() => {
+    mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedMaterialId]);
 
   if (!courseId) {
     return (
@@ -113,7 +129,7 @@ const CoursePage: React.FC = () => {
         selectedMaterialId={selectedMaterialId}
       />
 
-      <div className="min-w-0 flex-1 overflow-y-auto">
+      <div ref={mainScrollRef} className="min-w-0 flex-1 overflow-y-auto">
         <div className="fixed top-0 z-10 flex gap-4 w-full justify-center border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)] px-4 py-6 lg:justify-start lg:px-10">
           <button
            type="button"
@@ -134,7 +150,11 @@ const CoursePage: React.FC = () => {
           aria-label="Lesson content"
         >
           {currentLesson ? (
-            <MaterialWindow lesson={currentLesson} />
+            <MaterialWindow
+              lesson={currentLesson}
+              hasNextVideoLesson={Boolean(nextVideoMaterialId)}
+              onNextVideoLesson={handleNextVideoLesson}
+            />
           ) : (
             <div className="flex justify-center p-8 text-[var(--color-text-secondary)]">
               No lessons in this course yet.
