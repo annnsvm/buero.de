@@ -3,6 +3,7 @@ import { BaseDialog, useModal } from '@/components/modal';
 import Icon from '@/components/ui/Icon';
 import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
 import type { CourseInfoData } from '@/types/components/modal/UIModalType.types';
+import { courseStructureKeyFromModules } from './courseStructure.helpers';
 import CourseStructure from './CourseStructure';
 
 const MOCK_MODULES = [
@@ -166,7 +167,10 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
             </div>
           </div>
 
-          <CourseStructure modules={modules} />
+          <CourseStructure
+            key={`${courseId}-${courseStructureKeyFromModules(modules)}`}
+            modules={modules}
+          />
 
           <div className="mt-8">
             <h3 className="text-base font-bold text-[var(--color-text-primary)]">Add on top</h3>

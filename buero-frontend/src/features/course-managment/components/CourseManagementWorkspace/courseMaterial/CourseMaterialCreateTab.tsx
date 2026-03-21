@@ -8,6 +8,7 @@ import type {
   CourseMaterialCreateTabProps,
   CourseMaterialType,
 } from '@/types/features/courseManagment/CourseMaterialCreateTab.types';
+import { extractYouTubeVideoId } from '@/features/course-managment/helpers/extractYouTubeVideoId';
 import { MATERIAL_TYPE_OPTIONS } from '@/features/course-managment/helpers/courseMaterials.consts';
 import CourseMaterialCreateSection from './CourseMaterialCreateSection';
 import CourseMaterialQuizEditor from './CourseMaterialQuizEditor';
@@ -53,7 +54,7 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
       ? {
           type: 'video',
           title: title.trim(),
-          youtubeVideoId: youtubeVideoId.trim(),
+          youtubeVideoId: extractYouTubeVideoId(youtubeVideoId) ?? youtubeVideoId.trim(),
           youtubeVideoDuration: youtubeVideoDuration.trim(),
         }
       : {
@@ -81,6 +82,9 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
     if (!title.trim()) return setError('Material title is required');
     if (materialType === 'video' && !youtubeVideoId.trim())
       return setError('YouTube video id is required');
+    if (materialType === 'video' && !extractYouTubeVideoId(youtubeVideoId)) {
+      return setError('Enter a valid YouTube video id or a supported YouTube link (watch, youtu.be, embed)');
+    }
     if (materialType === 'video' && !youtubeVideoDuration.trim())
       return setError('Video duration is required');
     if (materialType === 'quiz') {

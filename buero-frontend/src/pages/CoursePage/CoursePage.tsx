@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { MaterialWindow } from '@/features/course-learning';
-import { CourseStructure } from '@/features/courses-catalog';
+import { CourseLearningSidebar, MaterialWindow } from '@/features/course-learning';
 
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
+import { ROUTES } from '@/helpers/routes';
 import {
   type ApiCourseWithTree,
   buildLearningLessonFromMaterial,
@@ -83,7 +83,7 @@ const CoursePage: React.FC = () => {
 
   if (!courseId) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--color-neutral-white)] pt-16">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-neutral-white)]">
         <p className="text-[var(--color-text-secondary)]">Course id is missing.</p>
       </div>
     );
@@ -91,7 +91,7 @@ const CoursePage: React.FC = () => {
 
   if (loadStatus === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--color-neutral-white)] pt-16">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-neutral-white)]">
         <p className="text-[var(--color-text-secondary)]">Loading course…</p>
       </div>
     );
@@ -99,29 +99,35 @@ const CoursePage: React.FC = () => {
 
   if (loadStatus === 'error' || !course) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-[var(--color-neutral-white)] pt-16 px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-2 bg-[var(--color-neutral-white)] px-4">
         <p className="text-center text-[var(--color-error)]">{loadError ?? 'Course not found.'}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--color-neutral-white)] pt-16">
-      <aside className="hidden border-r border-[var(--color-border-subtle)] bg-[var(--color-neutral-white)] lg:block lg:w-[240px] lg:shrink-0 lg:overflow-y-auto">
-        <CourseStructure
-          modules={structureModules}
-          onSelectLesson={handleSelectLesson}
-          selectedMaterialId={selectedMaterialId}
-        />
-      </aside>
+    <div className="flex h-[100vh] overflow-hidden bg-[var(--color-surface-section)]">
+      <CourseLearningSidebar
+        modules={structureModules}
+        onSelectLesson={handleSelectLesson}
+        selectedMaterialId={selectedMaterialId}
+      />
 
-      <div className="flex min-w-0 flex-1 flex-col px-4">
-        <header className="shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-neutral-white)] px-4 py-3 lg:px-6">
-          <h1 className="truncate text-lg font-semibold text-[var(--color-text-primary)]">{course.title}</h1>
-          {course.description ? (
-            <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-secondary)]">{course.description}</p>
-          ) : null}
-        </header>
+      <div className="min-w-0 flex-1 overflow-y-auto">
+        <div className="fixed top-0 z-10 flex gap-4 w-full justify-center border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)] px-4 py-6 lg:justify-start lg:px-10">
+          <button
+           type="button"
+            className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
+          >
+            Vocabulary
+          </button>
+          <NavLink
+            to={ROUTES.COURSES}
+            className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
+          >
+            All courses
+          </NavLink>
+        </div>
 
         <section
           className="min-w-0 flex-1 bg-[var(--color-soapstone-base)]"

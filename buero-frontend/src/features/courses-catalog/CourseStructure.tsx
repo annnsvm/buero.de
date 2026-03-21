@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Icon from '@/components/ui/Icon';
-import { ICON_NAMES } from '@/helpers/iconNames';
-
 
 export type CourseLesson = {
   id: string;
@@ -18,9 +16,7 @@ export type CourseModule = {
 
 type CourseStructureProps = {
   modules: CourseModule[];
-  /** Якщо передано — клік по уроку в сайдбарі */
   onSelectLesson?: (payload: { moduleId: string; materialId: string }) => void;
-  /** Поточний обраний матеріал (підсвітка за потреби) */
   selectedMaterialId?: string | null;
 };
 
@@ -29,13 +25,10 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
   onSelectLesson,
   selectedMaterialId,
 }) => {
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (modules.length > 0 && modules[0]?.id) {
-      setExpandedModules(new Set([modules[0].id]));
-    }
-  }, [modules]);
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
+    const first = modules[0]?.id;
+    return first ? new Set([first]) : new Set();
+  });
 
   const toggleModule = (id: string) => {
     setExpandedModules((prev) => {

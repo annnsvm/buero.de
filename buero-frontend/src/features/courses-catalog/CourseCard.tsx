@@ -131,7 +131,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
   return (
     <article
       tabIndex={0}
-      className="group min-w -[303] flex h-full w-full max-w-[405px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-surface-card)] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="group flex h-full w-full min-w-0 max-w-[405px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-surface-card)] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden">
         <img
