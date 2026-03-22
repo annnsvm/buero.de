@@ -9,6 +9,7 @@ const ConfirmPublishCourseModal: React.FC<ConfirmPublishCourseModalProps> = ({
   title,
   description,
   confirmButtonLabel = 'Publish',
+  submittingLabel = 'Publishing',
   isSubmitting,
   onConfirm,
 }) => {
@@ -32,7 +33,7 @@ const ConfirmPublishCourseModal: React.FC<ConfirmPublishCourseModalProps> = ({
           ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
           : err instanceof Error
             ? err.message
-            : 'Failed to publish';
+            : 'Request failed';
       setError(Array.isArray(message) ? message.join(', ') : String(message));
     }
   };
@@ -70,7 +71,7 @@ const ConfirmPublishCourseModal: React.FC<ConfirmPublishCourseModalProps> = ({
           {isSubmitting ? (
             <span className="inline-flex items-center gap-2">
               <Spinner variant="onPrimary" className="size-5" />
-              Publishing
+              {submittingLabel}
             </span>
           ) : (
             confirmButtonLabel

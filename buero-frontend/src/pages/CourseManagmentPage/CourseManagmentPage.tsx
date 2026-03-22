@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -32,8 +32,8 @@ import type {
   CourseManagementRightTab,
   CourseModuleModalMode,
 } from '@/types/features/courseManagment/CourseManagementPage.types';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { ROUTES } from '@/helpers/routes';
+import { NavLink, useLocation, useMatch, useNavigate } from 'react-router-dom';
+import { ROUTES, getTeacherCourseEditPath } from '@/helpers/routes';
 import ConfirmDeleteEntityModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmDeleteEntityModal';
 import ConfirmPublishCourseModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmPublishCourseModal';
 import {
@@ -42,10 +42,22 @@ import {
   buildDeleteModuleDescription,
 } from '@/features/course-managment/helpers/courseEntityDeleteCopy.helpers';
 import { countModuleMaterialsByKind } from '@/features/course-managment/helpers/courseModuleMaterialCounts.helpers';
-import { PUBLISH_COURSE_MODAL_DESCRIPTION } from '@/features/course-managment/helpers/courseEntityPublishCopy.helpers';
+import {
+  PUBLISH_COURSE_MODAL_DESCRIPTION,
+  UNPUBLISH_COURSE_MODAL_DESCRIPTION,
+} from '@/features/course-managment/helpers/courseEntityPublishCopy.helpers';
+import {
+  getCoursePublishedFromApi,
+  mapApiCourseToCourseEditorFormValues,
+  type ApiCourseTreeResponse,
+} from '@/features/course-managment/helpers/mapApiCourseToCourseEditorForm.helpers';
 
 const CourseManagmentPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editMatch = useMatch({ path: '/teacher/courses/:courseId/edit', end: true });
+  const routeCourseId = editMatch?.params.courseId;
+
   const [modules, setModules] = useState<Modules[]>([]);
 
   const {
@@ -104,6 +116,11 @@ const CourseManagmentPage: React.FC = () => {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isPublishingCourse, setIsPublishingCourse] = useState(false);
 
+  const [isUnpublishModalOpen, setIsUnpublishModalOpen] = useState(false);
+  const [isUnpublishingCourse, setIsUnpublishingCourse] = useState(false);
+
+  const [isBootstrappingCourse, setIsBootstrappingCourse] = useState(false);
+
   const totalMaterialsCount = useMemo(
     () => countTotalMaterialsAcrossModules(modules),
     [modules],
@@ -143,6 +160,89 @@ const CourseManagmentPage: React.FC = () => {
     [syncCourseDurationHours],
   );
 
+  const resetEditorToEmpty = useCallback(() => {
+    setCourseId(null);
+    setModules([]);
+    setIsEditingCourse(false);
+    setIsCoursePublished(false);
+    setCreateCourseError(null);
+    setCoverFile(null);
+    setCoverPreviewUrl(null);
+    setActiveModuleIdForMaterial(null);
+    setActiveMaterialIdForEdit(null);
+    setActiveRightTab('course');
+    setDeleteTarget(null);
+    setIsPublishModalOpen(false);
+    setIsCreateModuleOpen(false);
+    setModuleModalMode('create');
+    setActiveModuleIdForEdit(null);
+    setModuleInitialTitle('');
+    reset({
+      title: '',
+      description: '',
+      language: 'en',
+      category: 'language',
+      price: '',
+      durationHours: '',
+      tags: [],
+      level: '',
+    });
+  }, [reset]);
+
+  useEffect(() => {
+    const isBlankEditor =
+      location.pathname === ROUTES.TEACHER_COURSES_CREATE ||
+      location.pathname === ROUTES.COURSE_MANAGEMENT;
+    if (!isBlankEditor) return;
+    resetEditorToEmpty();
+  }, [location.pathname, resetEditorToEmpty]);
+
+  useLayoutEffect(() => {
+    setIsBootstrappingCourse(Boolean(routeCourseId));
+  }, [routeCourseId]);
+
+  useEffect(() => {
+    if (!routeCourseId) return;
+
+    let cancelled = false;
+    setCreateCourseError(null);
+
+    const load = async () => {
+      try {
+        const res = await apiInstance.get(API_ENDPOINTS.courses.byId(routeCourseId));
+        if (cancelled) return;
+        const data = res.data as ApiCourseTreeResponse;
+        const formValues = mapApiCourseToCourseEditorFormValues(data);
+        reset(formValues);
+        setCourseId(routeCourseId);
+        setModules(data.modules ?? []);
+        setIsCoursePublished(getCoursePublishedFromApi(data));
+        setIsEditingCourse(true);
+        setCoverFile(null);
+        setCoverPreviewUrl(null);
+        await syncCourseDurationHours(routeCourseId, data.modules ?? []);
+      } catch (err: unknown) {
+        if (cancelled) return;
+        const message =
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+              ? err.message
+              : 'Failed to load course';
+        setCreateCourseError(Array.isArray(message) ? message.join(', ') : String(message));
+        setCourseId(null);
+        setModules([]);
+      } finally {
+        if (!cancelled) setIsBootstrappingCourse(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [routeCourseId, reset, syncCourseDurationHours]);
+
   const isFormDisabled = courseId !== null && !isEditingCourse;
 
   const canCreate = !courseId && !isCreatingCourse && !isUpdatingCourse;
@@ -169,12 +269,8 @@ const CourseManagmentPage: React.FC = () => {
       };
 
       const res = await apiInstance.post<{ id: string }>(API_ENDPOINTS.courses.create, payload);
-      setCourseId(res.data.id);
-      setIsCoursePublished(false);
-      setIsEditingCourse(false);
       setCreateCourseError(null);
-      reset(values);
-      await fetchCourseTree(res.data.id);
+      navigate(getTeacherCourseEditPath(res.data.id), { replace: true });
     } catch (err: unknown) {
       const message =
         err && typeof err === 'object' && 'response' in err
@@ -269,6 +365,18 @@ const CourseManagmentPage: React.FC = () => {
       setIsCoursePublished(true);
     } finally {
       setIsPublishingCourse(false);
+    }
+  };
+
+  const handleConfirmUnpublishCourse = async () => {
+    const cid = courseId;
+    if (!cid) return;
+    setIsUnpublishingCourse(true);
+    try {
+      await apiInstance.patch(API_ENDPOINTS.courses.update(cid), { is_published: false });
+      setIsCoursePublished(false);
+    } finally {
+      setIsUnpublishingCourse(false);
     }
   };
 
@@ -368,6 +476,14 @@ const CourseManagmentPage: React.FC = () => {
     };
   }, [deleteTarget]);
 
+  if (routeCourseId && isBootstrappingCourse) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-surface-section)] px-4">
+        <p className="text-center text-[var(--color-text-secondary)]">Loading course…</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex h-[100vh] overflow-hidden bg-[var(--color-surface-section)]">
@@ -420,6 +536,8 @@ const CourseManagmentPage: React.FC = () => {
             Boolean(courseId) && totalMaterialsCount > 0 && !isCoursePublished
           }
           onRequestPublishCourse={() => setIsPublishModalOpen(true)}
+          showUnpublishCourseButton={Boolean(courseId) && isCoursePublished}
+          onRequestUnpublishCourse={() => setIsUnpublishModalOpen(true)}
         />
 
         <div className="min-w-0 flex-1 overflow-y-auto">
@@ -743,8 +861,22 @@ const CourseManagmentPage: React.FC = () => {
         }}
         title="Publish course?"
         description={PUBLISH_COURSE_MODAL_DESCRIPTION}
+        submittingLabel="Publishing"
         isSubmitting={isPublishingCourse}
         onConfirm={handleConfirmPublishCourse}
+      />
+
+      <ConfirmPublishCourseModal
+        isOpen={isUnpublishModalOpen}
+        handleOpenChange={(open) => {
+          if (!open && !isUnpublishingCourse) setIsUnpublishModalOpen(false);
+        }}
+        title="Unpublish course?"
+        description={UNPUBLISH_COURSE_MODAL_DESCRIPTION}
+        confirmButtonLabel="Unpublish"
+        submittingLabel="Unpublishing"
+        isSubmitting={isUnpublishingCourse}
+        onConfirm={handleConfirmUnpublishCourse}
       />
     </div>
   );

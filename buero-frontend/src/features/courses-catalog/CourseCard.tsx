@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FC, type MouseEvent } from 'react';
 import Icon from '@/components/ui/Icon';
 import { useModal } from '@/components/modal';
-import { ROUTES } from '@/helpers/routes';
+import { ROUTES, getTeacherCourseEditPath } from '@/helpers/routes';
 import LinkBtn from '@/components/ui/Link';
 import { Button } from '@/components/ui';
 import { apiInstance } from '@/api/apiInstance';
@@ -147,7 +147,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
       buttonsComponent = (
         <div className="flex w-full min-w-0 flex-row items-stretch gap-2 sm:gap-3">
           <LinkBtn
-            to={`${ROUTES.TEACHER_COURSE}/${id}/edit`}
+            to={getTeacherCourseEditPath(id)}
             variant="dark"
             className="min-w-0 flex-1 !w-auto"
           >

@@ -5,10 +5,12 @@ import Footer from '../Footer/Footer';
 
 const SharedLayout = () => {
   const { pathname } = useLocation();
-  const hideHeader =
-    pathname === ROUTES.TEACHER_COURSES_EDIT ||
+  const isTeacherCourseEditor =
     pathname === ROUTES.TEACHER_COURSES_CREATE ||
-    pathname.startsWith('/courses/');
+    pathname === ROUTES.COURSE_MANAGEMENT ||
+    /^\/teacher\/courses\/[^/]+\/edit$/.test(pathname);
+
+  const hideHeader = isTeacherCourseEditor || pathname.startsWith('/courses/');
   const hideFooter = pathname.includes('/teacher/courses/');
 
   return (

@@ -15,6 +15,9 @@ export type CourseStructureAsideProps = {
   /** Показувати «Publish course», якщо є матеріали і курс ще не опублікований */
   showPublishCourseButton?: boolean;
   onRequestPublishCourse?: () => void;
+  /** Показувати «Unpublish course», якщо курс уже в каталозі */
+  showUnpublishCourseButton?: boolean;
+  onRequestUnpublishCourse?: () => void;
 };
 
 export type CourseAsideActionButtonProps = {

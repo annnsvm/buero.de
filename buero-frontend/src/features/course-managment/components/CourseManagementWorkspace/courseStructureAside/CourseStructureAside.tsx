@@ -24,6 +24,8 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   onRequestDeleteMaterial,
   showPublishCourseButton,
   onRequestPublishCourse,
+  showUnpublishCourseButton,
+  onRequestUnpublishCourse,
 }) => {
   const [isOpenMobile, setIsOpenMobile] = useState(false);
   const hasStructure = modules.length > 0;
@@ -40,6 +42,16 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
     if (e.key !== 'Enter' && e.key !== ' ') return;
     e.preventDefault();
     handleRequestPublish();
+  };
+
+  const handleRequestUnpublish = () => {
+    onRequestUnpublishCourse?.();
+  };
+
+  const handleUnpublishKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    handleRequestUnpublish();
   };
 
   const renderScrollableBody = (isMobile: boolean) => (
@@ -95,6 +107,18 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
             aria-label="Publish course"
           >
             Publish course
+          </Button>
+        ) : null}
+        {showUnpublishCourseButton && onRequestUnpublishCourse ? (
+          <Button
+            type="button"
+            variant="outlineDark"
+            className="w-full"
+            onClick={handleRequestUnpublish}
+            onKeyDown={handleUnpublishKeyDown}
+            aria-label="Unpublish course"
+          >
+            Unpublish course
           </Button>
         ) : null}
       </div>
