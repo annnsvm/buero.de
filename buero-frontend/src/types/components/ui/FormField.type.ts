@@ -5,6 +5,7 @@ type FormFieldProps = {
   name: string;
   error?: string;
   children: ReactNode;
+  className?: string;
 };
 
 export type { FormFieldProps };

@@ -3,6 +3,7 @@ type CheckoutButtonProps = {
   successUrl?: string;
   cancelUrl?: string;
   label?: string;
+  className?: string;
 };
 
 export type { CheckoutButtonProps };

@@ -6,7 +6,7 @@ import { ICON_NAMES } from '@/helpers/iconNames';
 const SuccessPurchase: React.FC = () => {
   return (
     <PurchaseCard
-      redirectTo={ROUTES.PROFILE}
+      redirectTo={ROUTES.MY_LEARNING}
       type="confirmed"
       title="Order Confirmed!"
       iconName={ICON_NAMES.CHECK}

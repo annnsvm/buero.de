@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,11 +10,16 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseFilters,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -29,6 +35,8 @@ import { CourseService } from "./course.service";
 import { CreateCourseDto } from "./dto/create-course.dto";
 import { ListCoursesQueryDto } from "./dto/list-courses-query.dto";
 import { UpdateCourseDto } from "./dto/update-course.dto";
+import { MulterExceptionFilter } from "./filters/multer-exception.filter";
+import { courseCoverMulterOptions } from "./multer-course-cover.config";
 
 @ApiTags("courses")
 @Controller("courses")
@@ -61,7 +69,7 @@ export class CoursesController {
   @ApiResponse({
     status: 200,
     description:
-      "Масив курсів: price, tags, level, durationHours, videoLessonCount",
+      "Масив опублікованих курсів (поля: price, tags, level, durationHours, image_url, videoLessonCount тощо)",
   })
   list(@Query() query: ListCoursesQueryDto) {
     return this.courseService.findAll(query);
@@ -221,6 +229,62 @@ export class CoursesController {
   @ApiResponse({ status: 403, description: "Тільки для вчителів" })
   delete(@Param("id") id: string) {
     return this.courseService.delete(id);
+  }
+
+  @Post(":id/cover")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.teacher)
+  @UseFilters(MulterExceptionFilter)
+  @UseInterceptors(FileInterceptor("file", courseCoverMulterOptions))
+  @ApiConsumes("multipart/form-data")
+  @ApiBearerAuth("access_token")
+  @ApiOperation({
+    summary: "Завантажити обкладинку курсу",
+    description:
+      "Тільки для вчителів. Multipart поле **file** (JPEG, PNG, WebP, до 5 MB). Файл завантажується в Cloudinary (папка `courses`), у БД зберігається `secure_url` у `image_url`. Повертає оновлений курс (як у PATCH). 404, якщо курс не знайдено.",
+  })
+  @ApiParam({ name: "id", description: "UUID курсу" })
+  @ApiBody({
+    description: "Обкладинка курсу",
+    schema: {
+      type: "object",
+      required: ["file"],
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+          description: "Зображення: image/jpeg, image/png, image/webp",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Курс оновлено; у відповіді є image_url (URL з Cloudinary)",
+    schema: {
+      example: {
+        id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        title: "German A1 Basics",
+        image_url: "https://res.cloudinary.com/demo/image/upload/v1/courses/xxx.jpg",
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: "Файл відсутній, невалідний тип або > 5 MB" })
+  @ApiResponse({ status: 401, description: "Не авторизовано" })
+  @ApiResponse({ status: 403, description: "Тільки для вчителів" })
+  @ApiResponse({ status: 404, description: "Курс не знайдено" })
+  @ApiResponse({ status: 500, description: "Помилка Cloudinary" })
+  uploadCover(
+    @Param("id") id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException(
+        "Потрібно передати файл у полі file (multipart/form-data)",
+      );
+    }
+    return this.courseService.uploadCover(id, file);
   }
 
   @Post(":id/start-trial")

@@ -1,15 +1,22 @@
-// LearningPage.tsx
 import React from 'react';
 import { BookOpen, CircleHelp, FileText, Flame, SkipForward, Trophy } from 'lucide-react';
 
 import { Container, Text, Title } from '@/components/layout';
-import { lessonContent } from './LearningPage.data';
+import { lessonContent } from './MaterialWindow.data';
 import type { LearningPageProps } from '@/types/features/learning/LearningPage.types';
 
-const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) => {
+const MaterialWindow: React.FC<LearningPageProps> = ({
+  lesson = lessonContent,
+  hasNextVideoLesson = false,
+  onNextVideoLesson,
+}) => {
+  const handleNextVideoLessonClick = () => {
+    if (!hasNextVideoLesson || !onNextVideoLesson) return;
+    onNextVideoLesson();
+  };
   return (
-    <main className="flex-1 bg-[var(--color-soapstone-base)] py-4 sm:py-6 lg:py-8">
-      <Container className="max-w-5xl">
+    <article className="flex-1 bg-[var(--color-surface-section)] py-31" aria-label={lesson.title}>
+      <Container className="max-w-5xl px-6 lg:px-12">
         <section className="rounded-[20px] bg-[var(--color-neutral-white)] p-4 shadow-sm sm:rounded-[22px] sm:p-5 md:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
             <div className="flex min-w-0 items-center gap-3 sm:gap-4">
@@ -21,14 +28,19 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
                 <p className="truncate text-sm font-semibold text-[#1b1b1b] sm:text-base lg:text-lg">
                   {lesson.courseTitle}
                 </p>
-                <p className="text-xs text-[#6f6865] sm:text-sm lg:text-[15px]">{lesson.progressText}</p>
+                <p className="text-xs text-[#6f6865] sm:text-sm lg:text-[15px]">
+                  {lesson.progressText}
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:gap-4 lg:min-w-[320px] lg:items-end">
+            <div className="flex flex-row gap-3 sm:gap-4 lg:min-w-[320px] lg:items-end">
               <div className="flex items-center gap-2 text-xs text-[#6f6865] sm:text-sm lg:text-[15px]">
-                <Flame className="h-4 w-4 text-[#e87753]" />
-                <span>{lesson.streak}</span>
+                <Flame className="h-4 w-4 shrink-0 text-[#e87753]" />
+                <span className="shrink-0">
+                  {lesson.streak.length > 0 ? lesson.streak.length : '0'}{' '}
+                  {Number(lesson?.streak?.length === 1) ? 'day' : 'days'}
+                </span>
               </div>
 
               <div className="flex w-full items-center gap-2 sm:gap-3 lg:max-w-[260px]">
@@ -46,7 +58,7 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
           </div>
         </section>
 
-        <section className="mt-4 sm:mt-5 md:mt-6">
+        <section className="mt-6 bg-[var(--color-neutral-white)] sm:mt-5 md:mt-12">
           <div className="overflow-hidden rounded-[20px] bg-[#8f8f8f] sm:rounded-[22px]">
             <div className="aspect-video w-full">
               <iframe
@@ -87,16 +99,25 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
             </button>
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 sm:w-auto"
+              onClick={handleNextVideoLessonClick}
+              disabled={!hasNextVideoLesson}
+              aria-label={
+                hasNextVideoLesson
+                  ? 'Go to next video lesson'
+                  : 'No more video lessons in this course'
+              }
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
             >
               Next lesson
-              <SkipForward className="h-4 w-4" />
+              <SkipForward className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </section>
 
-        <section className="mt-6 rounded-[20px] bg-[var(--color-neutral-white)] p-4 shadow-sm sm:mt-8 sm:rounded-[22px] sm:p-5 md:mt-10 md:p-6">
-          <h2 className="text-xl font-semibold text-[#56504c] sm:text-2xl md:text-[2rem]">Lesson Notes</h2>
+        <section className="mt-6 rounded-[20px] bg-[var(--color-neutral-white)] p-6 shadow-sm sm:mt-8 sm:rounded-[22px] md:mt-10">
+          <h2 className="text-xl font-semibold text-[#56504c] sm:text-2xl md:text-[2rem]">
+            Lesson Notes
+          </h2>
 
           <textarea
             placeholder="Take your notes here..."
@@ -115,11 +136,13 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
         </div>
 
         <section className="mt-6 rounded-[20px] border border-dashed border-[#e87753] p-5 sm:mt-8 sm:rounded-[22px] sm:p-7 md:mt-10 md:p-10">
-          <Title className="text-[1.75rem] sm:text-[2rem] lg:text-[2.5rem]">Need clarification?</Title>
+          <Title className="text-[1.75rem] sm:text-[2rem] lg:text-[2.5rem]">
+            Need clarification?
+          </Title>
 
           <Text label="Clarification description" className="mt-3 max-w-3xl text-[#5f5854] sm:mt-4">
-            Book a 1-on-1 session with our instructors if something feels unclear. Get
-            personalized guidance and answers to your specific questions.
+            Book a 1-on-1 session with our instructors if something feels unclear. Get personalized
+            guidance and answers to your specific questions.
           </Text>
 
           <button
@@ -131,8 +154,8 @@ const LearningPage: React.FC<LearningPageProps> = ({ lesson = lessonContent }) =
           </button>
         </section>
       </Container>
-    </main>
+    </article>
   );
 };
 
-export default LearningPage;
+export default MaterialWindow;

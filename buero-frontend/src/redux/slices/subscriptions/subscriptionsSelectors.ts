@@ -1,4 +1,4 @@
-import type { RootState } from '../../store';
+import type { RootState } from '../../rootReducer';
 
 export const selectSubscription = (state: RootState) => state.subscriptions.subscription;
 export const selectSubscriptionStatus = (state: RootState) => state.subscriptions.status;

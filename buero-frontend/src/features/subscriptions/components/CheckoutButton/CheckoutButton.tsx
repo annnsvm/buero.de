@@ -1,13 +1,14 @@
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { selectSubscriptionStatus } from "@/redux/slices/subscriptions";
-import { createCheckoutSessionThunk } from "@/redux/slices/subscriptions/subscriptionsThunks";
-import { CheckoutButtonProps } from "@/types/components/ui/CheckoutButton.types";
-import React from "react";
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { selectSubscriptionStatus } from '@/redux/slices/subscriptions';
+import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
+import { CheckoutButtonProps } from '@/types/components/ui/CheckoutButton.types';
+import React from 'react';
 
 const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   courseId,
   successUrl,
   cancelUrl,
+  className = '',
   label = 'Buy course',
 }) => {
   const dispatch = useAppDispatch();
@@ -29,7 +30,6 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
       }
       return;
     }
-
   };
 
   return (
@@ -37,7 +37,11 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
       type="button"
       onClick={handleClick}
       disabled={isLoading}
-      className="bg-primary hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+      className={
+        className
+          ? className
+          : 'bg-primary hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60'
+      }
     >
       {isLoading ? 'Redirecting…' : label}
     </button>

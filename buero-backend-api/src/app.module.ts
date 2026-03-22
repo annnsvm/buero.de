@@ -13,6 +13,7 @@ import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { ProgressQuizModule } from './modules/progress-quiz/progress-quiz.module';
+import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { ProgressQuizModule } from './modules/progress-quiz/progress-quiz.module
     }),
     SubscriptionsModule,
     ProgressQuizModule,
+    VocabularyModule,
   ],
   providers: [
     {

@@ -5,7 +5,11 @@ import Footer from '../Footer/Footer';
 
 const SharedLayout = () => {
   const { pathname } = useLocation();
-  const hideHeader = pathname === ROUTES.PROFILE;
+  const hideHeader =
+    pathname === ROUTES.TEACHER_COURSES_EDIT ||
+    pathname === ROUTES.TEACHER_COURSES_CREATE ||
+    pathname.startsWith('/courses/');
+  const hideFooter = pathname.includes('/teacher/courses/');
 
   return (
     <div>
@@ -13,7 +17,7 @@ const SharedLayout = () => {
       <main>
         <Outlet />
       </main>
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   );
 };

@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '@/components/ui/Icon';
-import { ICON_NAMES } from '@/helpers/iconNames';
-
 
 export type CourseLesson = {
   id: string;
@@ -18,10 +16,19 @@ export type CourseModule = {
 
 type CourseStructureProps = {
   modules: CourseModule[];
+  onSelectLesson?: (payload: { moduleId: string; materialId: string }) => void;
+  selectedMaterialId?: string | null;
 };
 
-const CourseStructure: React.FC<CourseStructureProps> = ({ modules }) => {
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(['1']));
+const CourseStructure: React.FC<CourseStructureProps> = ({
+  modules,
+  onSelectLesson,
+  selectedMaterialId,
+}) => {
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
+    const first = modules[0]?.id;
+    return first ? new Set([first]) : new Set();
+  });
 
   const toggleModule = (id: string) => {
     setExpandedModules((prev) => {
@@ -32,11 +39,25 @@ const CourseStructure: React.FC<CourseStructureProps> = ({ modules }) => {
     });
   };
 
+  useEffect(() => {
+    if (!selectedMaterialId) return;
+    const parentModule = modules.find((m) =>
+      m.lessons?.some((lesson) => lesson.id === selectedMaterialId),
+    );
+    if (!parentModule) return;
+    setExpandedModules((prev) => {
+      if (prev.has(parentModule.id)) return prev;
+      const next = new Set(prev);
+      next.add(parentModule.id);
+      return next;
+    });
+  }, [selectedMaterialId, modules]);
+
   return (
     <div className="mt-6">
       <h3 className="text-base font-bold text-[var(--color-text-primary)]">Course Structure</h3>
       <div className="mt-4 space-y-2">
-        {modules.map((mod) => (
+        {modules.map((mod, modIdx) => (
           <div
             key={mod.id}
             className="rounded-lg bg-[var(--color-surface-card)]"
@@ -48,13 +69,13 @@ const CourseStructure: React.FC<CourseStructureProps> = ({ modules }) => {
             >
               <div>
                 <div className="font-bold text-[var(--color-text-primary)] flex flex-col">
-                  <span className="text-[var(--color-text-secondary)]">MODULE {mod.id}</span>
+                  <span className="text-[var(--color-text-secondary)]">MODULE {modIdx + 1}</span>
                   <span>{mod.title}</span>
                 </div>
                 <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{mod.lessonsCount} lessons</p>
               </div>
               <Icon
-                name={expandedModules.has(mod.id) ? ICON_NAMES.CHEVRON_UP : ICON_NAMES.CHEVRON_DOWN}
+                name={expandedModules.has(mod.id) ? 'icon-chevron-up' : 'icon-chevron-down'}
                 size={20}
                 className="text-[var(--color-text-secondary)]"
               />
@@ -66,19 +87,31 @@ const CourseStructure: React.FC<CourseStructureProps> = ({ modules }) => {
                     key={lesson.id}
                     className="flex items-center justify-between py-2"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="w-10 h-10 bg-[var(--color-primary)] rounded-lg flex justify-center items-center shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onSelectLesson?.({ moduleId: mod.id, materialId: lesson.id })
+                      }
+                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
+                        selectedMaterialId === lesson.id
+                          ? 'bg-[var(--color-dawn-pink-light)]'
+                          : ''
+                      }`}
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-primary)]">
                         <Icon
                           name="icon-play_arrow"
                           size={18}
                           color="var(--color-white)"
                         />
                       </span>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm font-medium text-[var(--color-text-primary)]">{lesson.title}</span>
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                          {lesson.title}
+                        </span>
                         <span className="text-xs text-[var(--color-text-secondary)]">{lesson.duration}</span>
                       </div>
-                    </div>
+                    </button>
                   </div>
                 ))}
               </div>

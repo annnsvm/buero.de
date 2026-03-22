@@ -137,25 +137,26 @@ model TeacherProfile {
 // ─── Courses, Modules & Materials ────────────────────────────────────────────
 
 model Course {
-  id            String   @id @default(uuid())
-  teacherId     String?  @map("teacher_id")
-  title         String
-  description   String?
-  language      Language
-  isPublished   Boolean  @default(false) @map("is_published")
-  price         Decimal? @db.Decimal(10, 2)
-  tags          String[] @default([])
-  level         Level?
-  durationHours Int?     @map("duration_hours")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id              String         @id @default(uuid())
+  teacherId       String?        @map("teacher_id")
+  title           String
+  description     String?
+  language        Language
+  isPublished     Boolean        @default(false) @map("is_published")
+  price           Decimal?       @db.Decimal(10, 2)
+  tags            String[]       @default([])
+  level           Level?
+  durationHours    Int?           @map("duration_hours")
+  imageUrl         String?        @map("image_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
-  teacher          User?              @relation("CourseCreator", fields: [teacherId], references: [id], onDelete: SetNull)
-  modules          CourseModule[]
-  userCourseAccess UserCourseAccess[]
-  subscriptions    Subscription[]
-  payments         Payment[]
-  courseProgress   CourseProgress[]
+  teacher            User?                @relation("CourseCreator", fields: [teacherId], references: [id], onDelete: SetNull)
+  modules            CourseModule[]
+  userCourseAccess   UserCourseAccess[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+  courseProgress     CourseProgress[]
 
   @@index([teacherId])
   @@index([level])
@@ -323,6 +324,20 @@ model LessonRequest {
   @@index([studentId])
   @@index([teacherId])
   @@map("lesson_requests")
+}
+
+// ─── Vocabulary (global dictionary) ─────────────────────────────────────────
+
+model Vocabulary {
+  id              String   @id @default(uuid())
+  word            String   @unique
+  translation     String
+  pronunciation   String?
+  exampleSentence String?  @map("example_sentence")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("vocabulary")
 }
 
 // ─── Placement Test ────────────────────────────────────────────────────────

@@ -42,8 +42,8 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
   };
 
   const renderUiModalByType = (item: UiModalPayload, index: number) => {
+    const modalKey = `${item.type}-${index}`;
     const commonProps = {
-      key: `${item.type}-${index}`,
       isOpen: true,
       handleOpenChange: (open: boolean) => {
         if (!open) {
@@ -56,6 +56,7 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
       case 'courseInfo':
         return (
           <CourseInfoModal
+            key={modalKey}
             {...commonProps}
             courseId={item.courseId}
             course={item.course}
@@ -65,6 +66,7 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
       case 'contactSupport':
         return (
           <ContactSupportModal
+            key={modalKey}
             {...commonProps}
             subject={item.subject}
             courseId={item.courseId}

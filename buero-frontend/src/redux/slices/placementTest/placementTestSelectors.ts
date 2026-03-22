@@ -1,4 +1,4 @@
-import type { RootState } from '../../store';
+import type { RootState } from '../../rootReducer';
 
 export const selectPlacementQuestions = (state: RootState) => state.placementTest.questions;
 export const selectPlacementResultLevel = (state: RootState) => state.placementTest.resultLevel;

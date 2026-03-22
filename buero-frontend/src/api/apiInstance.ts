@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { store } from '../redux/store';
+import { getStore } from '../redux/storeRef';
 import { API_ENDPOINTS, PUBLIC_ENDPOINT_PREFIXE } from './apiEndpoints';
 import { logout } from '@/redux/slices/auth';
 
@@ -47,7 +47,7 @@ const processQueue = (error: unknown, token?: unknown) => {
 };
 
 const handleLogout = () => {
-  store.dispatch(logout());
+  getStore().dispatch(logout());
 };
 
 apiInstance.interceptors.request.use((config) => {
@@ -68,7 +68,7 @@ apiInstance.interceptors.response.use(
     if (isPublicEndpoint(url)) {
       return Promise.reject(error);
     }
-    const state = store.getState();
+    const state = getStore().getState();
     const hasSession = Boolean(state.auth?.isAuthenticated);
     if (!hasSession) {
       return Promise.reject(error);

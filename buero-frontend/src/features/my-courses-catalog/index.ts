@@ -1,0 +1,1 @@
+export {default as MyCoursesList} from './components/MyCoursesList'

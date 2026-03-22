@@ -1,4 +1,4 @@
-import { RootState } from "@/types/redux/store.types";
+import type { RootState } from '@/redux/rootReducer';
 
 export const selectIsAuthenticated = (state: RootState): boolean => state.auth.isAuthenticated;
 export const selectAuthStatus = (state: RootState) => state.auth.status;

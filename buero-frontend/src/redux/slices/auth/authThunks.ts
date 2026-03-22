@@ -2,7 +2,7 @@ import type { LoginPayload, SignUpPayload } from '@/types/redux/auth.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { addUser } from '../user/userSlice';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { RootState } from '@/types/redux/store.types';
+import type { RootState } from '@/redux/rootReducer';
 import { getErrorMessage } from '@/helpers/getErrorMessage';
 
 export const loginThunk = createAsyncThunk<void, LoginPayload>(

@@ -7,6 +7,7 @@ const CoursesCatalogFilters = ({
   activeFilterId,
   onFilterChange,
   totalCount,
+  besideCountSlot,
 }: CoursesCatalogFiltersProps) => {
   return (
     <Section className="sm:pt-12 pb-20">
@@ -32,9 +33,14 @@ const CoursesCatalogFilters = ({
               );
             })}
           </div>
-          <p className="text-base font-medium leading-[1.5] text-[var(--color-text-primary)]">
-            {totalCount} {totalCount === 1 ? 'course found' : 'courses found'}
-          </p>
+          <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-end sm:justify-end sm:gap-4 md:items-center">
+            {besideCountSlot ? (
+              <div className="min-w-0 sm:max-w-[min(100%,320px)]">{besideCountSlot}</div>
+            ) : null}
+            <p className="shrink-0 text-base font-medium leading-[1.5] whitespace-nowrap text-[var(--color-text-primary)]">
+              {totalCount} {totalCount === 1 ? 'course found' : 'courses found'}
+            </p>
+          </div>
         </div>
       </Container>
     </Section>

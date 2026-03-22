@@ -15,14 +15,14 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isHomeActive = pathname === '/' || pathname === ROUTES.HOME;
   const isCoursesActive = pathname === ROUTES.COURSES || pathname.startsWith('/courses/');
-  const isProfileActive = pathname === ROUTES.PROFILE;
+  const isMyLearningActive = pathname === ROUTES.MY_LEARNING;
 
   const activeClass = isLight ? activeClassLight : activeClassDark;
   const inactiveClass = isLight ? inactiveClassLight : inactiveClassDark;
   const getClass = (active: boolean) =>
     `transition-colors ${isLight ? 'hover:text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)]'} ${active ? activeClass : inactiveClass}`;
   return (
-    <nav aria-label="Main navigation" className={`gap-8 flex flex-wrap items-center ${className}`}>
+    <nav aria-label="Main navigation" className={`flex flex-wrap items-center gap-8 ${className}`}>
       <NavLink to={ROUTES.HOME} end className={getClass(isHomeActive)}>
         Home
       </NavLink>
@@ -30,12 +30,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
         Courses
       </NavLink>
       {isAuthenticated && (
-        <NavLink to={ROUTES.PROFILE} className={getClass(isProfileActive)}>
+        <NavLink to={ROUTES.MY_LEARNING} className={getClass(isMyLearningActive)}>
           My learning
         </NavLink>
       )}
     </nav>
-  )
+  );
 }
 
 export default HeaderNavBar;

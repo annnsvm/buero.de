@@ -29,7 +29,7 @@ export const fetchCoursesCatalogThunk = createAsyncThunk<
 
   try {
     const res = await apiInstance.get<FetchCoursesResponse>(
-      `http://localhost:3000/api/courses?${query}`,
+      `/courses?${query}`
     );
 
     const data = res.data;

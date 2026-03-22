@@ -7,7 +7,7 @@ type UiModalType =
   | 'addVocabulary'
   | 'addVocabularySuccess'
   | 'confirm';
-// Додав
+
   export type CourseModule = {
   id: string;
   title: string;
@@ -19,7 +19,7 @@ export type CourseInfoData = CourseCardProps & {
   modules?: CourseModule[];
   addOns?: { id: string; title: string; description: string; price: string }[];
 };
-// 
+
 
 type UiModalPayload =
   | {

@@ -12,4 +12,7 @@ export type LearningLesson = {
   
   export type LearningPageProps = {
     lesson?: LearningLesson;
+    /** Є наступне відео в цьому ж або наступному модулі (за порядком курсу). */
+    hasNextVideoLesson?: boolean;
+    onNextVideoLesson?: () => void;
   };

@@ -4,18 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import {
-  CourseMaterialType,
-  Language,
-  Level,
-  Role,
-  UserCourseAccessType,
-} from "../../generated/prisma/enums";
+import { ConfigService } from "@nestjs/config";
+import {Language, Level, Role, UserCourseAccessType } from "../../generated/prisma/enums";
 import { PrismaService } from "../../prisma/prisma.service";
+import { CloudinaryService } from "../../cloudinary/cloudinary.service";
 import { CreateCourseDto } from "./dto/create-course.dto";
 import { ListCoursesQueryDto } from "./dto/list-courses-query.dto";
 import { UpdateCourseDto } from "./dto/update-course.dto";
-import { ConfigService } from "@nestjs/config";
 import { UserService } from "../user/user.service";
 
 @Injectable()
@@ -23,7 +18,8 @@ export class CourseService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   /**
@@ -230,6 +226,29 @@ export class CourseService {
     }
   }
 
+  /**
+   * Завантажує обкладинку в Cloudinary і зберігає secure_url у courses.image_url.
+   */
+  async uploadCover(courseId: string, file: Express.Multer.File) {
+    try {
+      await this.findById(courseId, false);
+
+      const secureUrl = await this.cloudinaryService.uploadImage(file.buffer, {
+        folder: "courses",
+        publicId: courseId,
+      });
+
+      const course = await this.prisma.course.update({
+        where: { id: courseId },
+        data: { imageUrl: secureUrl },
+      });
+      return this.serializeCourse(course as Record<string, unknown>);
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw error;
+    }
+  }
+
   async startTrial(userId: string, courseId: string) {
     try {
       const trialDaysRaw = this.configService.get<string | number>(
@@ -331,7 +350,14 @@ export class CourseService {
         : price != null
           ? Number(price)
           : null;
-    return { ...course, price: priceAsNumber } as T;
+    const { imageUrl, ...rest } = course as T & {
+      imageUrl?: string | null;
+    };
+    return {
+      ...rest,
+      price: priceAsNumber,
+      image_url: imageUrl ?? null,
+    } as unknown as T;
   }
 
   private mapPrismaError(error: unknown): never {

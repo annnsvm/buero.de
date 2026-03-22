@@ -134,6 +134,7 @@ import { selectIsAuthenticated } from '@/redux/slices/auth';
 
 - `docs/frontend-features/00-landing-ui.md`
 - `docs/frontend-features/01-auth-ui.md`
+- `docs/frontend-features/10-teacher-course-management-ui.md` (керування курсом вчителя)
 - … (див. зміст папки `docs/frontend-features/`).
 
 У кожного `src/features/<name>/index.ts` у JSDoc є посилання на відповідний документ. Стейт і редьюсери описані в архітектурі та в `src/redux/`.

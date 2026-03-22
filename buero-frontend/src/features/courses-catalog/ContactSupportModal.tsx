@@ -110,7 +110,6 @@ const ContactSupportModal: React.FC<ContactSupportModalProps> = ({
             </label>
           </div>
 
-          {/* Submit Button */}
           <div className="mt-2">
             <button
               type="submit"

@@ -1,5 +1,5 @@
 import { GlobalModalState } from "@/types/components/modal/GlobalModalType.types";
-import { RootState } from "@/types/redux/store.types";
+import type { RootState } from '@/redux/rootReducer';
 
 const selectGlobalLoading = (state: RootState): boolean => state.ui.globalLoading;
 

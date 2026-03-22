@@ -1,4 +1,3 @@
-import { store } from '@/redux/store';
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+/** Тільки type-only re-export — без `import { store }`, щоб уникнути циклічного імпорту store → rootReducer → api. */
+export type { RootState } from '@/redux/rootReducer';
+export type { AppDispatch } from '@/redux/store';

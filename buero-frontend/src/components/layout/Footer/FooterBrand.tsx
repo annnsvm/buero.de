@@ -53,7 +53,7 @@ const FooterBrand: React.FC = () => {
         className="inline-flex w-fit transition-opacity hover:opacity-80"
         aria-label="buero.de go to home"
       >
-        <Logo width={70} height={28} />
+        <Logo width={70} height={28} isLight/>
       </Link>
       <p className="text-[0.9375rem] leading-[1.5] text-[var(--color-neutral-light)] max-w-[280px]">
         {TAGLINE}
