@@ -6,13 +6,14 @@ import * as bcrypt from "bcrypt";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserService } from "./user.service";
 import { CreateUserDto, LanguageEnum, RoleEnum } from "./dto/create-user.dto";
+import { UpdateProfileDto } from "./dto/update-user.dto";
 
 describe("UserService (auth-related)", () => {
   let service: UserService;
   let prisma: {
-    user: { findFirst: jest.Mock; create: jest.Mock };
-    studentProfile: { create: jest.Mock };
-    teacherProfile: { create: jest.Mock };
+    user: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
+    studentProfile: { create: jest.Mock; updateMany: jest.Mock };
+    teacherProfile: { create: jest.Mock; updateMany: jest.Mock };
     refreshToken: { create: jest.Mock; findFirst: jest.Mock; updateMany: jest.Mock };
   };
   let jwtService: jest.Mocked<Pick<JwtService, "sign" | "verify" | "decode">>;
@@ -36,9 +37,10 @@ describe("UserService (auth-related)", () => {
       user: {
         findFirst: jest.fn(),
         create: jest.fn(),
+        update: jest.fn(),
       },
-      studentProfile: { create: jest.fn() },
-      teacherProfile: { create: jest.fn() },
+      studentProfile: { create: jest.fn(), updateMany: jest.fn() },
+      teacherProfile: { create: jest.fn(), updateMany: jest.fn() },
       refreshToken: {
         create: jest.fn(),
         findFirst: jest.fn(),
@@ -235,6 +237,218 @@ describe("UserService (auth-related)", () => {
           tokenHash: expect.any(String),
           expiresAt: expect.any(Date),
         }),
+      });
+    });
+  });
+
+  describe("findUserById", () => {
+    it("returns null when user not found", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      expect(await service.findUserById("missing")).toBeNull();
+    });
+
+    it("returns user without passwordHash when found", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue({
+        id: "u1",
+        email: "a@b.com",
+        passwordHash: "secret",
+        role: "student",
+        language: "en",
+        deletedAt: null,
+        stripeCustomerId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const u = await service.findUserById("u1");
+      expect(u).not.toBeNull();
+      expect(u).not.toHaveProperty("passwordHash");
+      expect(u?.email).toBe("a@b.com");
+    });
+  });
+
+  describe("getProfile", () => {
+    const baseUser = {
+      id: "u1",
+      email: "stu@test.com",
+      passwordHash: "hash",
+      role: "student" as const,
+      language: "en",
+      deletedAt: null,
+      stripeCustomerId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it("returns null when user missing", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      expect(await service.getProfile("u1")).toBeNull();
+    });
+
+    it("returns null when role profile row missing", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue({
+        ...baseUser,
+        studentProfile: null,
+        teacherProfile: null,
+      });
+      expect(await service.getProfile("u1")).toBeNull();
+    });
+
+    it("returns user and student profile without passwordHash", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue({
+        ...baseUser,
+        studentProfile: {
+          id: "sp1",
+          userId: "u1",
+          level: null,
+          timezone: "Europe/Berlin",
+          trialEndsAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        teacherProfile: null,
+      });
+      const result = await service.getProfile("u1");
+      expect(result).not.toBeNull();
+      expect(result!.user).not.toHaveProperty("passwordHash");
+      expect(result!.user.role).toBe("student");
+      expect(result!.profile).toMatchObject({ timezone: "Europe/Berlin" });
+    });
+
+    it("returns user and teacher profile", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue({
+        ...baseUser,
+        role: "teacher",
+        studentProfile: null,
+        teacherProfile: {
+          id: "tp1",
+          userId: "u1",
+          bio: "Hello",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+      const result = await service.getProfile("u1");
+      expect(result!.user.role).toBe("teacher");
+      expect(result!.profile).toMatchObject({ bio: "Hello", isActive: true });
+    });
+  });
+
+  describe("updateProfile", () => {
+    const studentUser = {
+      id: "u-stu",
+      email: "s@test.com",
+      passwordHash: "hash",
+      role: "student" as const,
+      language: "en",
+      deletedAt: null,
+      stripeCustomerId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      studentProfile: {
+        id: "sp1",
+        userId: "u-stu",
+        level: null,
+        timezone: "UTC",
+        trialEndsAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      teacherProfile: null,
+    };
+
+    const teacherUser = {
+      id: "u-teach",
+      email: "t@test.com",
+      passwordHash: "hash",
+      role: "teacher" as const,
+      language: "en",
+      deletedAt: null,
+      stripeCustomerId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      studentProfile: null,
+      teacherProfile: {
+        id: "tp1",
+        userId: "u-teach",
+        bio: null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    };
+
+    it("returns null when user not found", async () => {
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      expect(await service.updateProfile("x", { timezone: "UTC" })).toBeNull();
+    });
+
+    it("student: updates timezone and language then returns getProfile shape", async () => {
+      (prisma.user.findFirst as jest.Mock)
+        .mockResolvedValueOnce({ ...studentUser })
+        .mockResolvedValueOnce({
+          ...studentUser,
+          language: "de",
+          studentProfile: {
+            ...studentUser.studentProfile,
+            timezone: "Europe/Vienna",
+          },
+        });
+      (prisma.studentProfile.updateMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
+      (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+      const dto: UpdateProfileDto = {
+        timezone: "Europe/Vienna",
+        language: LanguageEnum.de,
+      };
+      const result = await service.updateProfile("u-stu", dto);
+
+      expect(prisma.studentProfile.updateMany).toHaveBeenCalledWith({
+        where: { userId: "u-stu" },
+        data: { timezone: "Europe/Vienna" },
+      });
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: "u-stu" },
+        data: { language: "de" },
+      });
+      expect(result).not.toBeNull();
+      expect(result!.user).not.toHaveProperty("passwordHash");
+      expect(result!.user.language).toBe("de");
+    });
+
+    it("teacher: updates bio, isActive, language", async () => {
+      (prisma.user.findFirst as jest.Mock)
+        .mockResolvedValueOnce({ ...teacherUser })
+        .mockResolvedValueOnce({
+          ...teacherUser,
+          language: "de",
+          teacherProfile: {
+            ...teacherUser.teacherProfile,
+            bio: "Updated bio",
+            isActive: false,
+          },
+        });
+      (prisma.teacherProfile.updateMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
+      (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+      const dto: UpdateProfileDto = {
+        bio: "Updated bio",
+        isActive: false,
+        language: LanguageEnum.de,
+      };
+      await service.updateProfile("u-teach", dto);
+
+      expect(prisma.teacherProfile.updateMany).toHaveBeenCalledWith({
+        where: { userId: "u-teach" },
+        data: { bio: "Updated bio" },
+      });
+      expect(prisma.teacherProfile.updateMany).toHaveBeenCalledWith({
+        where: { userId: "u-teach" },
+        data: { isActive: false },
       });
     });
   });
