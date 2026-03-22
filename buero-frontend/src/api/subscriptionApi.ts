@@ -9,6 +9,15 @@ import { apiInstance } from './apiInstance';
 import { API_ENDPOINTS } from './apiEndpoints';
 
 export const subscriptionApi = {
+  /** Call after Stripe redirects to success URL so DB gets access if webhook did not run (e.g. localhost). */
+  syncCheckoutSession: async (sessionId: string): Promise<{ ok: boolean }> => {
+    const response = await apiInstance.post<{ ok: boolean }>(
+      API_ENDPOINTS.subscriptions.syncCheckout,
+      { session_id: sessionId },
+    );
+    return response.data;
+  },
+
   getMyAccess: async () => {
     const response = await apiInstance.get<GetMyCourseAccessResponse>(
       API_ENDPOINTS.subscriptions.myAccess,

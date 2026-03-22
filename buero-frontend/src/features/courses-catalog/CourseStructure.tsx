@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Icon from '@/components/ui/Icon';
+import { ICON_NAMES } from '@/helpers/iconNames';
 
 export type CourseLesson = {
   id: string;
   title: string;
+  /** Shown under the title except for quiz materials (no meaningful duration). */
   duration: string;
+  /** Backend material type, e.g. `video` | `quiz` */
+  type: string;
 };
 
 export type CourseModule = {
@@ -82,7 +86,9 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
             </button>
             {expandedModules.has(mod.id) && mod.lessons && mod.lessons.length > 0 && (
               <div className="px-8 py-2">
-                {mod.lessons.map((lesson) => (
+                {mod.lessons.map((lesson) => {
+                  const isQuiz = String(lesson.type).toLowerCase() === 'quiz';
+                  return (
                   <div
                     key={lesson.id}
                     className="flex items-center justify-between py-2"
@@ -98,9 +104,12 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
                           : ''
                       }`}
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-primary)]">
+                      <span
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-primary)]"
+                        aria-hidden
+                      >
                         <Icon
-                          name="icon-play_arrow"
+                          name={isQuiz ? ICON_NAMES.HELP : ICON_NAMES.PLAY_ARROW}
                           size={18}
                           color="var(--color-white)"
                         />
@@ -109,11 +118,14 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
                         <span className="text-sm font-medium text-[var(--color-text-primary)]">
                           {lesson.title}
                         </span>
-                        <span className="text-xs text-[var(--color-text-secondary)]">{lesson.duration}</span>
+                        {!isQuiz ? (
+                          <span className="text-xs text-[var(--color-text-secondary)]">{lesson.duration}</span>
+                        ) : null}
                       </div>
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

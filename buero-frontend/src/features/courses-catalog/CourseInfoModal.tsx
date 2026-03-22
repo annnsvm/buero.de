@@ -12,10 +12,10 @@ const MOCK_MODULES = [
     title: 'Getting Started',
     lessonsCount: 4,
     lessons: [
-      { id: '1', title: 'Welcome to German A1', duration: '5:30' },
-      { id: '2', title: 'The German Alphabet & Pronunciation', duration: '12:15' },
-      { id: '3', title: 'Pronunciation Practice', duration: '8:00' },
-      { id: '4', title: 'Your First German Words', duration: '10:45' },
+      { id: '1', title: 'Welcome to German A1', duration: '5:30', type: 'video' },
+      { id: '2', title: 'The German Alphabet & Pronunciation', duration: '12:15', type: 'video' },
+      { id: '3', title: 'Pronunciation Practice', duration: '8:00', type: 'video' },
+      { id: '4', title: 'Your First German Words', duration: '10:45', type: 'video' },
     ],
   },
   {
@@ -23,10 +23,10 @@ const MOCK_MODULES = [
     title: 'Greetings & Introductions',
     lessonsCount: 4,
     lessons: [
-      { id: '5', title: 'Saying Hello and Goodbye', duration: '6:20' },
-      { id: '6', title: 'Introducing Yourself', duration: '9:15' },
-      { id: '7', title: 'Asking Names', duration: '7:40' },
-      { id: '8', title: 'Formal vs Informal', duration: '11:00' },
+      { id: '5', title: 'Saying Hello and Goodbye', duration: '6:20', type: 'video' },
+      { id: '6', title: 'Introducing Yourself', duration: '9:15', type: 'video' },
+      { id: '7', title: 'Asking Names', duration: '7:40', type: 'video' },
+      { id: '8', title: 'Formal vs Informal', duration: '11:00', type: 'video' },
     ],
   },
   {
