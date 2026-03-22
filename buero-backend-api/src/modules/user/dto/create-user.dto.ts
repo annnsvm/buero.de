@@ -24,15 +24,15 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: "Олена Петренко",
-    description: "Ім'я для відображення",
+    description: "Ім'я для відображення (опційно)",
   })
-  @IsString()
   @IsOptional()
+  @IsString()
   @MinLength(1)
   @MaxLength(255)
-  name: string;
+  name?: string;
 
   @ApiProperty({
     example: "SecurePass1",
@@ -59,7 +59,6 @@ export class CreateUserDto {
 
   constructor() {
     this.email = "";
-    this.name = "";
     this.password = "";
     this.role = RoleEnum.student;
   }

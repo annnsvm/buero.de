@@ -108,10 +108,15 @@ export class UserService {
     const role = dto.role as Role;
     const language = dto.language as Language;
 
+    const name =
+      dto.name == null
+        ? null
+        : (typeof dto.name === "string" ? dto.name.trim() : "") || null;
+
     const user = await this.prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
-        name: dto.name.trim(),
+        name,
         passwordHash,
         role,
         language: language || "en",

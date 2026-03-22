@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import {Language, Level, Role, UserCourseAccessType } from "../../generated/prisma/enums";
+import {CourseMaterialType, Language, Level, Role, UserCourseAccessType } from "../../generated/prisma/enums";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CloudinaryService } from "../../cloudinary/cloudinary.service";
 import { CreateCourseDto } from "./dto/create-course.dto";

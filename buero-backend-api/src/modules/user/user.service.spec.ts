@@ -69,8 +69,10 @@ describe("UserService (auth-related)", () => {
   });
 
   describe("createUser", () => {
+    const testUserName = "Test User";
     const baseDto: CreateUserDto = {
       email: "new@example.com",
+      name: testUserName,
       password: "Password1x",
       role: RoleEnum.student,
       language: LanguageEnum.en,
@@ -93,6 +95,7 @@ describe("UserService (auth-related)", () => {
       const createdUser = {
         id: "user-uuid",
         email: baseDto.email.toLowerCase(),
+        name: testUserName,
         passwordHash: "hashed",
         role: "student",
         language: "en",
@@ -106,12 +109,54 @@ describe("UserService (auth-related)", () => {
 
       const result = await service.createUser(baseDto);
 
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          email: baseDto.email.toLowerCase(),
+          name: testUserName,
+        }),
+      });
       expect(result.email).toBe(baseDto.email.toLowerCase());
+      expect(result.name).toBe(testUserName);
       expect(result).not.toHaveProperty("passwordHash");
       expect(prisma.studentProfile.create).toHaveBeenCalledWith({
         data: { userId: createdUser.id },
       });
       expect(prisma.teacherProfile.create).not.toHaveBeenCalled();
+    });
+
+    it("creates student with null name when name is omitted", async () => {
+      const dto = {
+        email: "noname@example.com",
+        password: "Password1x",
+        role: RoleEnum.student,
+        language: LanguageEnum.en,
+      } as CreateUserDto;
+
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
+      const createdUser = {
+        id: "user-no-name",
+        email: dto.email.toLowerCase(),
+        name: null,
+        passwordHash: "hashed",
+        role: "student",
+        language: "en",
+        deletedAt: null,
+        stripeCustomerId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      (prisma.user.create as jest.Mock).mockResolvedValue(createdUser);
+      (prisma.studentProfile.create as jest.Mock).mockResolvedValue({});
+
+      const result = await service.createUser(dto);
+
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          email: dto.email.toLowerCase(),
+          name: null,
+        }),
+      });
+      expect(result.name).toBeNull();
     });
 
     it("creates teacher user and profile on success", async () => {
@@ -120,6 +165,7 @@ describe("UserService (auth-related)", () => {
       const createdUser = {
         id: "teacher-uuid",
         email: dto.email.toLowerCase(),
+        name: testUserName,
         passwordHash: "hashed",
         role: "teacher",
         language: "en",
