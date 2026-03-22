@@ -24,7 +24,10 @@ import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
       useFactory: (config: ConfigService) => {
         const ttlSec = Number(config.get("THROTTLE_TTL")) || 60;
         const limit = Number(config.get("THROTTLE_LIMIT")) || 100;
+        const e2e = config.get<string>("E2E_TEST") === "true";
         return {
+          /** У e2e (`E2E_TEST=true`) не застосовувати rate limit (у т.ч. @Throttle на auth). */
+          skipIf: () => e2e,
           throttlers: [
             { name: "default", ttl: ttlSec * 1000, limit },
           ],

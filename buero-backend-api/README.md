@@ -115,6 +115,17 @@ curl http://localhost:3000/api/health/db
 
 ---
 
+## Тести
+
+| Команда            | Опис                                                                 |
+| ------------------ | -------------------------------------------------------------------- |
+| `npm run test`     | Unit-тести (Jest), наприклад `UserService` (auth: register, tokens). |
+| `npm run test:watch` | Unit у watch-режимі.                                             |
+| `npm run test:cov` | Unit з покриттям (`coverage/`).                                      |
+| `npm run test:e2e` | E2E по HTTP (Supertest): auth, cookies. Потрібні **PostgreSQL** і `.env` з `DATABASE_URL`, JWT, Stripe (як для `start:dev`). У `test/setup-e2e-env.ts` вмикається `E2E_TEST=true` — Throttler не обмежує запити під час e2e. |
+
+---
+
 ## Скрипти
 
 | Команда                   | Опис                                                                               |
