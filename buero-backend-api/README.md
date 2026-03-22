@@ -36,6 +36,16 @@ npm install
   ```
   Решту змінних (JWT, CORS, Cookie) можна заповнити пізніше для модуля Auth.
 
+**Cloudinary (обкладинки курсів):** для `POST /api/courses/:id/cover` потрібен акаунт [Cloudinary](https://cloudinary.com). У [Dashboard](https://cloudinary.com/console) скопіюй **Cloud name**, **API Key**, **API Secret** і додай у `.env`:
+
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+```
+
+Без цих змінних сервер стартує, але завантаження обкладинки поверне помилку конфігурації. У Media Library файли потрапляють у папку `courses` (public_id = id курсу).
+
 ### 3. Підготувати БД і Prisma Client
 
 Переконайся, що база з іменем у `DATABASE_URL` існує (створи її в pgAdmin або через `createdb`). Потім:
@@ -95,7 +105,7 @@ curl http://localhost:3000/api/health/db
 | Модуль           | Базовий шлях                                         | Опис                                                                                                                                                                                                                                        |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Health           | `/api/health`                                        | Перевірка життєздатності сервісу та БД (`GET /`, `GET /db`).                                                                                                                                                                                |
-| Courses          | `/api/courses`                                       | CRUD курсів: список опублікованих (фільтри `category`, `language`), один по id (з модулями), створення, оновлення, видалення.                                                                                                               |
+| Courses          | `/api/courses`                                       | CRUD курсів: список опублікованих (фільтри `category`, `language`), один по id (з модулями), створення, оновлення, видалення. Обкладинка: `POST /api/courses/:id/cover` (multipart `file`, teacher, Cloudinary → `image_url`).              |
 | Course Modules   | `/api/courses/:courseId/modules`                     | CRUD модулів курсу: список за order_index, один по id, створення, оновлення, видалення. Доступ за user_course_access.                                                                                                                       |
 | Course Materials | `/api/courses/:courseId/modules/:moduleId/materials` | CRUD матеріалів модуля: список за order_index, один по id, створення, оновлення, видалення. Доступ за user_course_access до курсу.                                                                                                          |
 | Progress         | `/api/progress`, `/api/courses/:courseId/progress`   | Загальний прогрес (`GET /me`), прогрес по курсу (`GET /courses/:id/progress`), позначити матеріал пройденим (`POST .../materials/:id/complete`), рекомендований наступний курс (`GET /recommended-next`). JWT: користувач з `request.user`. |
