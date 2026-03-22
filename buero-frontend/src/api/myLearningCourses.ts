@@ -26,7 +26,6 @@ export const isAccessCurrentlyValid = (a: NormalizedAccess, now = new Date()): b
   return true;
 };
 
-/** GET /courses відповідь — приводимо до CourseInfoData для CourseCard */
 export const mapApiCourseToCourseInfo = (course: CatalogCourse): CourseInfoData => {
   const categoryRaw = String(course.category ?? 'language');
   const level = course.level != null ? String(course.level) : 'A1';
@@ -65,10 +64,7 @@ export const mapApiCourseToCourseInfo = (course: CatalogCourse): CourseInfoData 
   };
 };
 
-/**
- * Доступи з /subscriptions/me + повний каталог GET /courses, залишаємо лише курси з доступом.
- * Потім мапимо кожен курс у формат картки.
- */
+
 const normalizeAccessRow = (row: unknown): NormalizedAccess | null => {
   if (!row || typeof row !== 'object') return null;
   const r = row as Record<string, unknown>;
@@ -101,7 +97,6 @@ export const fetchMyLearningCoursesFromCatalog = async (): Promise<CourseInfoDat
   return published.map((course) => mapApiCourseToCourseInfo(course));
 };
 
-/** Клієнтські фільтри як у каталозі (категорія + пошук) поверх уже завантажених «моїх» курсів */
 export const filterMyLearningCourses = (
   courses: CourseInfoData[],
   filters: CoursesCatalogFilters,
