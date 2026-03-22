@@ -8,7 +8,7 @@ export const ROUTES = Object.freeze({
   PURCHES_CANCEL: '/purchase/cancel',
   COURSE_MANAGEMENT: '/course-management',
   TEACHER_COURSES_CREATE: '/teacher/courses/create',
-  TEACHER_COURSES_EDIT: '/teacher/courses/:courseId/edit',
+  TEACHER_COURSE: '/teacher/courses/',
   TEACHERS: '/teachers',
   SETTINGS_ACCOUNT: '/settings/account',
   COURSES: '/courses',

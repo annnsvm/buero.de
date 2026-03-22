@@ -1,8 +1,10 @@
+import { useCallback } from 'react';
 import { Container, Section } from '@/components/layout';
 import CourseCard from './CourseCard';
-import type { CourseCardProps } from './CourseCard';
-import { useAppSelector } from '@/redux/hooks';
+import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { selectUserRole } from '@/redux/slices/user/userSelectors';
+import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
 import { CreateCourseCard } from '../course-managment';
 
 type CoursesGridProps = {
@@ -10,17 +12,25 @@ type CoursesGridProps = {
 };
 
 const CoursesCatalogList = ({ courses }: CoursesGridProps) => {
+  const dispatch = useAppDispatch();
   const role = useAppSelector(selectUserRole);
+
+  const handleCourseDeleted = useCallback(() => {
+    void dispatch(fetchCoursesCatalogThunk());
+  }, [dispatch]);
+
   return (
     <Section className="bg-white pb-28">
-      <Container className="md:px-20">    
-        <ul className="grid justify-center justify-items-center gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16 grid-cols-[repeat(auto-fit,minmax(303px,1fr))]">
-          {
-            role === "teacher" && <CreateCourseCard />
-          }
+      <Container className="md:px-20">
+        <ul className="grid grid-cols-[repeat(auto-fit,minmax(303px,1fr))] justify-center justify-items-center gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16">
+          {role === 'teacher' && <CreateCourseCard />}
           {courses.map((course) => (
-            <li key={course.id}> 
-              <CourseCard {...course} variant="catalog" />
+            <li key={course.id}>
+              <CourseCard
+                {...course}
+                variant={role === 'teacher' ? 'teacher-catalog' : 'catalog'}
+                onCourseDeleted={role === 'teacher' ? handleCourseDeleted : undefined}
+              />
             </li>
           ))}
         </ul>
