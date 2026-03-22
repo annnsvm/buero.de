@@ -12,7 +12,6 @@ import { UserWithoutPassword } from "./types/user-response.type";
 import { Language, Role } from "src/generated/prisma/enums";
 import { User } from "src/generated/prisma/client";
 
-
 const SALT_ROUNDS = 10;
 
 @Injectable()
@@ -82,12 +81,12 @@ export class UserService {
     return record ? { id: record.id, userId: record.userId } : null;
   }
 
-  async revokeRefreshToken(token: string): Promise<void> { 
+  async revokeRefreshToken(token: string): Promise<void> {
     const tokenHash = this.hashToken(token);
     await this.prisma.refreshToken.updateMany({
       where: { tokenHash },
       data: { revokedAt: new Date() },
-    })
+    });
   }
 
   toUserWithoutPassword(user: {
@@ -112,6 +111,7 @@ export class UserService {
     const user = await this.prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
+        name: dto.name.trim(),
         passwordHash,
         role,
         language: language || "en",
@@ -189,6 +189,12 @@ export class UserService {
       include: { studentProfile: true, teacherProfile: true },
     });
     if (!user) return null;
+    if (dto.name !== undefined) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { name: dto.name.trim() || null },
+      });
+    }
     if (user.role === "student") {
       if (dto.timezone !== undefined) {
         await this.prisma.studentProfile.updateMany({

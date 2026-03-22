@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEmail, IsEnum, IsOptional, IsString, Matches, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from "class-validator";
 
 export enum RoleEnum {
   student = "student",
@@ -15,6 +23,16 @@ export class CreateUserDto {
   @ApiProperty({ example: "user@example.com" })
   @IsEmail()
   email: string;
+
+  @ApiProperty({
+    example: "Олена Петренко",
+    description: "Ім'я для відображення",
+  })
+  @IsString()
+  @IsOptional()
+  @MinLength(1)
+  @MaxLength(255)
+  name: string;
 
   @ApiProperty({
     example: "SecurePass1",
@@ -41,6 +59,7 @@ export class CreateUserDto {
 
   constructor() {
     this.email = "";
+    this.name = "";
     this.password = "";
     this.role = RoleEnum.student;
   }

@@ -43,7 +43,7 @@ export class UserController {
   @ApiOperation({
     summary: "Оновити профіль",
     description:
-      "Student: timezone, language. Teacher: bio, is_active. Level не змінюється.",
+      "Student: timezone, language, name. Teacher: bio, is_active, language, name. Level не змінюється.",
   })
   @ApiBody({ type: UpdateProfileDto })
   @ApiResponse({ status: 200, description: "Оновлений профіль" })

@@ -30,11 +30,6 @@ enum Level {
   B2
 }
 
-enum CourseCategory {
-  language
-  sociocultural
-}
-
 enum CourseMaterialType {
   video
   vocabulary
@@ -70,28 +65,29 @@ enum LessonRequestStatus {
 // ─── Users & Auth ───────────────────────────────────────────────────────────
 
 model User {
-  id                 String    @id @default(uuid())
-  email              String    @unique
-  passwordHash       String    @map("password_hash")
-  role               Role
-  language           Language  @default(en)
-  stripeCustomerId   String?   @map("stripe_customer_id")
-  deletedAt          DateTime? @map("deleted_at")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  id               String    @id @default(uuid())
+  email            String    @unique
+  name             String?   @db.VarChar(255)
+  passwordHash     String    @map("password_hash")
+  role             Role
+  language         Language  @default(en)
+  stripeCustomerId String?   @map("stripe_customer_id")
+  deletedAt        DateTime? @map("deleted_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  refreshTokens      RefreshToken[]
-  studentProfile     StudentProfile?
-  teacherProfile     TeacherProfile?
-  coursesCreated     Course[]           @relation("CourseCreator")
-  userCourseAccess   UserCourseAccess[]
-  subscriptions      Subscription[]
-  payments           Payment[]
-  courseProgress     CourseProgress[]
-  quizAttempts       QuizAttempt[]
-  lessonRequestsAsStudent LessonRequest[] @relation("LessonRequestStudent")
-  lessonRequestsAsTeacher LessonRequest[] @relation("LessonRequestTeacher")
-  placementResults   PlacementResult[]
+  refreshTokens           RefreshToken[]
+  studentProfile          StudentProfile?
+  teacherProfile          TeacherProfile?
+  coursesCreated          Course[]           @relation("CourseCreator")
+  userCourseAccess        UserCourseAccess[]
+  subscriptions           Subscription[]
+  payments                Payment[]
+  courseProgress          CourseProgress[]
+  quizAttempts            QuizAttempt[]
+  lessonRequestsAsStudent LessonRequest[]    @relation("LessonRequestStudent")
+  lessonRequestsAsTeacher LessonRequest[]    @relation("LessonRequestTeacher")
+  placementResults        PlacementResult[]
 
   @@index([email])
   @@index([stripeCustomerId])
@@ -102,7 +98,7 @@ model RefreshToken {
   id        String    @id @default(uuid())
   userId    String    @map("user_id")
   tokenHash String    @map("token_hash")
-  expiresAt DateTime @map("expires_at")
+  expiresAt DateTime  @map("expires_at")
   revokedAt DateTime? @map("revoked_at")
   createdAt DateTime  @default(now()) @map("created_at")
 
@@ -146,7 +142,6 @@ model Course {
   title           String
   description     String?
   language        Language
-  category        CourseCategory
   isPublished     Boolean        @default(false) @map("is_published")
   price           Decimal?       @db.Decimal(10, 2)
   tags            String[]       @default([])
@@ -164,18 +159,17 @@ model Course {
   courseProgress     CourseProgress[]
 
   @@index([teacherId])
-  @@index([category])
   @@index([level])
   @@map("courses")
 }
 
 model CourseModule {
-  id        String   @id @default(uuid())
-  courseId  String   @map("course_id")
-  title     String
-  orderIndex Int     @map("order_index")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(uuid())
+  courseId   String   @map("course_id")
+  title      String
+  orderIndex Int      @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   materials CourseMaterial[]
@@ -185,18 +179,18 @@ model CourseModule {
 }
 
 model CourseMaterial {
-  id          String             @id @default(uuid())
-  moduleId    String             @map("module_id")
-  type        CourseMaterialType
-  title       String
-  content     Json               // JSON/JSONB: scenario nodes, video youtube_video_id, etc.
-  orderIndex  Int                @map("order_index")
-  createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime           @updatedAt @map("updated_at")
+  id         String             @id @default(uuid())
+  moduleId   String             @map("module_id")
+  type       CourseMaterialType
+  title      String
+  content    Json // JSON/JSONB: scenario nodes, video youtube_video_id, etc.
+  orderIndex Int                @map("order_index")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
 
-  module        CourseModule    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module         CourseModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   courseProgress CourseProgress[]
-  quizAttempts  QuizAttempt[]
+  quizAttempts   QuizAttempt[]
 
   @@index([moduleId])
   @@map("course_materials")
@@ -212,7 +206,7 @@ model UserCourseAccess {
   trialEndsAt    DateTime?            @map("trial_ends_at")
   subscriptionId String?              @map("subscription_id")
   paymentId      String?              @map("payment_id")
-  createdAt      DateTime            @default(now()) @map("created_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -235,14 +229,14 @@ model Subscription {
   currentPeriodStart   DateTime?          @map("current_period_start")
   currentPeriodEnd     DateTime?          @map("current_period_end")
   canceledAt           DateTime?          @map("canceled_at")
-  cancellationReason   String?             @map("cancellation_reason")
+  cancellationReason   String?            @map("cancellation_reason")
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
 
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course            Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  userCourseAccess  UserCourseAccess[]
-  payments          Payment[]
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userCourseAccess UserCourseAccess[]
+  payments         Payment[]
 
   @@index([userId])
   @@index([courseId])
@@ -250,18 +244,18 @@ model Subscription {
 }
 
 model Payment {
-  id               String   @id @default(uuid())
-  userId           String   @map("user_id")
-  courseId         String?  @map("course_id")
-  subscriptionId   String?  @map("subscription_id")
-  stripeInvoiceId  String   @unique @map("stripe_invoice_id")
-  amount           Decimal  @db.Decimal(10, 2)
-  currency         String
-  status           String
-  createdAt        DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  courseId        String?  @map("course_id")
+  subscriptionId  String?  @map("subscription_id")
+  stripeInvoiceId String   @unique @map("stripe_invoice_id")
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String
+  status          String
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course           Course?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course           Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
   subscription     Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   userCourseAccess UserCourseAccess[]
 
@@ -279,16 +273,16 @@ model StripeWebhookEvent {
 // ─── Progress & Quizzes ────────────────────────────────────────────────────
 
 model CourseProgress {
-  id               String    @id @default(uuid())
-  userId           String    @map("user_id")
-  courseId         String    @map("course_id")
-  courseMaterialId String?   @map("course_material_id")
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  courseId         String   @map("course_id")
+  courseMaterialId String?  @map("course_material_id")
   completedAt      DateTime @map("completed_at")
-  score            Decimal?  @db.Decimal(5, 2)
-  createdAt        DateTime  @default(now()) @map("created_at")
+  score            Decimal? @db.Decimal(5, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course         Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseMaterial CourseMaterial? @relation(fields: [courseMaterialId], references: [id], onDelete: SetNull)
 
   @@unique([userId, courseId, courseMaterialId])
@@ -305,7 +299,7 @@ model QuizAttempt {
   completedAt      DateTime? @map("completed_at")
   createdAt        DateTime  @default(now()) @map("created_at")
 
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseMaterial CourseMaterial @relation(fields: [courseMaterialId], references: [id], onDelete: Cascade)
 
   @@index([userId])

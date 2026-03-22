@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { CourseCategory, Language, Level, Role, UserCourseAccessType } from "../../generated/prisma/enums";
+import {Language, Level, Role, UserCourseAccessType } from "../../generated/prisma/enums";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CloudinaryService } from "../../cloudinary/cloudinary.service";
 import { CreateCourseDto } from "./dto/create-course.dto";
@@ -22,24 +22,66 @@ export class CourseService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  /**
+   * Курси, до яких у користувача є активний доступ (trial без прострочки, purchase, subscription).
+   */
+  async findMyAccessibleCourses(userId: string) {
+    try {
+      const accesses = await this.prisma.userCourseAccess.findMany({
+        where: { userId },
+        include: { course: true },
+        orderBy: { createdAt: "desc" },
+      });
+      const now = new Date();
+      const active = accesses.filter((a) => {
+        if (a.accessType !== UserCourseAccessType.trial) return true;
+        if (!a.trialEndsAt) return true;
+        return a.trialEndsAt >= now;
+      });
+      const courseIds = active.map((a) => a.courseId);
+      const videoByCourse =
+        await this.countVideoMaterialsByCourseIds(courseIds);
+      return active.map((a) => ({
+        ...this.serializeCourse(a.course as Record<string, unknown>),
+        videoLessonCount: videoByCourse.get(a.courseId) ?? 0,
+        my_access: {
+          access_type: a.accessType,
+          ...(a.accessType === "trial" &&
+            a.trialEndsAt && {
+              trial_ends_at: a.trialEndsAt.toISOString(),
+            }),
+        },
+      }));
+    } catch (error) {
+      throw this.mapPrismaError(error);
+    }
+  }
 
   async findAll(filters?: ListCoursesQueryDto) {
     try {
       const where: {
         isPublished: boolean;
-        category?: CourseCategory;
         language?: Language;
         tags?: { hasSome: string[] };
         level?: Level;
+        title?: { contains: string; mode: "insensitive" };
+        description?: { contains: string; mode: "insensitive" };
       } = {
         isPublished: true,
       };
-      if (filters?.category) where.category = filters.category;
       if (filters?.language) where.language = filters.language;
       if (filters?.level) where.level = filters.level;
+      const titleTrim = filters?.title?.trim();
+      if (titleTrim) {
+        where.title = { contains: titleTrim, mode: "insensitive" };
+      }
+      const descTrim = filters?.description?.trim();
+      if (descTrim) {
+        where.description = { contains: descTrim, mode: "insensitive" };
+      }
       if (filters?.tags) {
         const tagsArray = filters.tags
-          .split(',')
+          .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
         if (tagsArray.length > 0) where.tags = { hasSome: tagsArray };
@@ -49,17 +91,19 @@ export class CourseService {
         where,
         orderBy: { createdAt: "desc" },
       });
-      return courses.map((c) => this.serializeCourse(c));
+      const videoByCourse = await this.countVideoMaterialsByCourseIds(
+        courses.map((c) => c.id)
+      );
+      return courses.map((c) => ({
+        ...this.serializeCourse(c as Record<string, unknown>),
+        videoLessonCount: videoByCourse.get(c.id) ?? 0,
+      }));
     } catch (error) {
       throw this.mapPrismaError(error);
     }
   }
 
-  async findById(
-    id: string,
-    includeModules = true,
-    userId?: string | null,
-  ) {
+  async findById(id: string, includeModules = true, userId?: string | null) {
     try {
       const course = await this.prisma.course.findUnique({
         where: { id },
@@ -78,12 +122,14 @@ export class CourseService {
         throw new NotFoundException(`Курс з id ${id} не знайдено`);
       }
 
-      if (!userId) return this.serializeCourse(course as Record<string, unknown>) as any;
+      if (!userId)
+        return this.serializeCourse(course as Record<string, unknown>) as any;
 
       const access = await this.prisma.userCourseAccess.findUnique({
         where: { userId_courseId: { userId, courseId: id } },
       });
-      if (!access) return this.serializeCourse(course as Record<string, unknown>) as any;
+      if (!access)
+        return this.serializeCourse(course as Record<string, unknown>) as any;
 
       const firstModule =
         "modules" in course &&
@@ -98,14 +144,17 @@ export class CourseService {
 
       const my_access = {
         access_type: access.accessType,
-        ...(access.accessType === "trial" && access.trialEndsAt && {
-          trial_ends_at: access.trialEndsAt.toISOString(),
-        }),
+        ...(access.accessType === "trial" &&
+          access.trialEndsAt && {
+            trial_ends_at: access.trialEndsAt.toISOString(),
+          }),
         ...(access.accessType === "trial" &&
           firstModuleId && { first_module_id: firstModuleId }),
       };
 
-      const serialized = this.serializeCourse(course as Record<string, unknown>);
+      const serialized = this.serializeCourse(
+        course as Record<string, unknown>
+      );
       return { ...serialized, my_access } as any;
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -120,12 +169,13 @@ export class CourseService {
           title: dto.title,
           description: dto.description ?? null,
           language: dto.language,
-          category: dto.category,
           isPublished: dto.is_published ?? false,
           ...(dto.price !== undefined && { price: dto.price }),
           tags: dto.tags ?? [],
           ...(dto.level !== undefined && { level: dto.level }),
-          ...(dto.duration_hours !== undefined && { durationHours: dto.duration_hours }),
+          ...(dto.duration_hours !== undefined && {
+            durationHours: dto.duration_hours,
+          }),
         },
       });
       return this.serializeCourse(course as Record<string, unknown>);
@@ -145,14 +195,15 @@ export class CourseService {
             description: dto.description,
           }),
           ...(dto.language !== undefined && { language: dto.language }),
-          ...(dto.category !== undefined && { category: dto.category }),
           ...(dto.is_published !== undefined && {
             isPublished: dto.is_published,
           }),
           ...(dto.price !== undefined && { price: dto.price }),
           ...(dto.tags !== undefined && { tags: dto.tags }),
           ...(dto.level !== undefined && { level: dto.level }),
-          ...(dto.duration_hours !== undefined && { durationHours: dto.duration_hours }),
+          ...(dto.duration_hours !== undefined && {
+            durationHours: dto.duration_hours,
+          }),
         },
       });
       return this.serializeCourse(course as Record<string, unknown>);
@@ -200,7 +251,9 @@ export class CourseService {
 
   async startTrial(userId: string, courseId: string) {
     try {
-      const trialDaysRaw = this.configService.get<string | number>("TRIAL_DAYS");
+      const trialDaysRaw = this.configService.get<string | number>(
+        "TRIAL_DAYS"
+      );
       const trialDays = trialDaysRaw != null ? Number(trialDaysRaw) : 7;
       if (!Number.isFinite(trialDays) || trialDays < 1) {
         throw new BadRequestException("TRIAL_DAYS має бути додатним числом");
@@ -212,7 +265,8 @@ export class CourseService {
       }
 
       const user = await this.userService.findUserById(userId);
-      if (!user) throw new NotFoundException(`Користувач з id ${userId} не знайдено`);
+      if (!user)
+        throw new NotFoundException(`Користувач з id ${userId} не знайдено`);
       if (user.role !== Role.student) {
         throw new BadRequestException("Тільки студент може активувати trial");
       }
@@ -222,7 +276,7 @@ export class CourseService {
       });
       if (existingAccess) {
         throw new ConflictException(
-          "У вас вже є доступ до цього курсу (trial, купівля або підписка)",
+          "У вас вже є доступ до цього курсу (trial, купівля або підписка)"
         );
       }
 
@@ -255,7 +309,38 @@ export class CourseService {
     }
   }
 
-  /** Перетворює Decimal price на number; додає image_url для API */
+  /** Лише для каталогу: кількість матеріалів type=video по курсах (batch). */
+  private async countVideoMaterialsByCourseIds(
+    courseIds: string[]
+  ): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (courseIds.length === 0) return map;
+    const modules = await this.prisma.courseModule.findMany({
+      where: { courseId: { in: courseIds } },
+      select: { id: true, courseId: true },
+    });
+    if (modules.length === 0) return map;
+    const moduleIdToCourseId = new Map(
+      modules.map((m) => [m.id, m.courseId] as const)
+    );
+    const moduleIds = modules.map((m) => m.id);
+    const grouped = await this.prisma.courseMaterial.groupBy({
+      by: ["moduleId"],
+      where: {
+        type: CourseMaterialType.video,
+        moduleId: { in: moduleIds },
+      },
+      _count: { _all: true },
+    });
+    for (const row of grouped) {
+      const courseId = moduleIdToCourseId.get(row.moduleId);
+      if (!courseId) continue;
+      map.set(courseId, (map.get(courseId) ?? 0) + row._count._all);
+    }
+    return map;
+  }
+
+  /** Перетворює Decimal price на number для JSON-відповіді */
   private serializeCourse<T extends Record<string, unknown>>(course: T): T {
     if (course == null || typeof course !== "object") return course;
     const price = course.price;

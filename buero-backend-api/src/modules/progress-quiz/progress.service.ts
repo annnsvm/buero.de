@@ -169,7 +169,6 @@ export class ProgressService {
       where: {
         isPublished: true,
         id: { notIn: Array.from(completedCourseIds) },
-        category: 'language',
       },
       orderBy: { createdAt: 'asc' },
     });
