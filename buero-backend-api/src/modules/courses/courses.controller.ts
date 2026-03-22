@@ -39,12 +39,17 @@ export class CoursesController {
   @ApiOperation({
     summary: "Список опублікованих курсів (каталог)",
     description:
-      "Публічний каталог опублікованих курсів (is_published = true). Використовується на лендінгу. Опційні query: category (language | sociocultural), language (en | de), tags (через кому, напр. Language,Integration), level (A1|A2|B1|B2). У відповіді є поля price, tags, level, durationHours.",
+      "Публічний каталог опублікованих курсів (is_published = true). Опційні query: title, description (підрядок, без урахування регістру), language, tags (через кому), level. У відповіді: price, tags, level, durationHours, videoLessonCount (кількість матеріалів type=video).",
   })
   @ApiQuery({
-    name: "category",
+    name: "title",
     required: false,
-    enum: ["language", "sociocultural"],
+    description: "Підрядок у назві курсу",
+  })
+  @ApiQuery({
+    name: "description",
+    required: false,
+    description: "Підрядок у описі курсу",
   })
   @ApiQuery({ name: "language", required: false, enum: ["en", "de"] })
   @ApiQuery({
@@ -56,10 +61,28 @@ export class CoursesController {
   @ApiResponse({
     status: 200,
     description:
-      "Масив опублікованих курсів (поля: price, tags, level, durationHours тощо)",
+      "Масив курсів: price, tags, level, durationHours, videoLessonCount",
   })
   list(@Query() query: ListCoursesQueryDto) {
     return this.courseService.findAll(query);
+  }
+
+  @Get("me")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("access_token")
+  @ApiOperation({
+    summary: "Мої курси (з доступом)",
+    description:
+      "Список курсів, до яких у поточного користувача є активний доступ: trial (не прострочений), purchase або subscription. JWT обов'язковий. Порожній масив, якщо доступів немає.",
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      "Масив курсів з videoLessonCount та my_access: { access_type, trial_ends_at? }",
+  })
+  @ApiResponse({ status: 401, description: "Не авторизовано" })
+  myAccessibleCourses(@CurrentUser("id") userId: string) {
+    return this.courseService.findMyAccessibleCourses(userId);
   }
 
   @Get(":id")
@@ -79,7 +102,6 @@ export class CoursesController {
         title: "German A1 Basics",
         description: "Introduction to German language.",
         language: "en",
-        category: "language",
         isPublished: true,
         price: 29.99,
         tags: ["Language", "Integration"],
@@ -170,7 +192,7 @@ export class CoursesController {
   @ApiOperation({
     summary: "Оновити курс",
     description:
-      "Тільки для вчителів. Оновити курс за id. Поля body: title, description, language, category, is_published (усі опційні). 404, якщо не знайдено.",
+      "Тільки для вчителів. Оновити курс за id. Поля body: title, description, language, is_published, price, tags, level, duration_hours (усі опційні). 404, якщо не знайдено.",
   })
   @ApiParam({ name: "id", description: "UUID курсу" })
   @ApiBody({ type: UpdateCourseDto })
