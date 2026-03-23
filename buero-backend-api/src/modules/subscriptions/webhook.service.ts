@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-} from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Stripe from "stripe";
 import { SubscriptionStatus } from "src/generated/prisma/enums";
@@ -27,27 +22,6 @@ export class WebhookService {
       );
     }
     this.stripe = new Stripe(secret);
-  }
-
-  /**
-   * Replays the same logic as `checkout.session.completed` webhook by fetching the session
-   * from Stripe. Use when webhooks cannot reach the server (e.g. localhost without Stripe CLI).
-   * Caller must verify the session belongs to the authenticated user.
-   */
-  async syncCheckoutSessionById(
-    sessionId: string,
-    expectedUserId: string,
-  ): Promise<void> {
-    const session = await this.stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["subscription"],
-    });
-    const metaUserId = session.metadata?.user_id;
-    if (!metaUserId || metaUserId !== expectedUserId) {
-      throw new ForbiddenException(
-        "This checkout session does not belong to the current user",
-      );
-    }
-    await this.handleCheckoutSessionCompleted(session);
   }
 
   async handleStripeWebhook(
