@@ -47,6 +47,7 @@ export const mapApiModulesToCourseStructure = (
       id: mat.id,
       title: mat.title,
       duration: formatMaterialDuration(mat),
+      type: mat.type,
     })),
   }));
 };
@@ -76,6 +77,49 @@ export const findNextVideoMaterialId = (
     if (String(flat[i].material.type).toLowerCase() === 'video') return flat[i].material.id;
   }
   return null;
+};
+
+/** Parsed quiz for the learning UI (matches editor payload in `courseMaterialApiPayload.helpers`). */
+export type ParsedQuizAnswer = { id: string; text: string; isCorrect: boolean };
+export type ParsedQuizQuestion = { id: string; question: string; answers: ParsedQuizAnswer[] };
+
+export const parseQuizMaterialContent = (material: ApiCourseMaterial): ParsedQuizQuestion[] => {
+  if (String(material.type).toLowerCase() !== 'quiz' || !material.content || typeof material.content !== 'object') {
+    return [];
+  }
+  const quizQuestionsRaw = Array.isArray((material.content as { questions?: unknown }).questions)
+    ? ((material.content as { questions: Array<Record<string, unknown>> }).questions)
+    : [];
+
+  return quizQuestionsRaw.map((questionRaw, qIndex) => {
+    const questionId =
+      typeof questionRaw.id === 'string' && questionRaw.id.trim()
+        ? questionRaw.id
+        : `q${qIndex + 1}`;
+    const questionText = typeof questionRaw.text === 'string' ? questionRaw.text : '';
+    const correctRaw = questionRaw.correct;
+    const correctIds = Array.isArray(correctRaw)
+      ? correctRaw.map((v) => String(v))
+      : typeof correctRaw === 'string'
+        ? [correctRaw]
+        : [];
+    const optionsRaw = Array.isArray(questionRaw.options)
+      ? (questionRaw.options as Array<Record<string, unknown>>)
+      : [];
+    const answers: ParsedQuizAnswer[] = optionsRaw.map((optRaw, optIndex) => {
+      const optionId =
+        typeof optRaw.id === 'string' && optRaw.id.trim()
+          ? optRaw.id
+          : `${questionId}_opt_${optIndex + 1}`;
+      const optionText = typeof optRaw.text === 'string' ? optRaw.text : '';
+      return {
+        id: optionId,
+        text: optionText,
+        isCorrect: correctIds.includes(optionId),
+      };
+    });
+    return { id: questionId, question: questionText, answers };
+  });
 };
 
 const youtubeEmbedUrl = (material: ApiCourseMaterial): string => {

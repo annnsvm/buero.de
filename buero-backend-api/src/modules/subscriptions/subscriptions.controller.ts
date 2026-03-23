@@ -10,14 +10,19 @@ import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CourseAccessResponseDto } from "./dto/course-access-response.dto";
 import { CreateCheckoutDto } from "./dto/create-checkout.dto";
+import { SyncCheckoutDto } from "./dto/sync-checkout.dto";
 import { SubscriptionsService } from "./subscriptions.service";
+import { WebhookService } from "./webhook.service";
 
 @ApiTags("subscriptions")
 @Controller("subscriptions")
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth("access_token")
 export class SubscriptionsController {
-  constructor(private readonly subscriptionsService: SubscriptionsService) {}
+  constructor(
+    private readonly subscriptionsService: SubscriptionsService,
+    private readonly webhookService: WebhookService,
+  ) {}
 
   @Post("checkout")
   @ApiOperation({
@@ -40,6 +45,29 @@ export class SubscriptionsController {
     @Body() body: CreateCheckoutDto,
   ): Promise<{ url: string }> {
     return this.subscriptionsService.createCheckoutSession(userId, body);
+  }
+
+  @Post("sync-checkout")
+  @ApiOperation({
+    summary: "Підтвердити доступ після Checkout (коли webhook недоступний)",
+    description:
+      "Отримує Checkout Session з Stripe і застосовує ті самі зміни, що й подія checkout.session.completed. Потрібен на localhost без Stripe CLI. JWT обов'язковий; session_id має належати поточному користувачу (metadata.user_id).",
+  })
+  @ApiBody({ type: SyncCheckoutDto })
+  @ApiResponse({
+    status: 200,
+    description: "Доступ синхронізовано",
+    schema: { type: "object", properties: { ok: { type: "boolean" } } },
+  })
+  @ApiResponse({ status: 400, description: "Невалідні дані" })
+  @ApiResponse({ status: 403, description: "Session не належить користувачу" })
+  @ApiResponse({ status: 401, description: "Не авторизовано" })
+  async syncCheckoutAfterReturn(
+    @CurrentUser("id") userId: string,
+    @Body() body: SyncCheckoutDto,
+  ): Promise<{ ok: true }> {
+    await this.webhookService.syncCheckoutSessionById(body.session_id, userId);
+    return { ok: true };
   }
 
   @Get("me")

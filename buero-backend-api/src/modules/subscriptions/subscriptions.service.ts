@@ -14,6 +14,15 @@ import type { CourseAccessResponseDto } from "./dto/course-access-response.dto";
 export class SubscriptionsService {
   private readonly stripe: Stripe;
 
+  /** Stripe replaces `{CHECKOUT_SESSION_ID}` in the success URL after payment. */
+  static appendCheckoutSessionId(successUrl: string): string {
+    if (successUrl.includes("{CHECKOUT_SESSION_ID}")) {
+      return successUrl;
+    }
+    const separator = successUrl.includes("?") ? "&" : "?";
+    return `${successUrl}${separator}session_id={CHECKOUT_SESSION_ID}`;
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
@@ -92,7 +101,9 @@ export class SubscriptionsService {
 
     const baseUrl =
       this.configService.get<string>("CORS_ORIGIN") ?? "http://localhost:5173";
-    const successUrl = dto.success_url ?? `${baseUrl}/purchase/success`;
+    const successUrl = SubscriptionsService.appendCheckoutSessionId(
+      dto.success_url ?? `${baseUrl}/purchase/success`,
+    );
     const cancelUrl = dto.cancel_url ?? `${baseUrl}/purchase/cancel`;
 
     try {
