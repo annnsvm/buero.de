@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   },
   courses: {
     list: '/courses',
+    manage: '/courses/manage',
     my: '/courses/me',
     byId: (id: string) => `/courses/${id}`,
     create: '/courses',
