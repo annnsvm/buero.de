@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
+    "@nestjs/cli": "^11.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/jwt": "^11.0.2",
@@ -38,7 +39,6 @@
     "stripe": "^20.4.1"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.0",
     "@nestjs/testing": "^11.1.17",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.8",
