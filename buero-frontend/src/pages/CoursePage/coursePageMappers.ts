@@ -1,7 +1,6 @@
 import type { CourseModule } from '@/features/courses-catalog/CourseStructure';
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
 
-/** Фрагмент відповіді GET /courses/:id (дерево з бекенду, camelCase як у Prisma/Nest) */
 export type ApiCourseMaterial = {
   id: string;
   title: string;
@@ -27,12 +26,22 @@ export type ApiCourseWithTree = {
 const sortByOrder = <T extends { orderIndex?: number }>(items: T[]): T[] =>
   [...items].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
 
-const formatMaterialDuration = (mat: ApiCourseMaterial): string => {
+export const formatMaterialDuration = (mat: ApiCourseMaterial): string => {
   if (mat.type === 'video' && mat.content && typeof mat.content === 'object') {
     const d = (mat.content as { duration?: string }).duration;
     if (typeof d === 'string' && d.trim()) return d;
   }
   return '—';
+};
+
+export const parseDurationLabelToSeconds = (label: string): number | null => {
+  const t = label.trim();
+  if (!t || t === '—') return null;
+  const parts = t.split(':').map((p) => parseInt(p.trim(), 10));
+  if (parts.some((n) => Number.isNaN(n))) return null;
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return null;
 };
 
 export const mapApiModulesToCourseStructure = (
@@ -65,7 +74,6 @@ export const flattenMaterialsInOrder = (course: ApiCourseWithTree): FlatMaterial
   return out;
 };
 
-/** Наступний матеріал типу `video` після поточного (у межах курсу, між модулями). */
 export const findNextVideoMaterialId = (
   flat: FlatMaterialRef[],
   currentMaterialId: string | null,
@@ -79,8 +87,7 @@ export const findNextVideoMaterialId = (
   return null;
 };
 
-/** Parsed quiz for the learning UI (matches editor payload in `courseMaterialApiPayload.helpers`). */
-export type ParsedQuizAnswer = { id: string; text: string; isCorrect: boolean };
+export type ParsedQuizAnswer = { id: string; text: string };
 export type ParsedQuizQuestion = { id: string; question: string; answers: ParsedQuizAnswer[] };
 
 export const parseQuizMaterialContent = (material: ApiCourseMaterial): ParsedQuizQuestion[] => {
@@ -97,12 +104,6 @@ export const parseQuizMaterialContent = (material: ApiCourseMaterial): ParsedQui
         ? questionRaw.id
         : `q${qIndex + 1}`;
     const questionText = typeof questionRaw.text === 'string' ? questionRaw.text : '';
-    const correctRaw = questionRaw.correct;
-    const correctIds = Array.isArray(correctRaw)
-      ? correctRaw.map((v) => String(v))
-      : typeof correctRaw === 'string'
-        ? [correctRaw]
-        : [];
     const optionsRaw = Array.isArray(questionRaw.options)
       ? (questionRaw.options as Array<Record<string, unknown>>)
       : [];
@@ -115,7 +116,6 @@ export const parseQuizMaterialContent = (material: ApiCourseMaterial): ParsedQui
       return {
         id: optionId,
         text: optionText,
-        isCorrect: correctIds.includes(optionId),
       };
     });
     return { id: questionId, question: questionText, answers };
@@ -144,6 +144,7 @@ export const buildLearningLessonFromMaterial = (
       : material.type.charAt(0).toUpperCase() + material.type.slice(1);
 
   return {
+    materialId: material.id,
     courseTitle,
     progressText:
       totalMaterials > 0

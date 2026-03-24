@@ -18,6 +18,15 @@ import { ROUTES } from '@/helpers/routes';
 import { LOADING_STATUS } from '@/helpers/lodaingStatus';
 import { useSelector } from 'react-redux';
 import { selectAuthStatus } from '@/redux/slices/auth';
+import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
+
+const PENDING_CHECKOUT_KEY = 'pending_checkout';
+
+type PendingCheckoutPayload = {
+  courseId: string;
+  successUrl?: string;
+  cancelUrl?: string;
+};
 
 const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
   const dispatch = useAppDispatch();
@@ -55,6 +64,34 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
       ).unwrap();
 
       handleClose();
+
+      const pendingCheckoutRaw = sessionStorage.getItem(PENDING_CHECKOUT_KEY);
+      if (pendingCheckoutRaw) {
+        sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+        try {
+          const pendingCheckout = JSON.parse(pendingCheckoutRaw) as PendingCheckoutPayload;
+          if (pendingCheckout.courseId) {
+            const checkoutAction = await dispatch(
+              createCheckoutSessionThunk({
+                courseId: pendingCheckout.courseId,
+                successUrl: pendingCheckout.successUrl,
+                cancelUrl: pendingCheckout.cancelUrl,
+              }),
+            );
+            if (createCheckoutSessionThunk.fulfilled.match(checkoutAction)) {
+              const checkoutUrl = checkoutAction.payload.url;
+              if (checkoutUrl) {
+                sessionStorage.setItem('stripe_return', 'pending');
+                window.location.href = checkoutUrl;
+                return;
+              }
+            }
+          }
+        } catch {
+          // ignore malformed session payload, fallback to regular redirect
+        }
+      }
+
       navigate(redirectTo ?? ROUTES.COURSES);
     } catch (error) {
       const message =

@@ -4,9 +4,12 @@ import { NavLink, useParams } from 'react-router-dom';
 
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
+import { completeCourseMaterial, fetchCourseProgress } from '@/api/progressApi';
 import { CourseLearningSidebar, MaterialWindow, QuizLessonModal } from '@/features/course-learning';
+import type { QuizResultSummary } from '@/features/course-learning/QuizLessonModal';
 
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
+import { getErrorMessage } from '@/helpers/getErrorMessage';
 import { ROUTES } from '@/helpers/routes';
 import { selectCurrentUser } from '@/redux/slices/user/userSelectors';
 import {
@@ -14,7 +17,9 @@ import {
   buildLearningLessonFromMaterial,
   findNextVideoMaterialId,
   flattenMaterialsInOrder,
+  formatMaterialDuration,
   mapApiModulesToCourseStructure,
+  parseDurationLabelToSeconds,
   parseQuizMaterialContent,
 } from './coursePageMappers';
 
@@ -26,6 +31,10 @@ const CoursePage: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
   const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [quizPlaceholderResult, setQuizPlaceholderResult] = useState<QuizResultSummary | null>(null);
+  const [completedMaterialIds, setCompletedMaterialIds] = useState<Set<string>>(() => new Set());
+  const [videoCompletionSaving, setVideoCompletionSaving] = useState(false);
+  const [videoCompletionError, setVideoCompletionError] = useState<string | null>(null);
   const mainScrollRef = useRef<HTMLDivElement>(null);
   const currentUser = useSelector(selectCurrentUser);
 
@@ -49,6 +58,7 @@ const CoursePage: React.FC = () => {
         const flat = flattenMaterialsInOrder(data);
         const firstId = flat[0]?.material.id ?? null;
         const firstMat = flat[0]?.material;
+        setQuizPlaceholderResult(null);
         setSelectedMaterialId(firstId);
         setQuizModalOpen(
           Boolean(firstMat && String(firstMat.type).toLowerCase() === 'quiz'),
@@ -74,6 +84,27 @@ const CoursePage: React.FC = () => {
     };
   }, [courseId]);
 
+  useEffect(() => {
+    if (!courseId || !course || currentUser?.role !== 'student') {
+      setCompletedMaterialIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    void fetchCourseProgress(courseId)
+      .then((res) => {
+        if (cancelled) return;
+        setCompletedMaterialIds(
+          new Set(res.completed_materials.map((row) => row.course_material_id)),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setCompletedMaterialIds(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId, course, currentUser?.role]);
+
   const structureModules = useMemo(
     () => mapApiModulesToCourseStructure(course?.modules),
     [course?.modules],
@@ -83,6 +114,11 @@ const CoursePage: React.FC = () => {
 
   const selectedMaterial = useMemo(
     () => flatMaterials.find((r) => r.material.id === selectedMaterialId)?.material,
+    [flatMaterials, selectedMaterialId],
+  );
+
+  const selectedModuleId = useMemo(
+    () => flatMaterials.find((r) => r.material.id === selectedMaterialId)?.moduleId ?? null,
     [flatMaterials, selectedMaterialId],
   );
 
@@ -105,37 +141,61 @@ const CoursePage: React.FC = () => {
     const idx = flatMaterials.findIndex((r) => r.material.id === selectedMaterialId);
     const ref = idx >= 0 ? flatMaterials[idx] : flatMaterials[0];
     if (!ref) return undefined;
-    return buildLearningLessonFromMaterial(
+    const base = buildLearningLessonFromMaterial(
       course.title,
       ref.material,
       idx >= 0 ? idx : 0,
       flatMaterials.length,
     );
-  }, [course, flatMaterials, selectedMaterialId]);
+    const total = flatMaterials.length;
+    const completedCount = flatMaterials.filter((r) =>
+      completedMaterialIds.has(r.material.id),
+    ).length;
+    return {
+      ...base,
+      progress: total > 0 ? Math.round((completedCount / total) * 100) : 0,
+      progressText:
+        total > 0 ? `${completedCount} of ${total} lessons completed` : '0 of 0 lessons completed',
+    };
+  }, [course, flatMaterials, selectedMaterialId, completedMaterialIds]);
 
-  /** Last non-quiz material before the selected quiz — shown behind the quiz modal overlay. */
-  const previousLessonBehindQuizModal: LearningLesson | undefined = useMemo(() => {
-    if (!course?.title || !isQuizSelected) return undefined;
-    const idx = flatMaterials.findIndex((r) => r.material.id === selectedMaterialId);
-    let prevIdx = idx - 1;
-    while (prevIdx >= 0) {
-      const mat = flatMaterials[prevIdx]?.material;
-      if (!mat) break;
-      if (String(mat.type).toLowerCase() !== 'quiz') {
-        return buildLearningLessonFromMaterial(
-          course.title,
-          mat,
-          prevIdx,
-          flatMaterials.length,
-        );
-      }
-      prevIdx -= 1;
+  const isStudentVideoProgress =
+    currentUser?.role === 'student' &&
+    Boolean(
+      selectedMaterialId &&
+        selectedMaterial &&
+        String(selectedMaterial.type).toLowerCase() === 'video',
+    );
+
+  const videoFallbackSeconds = useMemo(() => {
+    if (!selectedMaterial || String(selectedMaterial.type).toLowerCase() !== 'video') return null;
+    return parseDurationLabelToSeconds(formatMaterialDuration(selectedMaterial)) ?? 480;
+  }, [selectedMaterial]);
+
+  const handleMarkVideoComplete = useCallback(async () => {
+    if (
+      !courseId ||
+      !selectedMaterialId ||
+      !selectedModuleId ||
+      currentUser?.role !== 'student'
+    ) {
+      return;
     }
-    return undefined;
-  }, [course?.title, flatMaterials, isQuizSelected, selectedMaterialId]);
+    setVideoCompletionError(null);
+    setVideoCompletionSaving(true);
+    try {
+      await completeCourseMaterial(courseId, selectedModuleId, selectedMaterialId);
+      setCompletedMaterialIds((prev) => new Set(prev).add(selectedMaterialId));
+    } catch (err: unknown) {
+      setVideoCompletionError(getErrorMessage(err, 'Could not update lesson progress.'));
+    } finally {
+      setVideoCompletionSaving(false);
+    }
+  }, [courseId, selectedMaterialId, selectedModuleId, currentUser?.role]);
 
   const handleSelectLesson = useCallback(
     (payload: { moduleId: string; materialId: string }) => {
+      setQuizPlaceholderResult(null);
       setSelectedMaterialId(payload.materialId);
       const mat = flatMaterials.find((r) => r.material.id === payload.materialId)?.material;
       const isQuiz = Boolean(mat && String(mat.type).toLowerCase() === 'quiz');
@@ -146,11 +206,19 @@ const CoursePage: React.FC = () => {
 
   const handleNextVideoLesson = useCallback(() => {
     if (!nextVideoMaterialId) return;
+    setQuizPlaceholderResult(null);
+    const mat = flatMaterials.find((r) => r.material.id === nextVideoMaterialId)?.material;
+    const isQuiz = Boolean(mat && String(mat.type).toLowerCase() === 'quiz');
+    setQuizModalOpen(isQuiz);
     setSelectedMaterialId(nextVideoMaterialId);
-  }, [nextVideoMaterialId]);
+  }, [nextVideoMaterialId, flatMaterials]);
 
   useEffect(() => {
     mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedMaterialId]);
+
+  useEffect(() => {
+    setVideoCompletionError(null);
   }, [selectedMaterialId]);
 
   if (!courseId) {
@@ -183,6 +251,7 @@ const CoursePage: React.FC = () => {
         modules={structureModules}
         onSelectLesson={handleSelectLesson}
         selectedMaterialId={selectedMaterialId}
+        completedMaterialIds={completedMaterialIds}
       />
 
       <div ref={mainScrollRef} className="min-w-0 flex-1 overflow-y-auto">
@@ -212,22 +281,47 @@ const CoursePage: React.FC = () => {
           ) : null}
           {flatMaterials.length > 0 && currentLesson && !isQuizSelected ? (
             <MaterialWindow
+              key={selectedMaterialId ?? currentLesson.materialId ?? currentLesson.videoUrl}
               lesson={currentLesson}
               hasNextVideoLesson={Boolean(nextVideoMaterialId)}
               onNextVideoLesson={handleNextVideoLesson}
+              isVideoLessonCompleted={
+                isStudentVideoProgress && selectedMaterialId
+                  ? completedMaterialIds.has(selectedMaterialId)
+                  : false
+              }
+              onMarkVideoComplete={
+                isStudentVideoProgress && selectedModuleId ? handleMarkVideoComplete : undefined
+              }
+              isVideoCompletionSaving={videoCompletionSaving}
+              videoCompletionError={videoCompletionError}
+              fallbackMarkReadyAfterSeconds={videoFallbackSeconds}
             />
           ) : null}
-          {flatMaterials.length > 0 && isQuizSelected && quizModalOpen && previousLessonBehindQuizModal ? (
-            <MaterialWindow lesson={previousLessonBehindQuizModal} hasNextVideoLesson={false} />
-          ) : null}
-          {flatMaterials.length > 0 && isQuizSelected && !quizModalOpen ? (
-            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
+          {flatMaterials.length > 0 && isQuizSelected ? (
+            <div className="flex h-[100vh] flex-col items-center justify-center gap-4 px-6 text-center">
               <p className="max-w-md text-lg font-medium text-[var(--color-text-primary)]">
                 {selectedMaterial?.title ?? 'Quiz'}
               </p>
-              <p className="max-w-md text-sm text-[var(--color-text-secondary)]">
-                Open the quiz to answer the questions for this lesson.
-              </p>
+              {quizPlaceholderResult ? (
+                <div
+                  className="max-w-md rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-neutral-white)] px-6 py-5 text-center"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">Your last result</p>
+                  <p className="mt-2 text-2xl font-bold tabular-nums text-[var(--color-primary)]">
+                    {quizPlaceholderResult.percent}%
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                    {quizPlaceholderResult.correct} of {quizPlaceholderResult.total} questions correct
+                  </p>
+                </div>
+              ) : (
+                <p className="max-w-md text-sm text-[var(--color-text-secondary)]">
+                  Open the quiz to answer the questions for this lesson.
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => setQuizModalOpen(true)}
@@ -244,9 +338,11 @@ const CoursePage: React.FC = () => {
         <QuizLessonModal
           isOpen={quizModalOpen}
           onOpenChange={setQuizModalOpen}
+          courseMaterialId={selectedMaterial.id}
           greetingName={greetingName}
           quizMaterialTitle={selectedMaterial.title || 'Quiz'}
           questions={parsedQuizQuestions}
+          onQuizResult={setQuizPlaceholderResult}
         />
       ) : null}
     </div>

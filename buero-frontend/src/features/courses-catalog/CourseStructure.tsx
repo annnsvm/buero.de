@@ -22,12 +22,15 @@ type CourseStructureProps = {
   modules: CourseModule[];
   onSelectLesson?: (payload: { moduleId: string; materialId: string }) => void;
   selectedMaterialId?: string | null;
+  /** Пройдені матеріали з course_progress (відео та квіз — різні кольори в списку). */
+  completedMaterialIds?: ReadonlySet<string>;
 };
 
 const CourseStructure: React.FC<CourseStructureProps> = ({
   modules,
   onSelectLesson,
   selectedMaterialId,
+  completedMaterialIds,
 }) => {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
     const first = modules[0]?.id;
@@ -88,6 +91,29 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
               <div className="px-8 py-2">
                 {mod.lessons.map((lesson) => {
                   const isQuiz = String(lesson.type).toLowerCase() === 'quiz';
+                  const isVideo = String(lesson.type).toLowerCase() === 'video';
+                  const isCompleted = completedMaterialIds?.has(lesson.id) ?? false;
+                  const isCompletedVideo = isVideo && isCompleted;
+                  const isCompletedQuiz = isQuiz && isCompleted;
+                  const rowBgClass =
+                    selectedMaterialId === lesson.id
+                      ? 'bg-[var(--color-dawn-pink-light)]'
+                      : isCompletedVideo
+                        ? 'bg-[#f5f3f0]'
+                        : isCompletedQuiz
+                          ? 'bg-[#eef2fc]'
+                          : '';
+                  const iconWrapClass = isCompletedVideo
+                    ? 'bg-[#6b9f7a]'
+                    : isCompletedQuiz
+                      ? 'bg-[#6b7eb8]'
+                      : 'bg-[var(--color-primary)]';
+                  const lessonIconName =
+                    isCompletedVideo || isCompletedQuiz
+                      ? ICON_NAMES.CHECK
+                      : isQuiz
+                        ? ICON_NAMES.HELP
+                        : ICON_NAMES.PLAY_ARROW;
                   return (
                   <div
                     key={lesson.id}
@@ -98,18 +124,14 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
                       onClick={() =>
                         onSelectLesson?.({ moduleId: mod.id, materialId: lesson.id })
                       }
-                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${
-                        selectedMaterialId === lesson.id
-                          ? 'bg-[var(--color-dawn-pink-light)]'
-                          : ''
-                      }`}
+                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${rowBgClass}`}
                     >
                       <span
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-primary)]"
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconWrapClass}`}
                         aria-hidden
                       >
                         <Icon
-                          name={isQuiz ? ICON_NAMES.HELP : ICON_NAMES.PLAY_ARROW}
+                          name={lessonIconName}
                           size={18}
                           color="var(--color-white)"
                         />

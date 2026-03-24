@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { apiInstance } from '@/api/apiInstance';
+import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 import type { CoursesCatalogFilters } from './coursesCatalogSlice';
 
@@ -23,13 +24,19 @@ export const fetchCoursesCatalogThunk = createAsyncThunk<
   void,
    { state: any; rejectValue: string } 
 >('coursesCatalog/fetch', async (_, { getState, rejectWithValue }) => {
-  const { filters, page, pageSize } = (getState() as any).coursesCatalog;
+  const state = getState() as any;
+  const { filters, page, pageSize } = state.coursesCatalog;
+  const currentUserRole = state.user?.currentUser?.role as 'student' | 'teacher' | undefined;
+  const endpoint =
+    currentUserRole === 'teacher'
+      ? API_ENDPOINTS.courses.manage
+      : API_ENDPOINTS.courses.list;
 
   const query = buildQueryString(filters, page, pageSize);
 
   try {
     const res = await apiInstance.get<FetchCoursesResponse>(
-      `/courses?${query}`
+      query ? `${endpoint}?${query}` : endpoint,
     );
 
     const data = res.data;
