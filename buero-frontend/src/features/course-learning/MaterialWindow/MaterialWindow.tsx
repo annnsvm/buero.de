@@ -248,14 +248,6 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
             </div>
 
             <div className="flex flex-row gap-3 sm:gap-4 lg:min-w-[320px] lg:items-end">
-              <div className="flex items-center gap-2 text-xs text-[#6f6865] sm:text-sm lg:text-[15px]">
-                <Flame className="h-4 w-4 shrink-0 text-[#e87753]" />
-                <span className="shrink-0">
-                  {lesson.streak.length > 0 ? lesson.streak.length : '0'}{' '}
-                  {Number(lesson?.streak?.length === 1) ? 'day' : 'days'}
-                </span>
-              </div>
-
               <div className="flex w-full items-center gap-2 sm:gap-3 lg:max-w-[260px]">
                 <div className="h-1.5 flex-1 rounded-full bg-[#eedad2]">
                   <div
