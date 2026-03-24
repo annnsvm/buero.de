@@ -4,6 +4,7 @@ import { HeaderNavBarProps } from '@/types/components/layout/Header.types';
 import { NavLink } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
 import { selectIsAuthenticated } from '@/redux/slices/auth';
+import { selectUserRole } from '@/redux/slices/user/userSelectors';
 
 const activeClassLight =
   'font-semibold text-[var(--color-primary)]';
@@ -13,6 +14,7 @@ const inactiveClassDark = 'text-[var(--color-text-primary)]';
 
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, className }) => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const role = useAppSelector(selectUserRole);
   const isHomeActive = pathname === '/' || pathname === ROUTES.HOME;
   const isCoursesActive = pathname === ROUTES.COURSES || pathname.startsWith('/courses/');
   const isMyLearningActive = pathname === ROUTES.MY_LEARNING;
@@ -29,7 +31,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
       <NavLink to={ROUTES.COURSES} className={getClass(isCoursesActive)}>
         Courses
       </NavLink>
-      {isAuthenticated && (
+      {isAuthenticated && role === 'student' && (
         <NavLink to={ROUTES.MY_LEARNING} className={getClass(isMyLearningActive)}>
           My learning
         </NavLink>
