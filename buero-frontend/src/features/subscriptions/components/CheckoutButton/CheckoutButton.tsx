@@ -1,8 +1,12 @@
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { selectIsAuthenticated } from '@/redux/slices/auth';
 import { selectSubscriptionStatus } from '@/redux/slices/subscriptions';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
+import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { CheckoutButtonProps } from '@/types/components/ui/CheckoutButton.types';
 import React from 'react';
+
+const PENDING_CHECKOUT_KEY = 'pending_checkout';
 
 const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   courseId,
@@ -13,10 +17,25 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectSubscriptionStatus);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isLoading = status === 'loading';
 
   const handleClick = async () => {
     if (isLoading) return;
+
+    if (!isAuthenticated) {
+      sessionStorage.setItem(
+        PENDING_CHECKOUT_KEY,
+        JSON.stringify({ courseId, successUrl, cancelUrl }),
+      );
+      dispatch(
+        openGlobalModal({
+          type: 'login',
+          redirectTo: '/courses',
+        }),
+      );
+      return;
+    }
 
     const resultAction = await dispatch(
       createCheckoutSessionThunk({ courseId, successUrl, cancelUrl }),
@@ -33,19 +52,18 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={isLoading}
-      className={
-        className
-          ? className
-          : 'bg-primary hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60'
-      }
-    >
-      {isLoading ? 'Redirecting…' : label}
-    </button>
-  );
+  <button
+    type="button"
+    onClick={handleClick}
+    disabled={isLoading}
+    className={
+      className
+        ? className
+        : 'bg-primary hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60'
+    }
+  >
+    {isLoading ? 'Redirecting…' : label}
+  </button>)
 };
 
 export default CheckoutButton;
