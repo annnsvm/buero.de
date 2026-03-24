@@ -24,10 +24,11 @@ export const loginThunk = createAsyncThunk<void, LoginPayload>(
 
 export const signupThunk = createAsyncThunk<void, SignUpPayload>(
   'auth/signup',
-  async ({ email, password, role = 'student', language = 'en' }, { dispatch, rejectWithValue }) => {
+  async ({ name, email, password, role = 'student', language = 'en' }, { dispatch, rejectWithValue }) => {
     try {
       const { apiInstance } = await import('@/api/apiInstance');
       const result = await apiInstance.post(API_ENDPOINTS.auth.register, {
+        name,
         email,
         password,
         role,

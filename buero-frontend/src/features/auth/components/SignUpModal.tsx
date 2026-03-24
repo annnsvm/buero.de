@@ -32,6 +32,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
     },
@@ -46,6 +47,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
     try {
       await dispatch(
         signupThunk({
+          name: values.name.trim(),
           email: values.email,
           password: values.password,
           redirectTo,
@@ -72,6 +74,17 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
         <ModalHeader title="Sign Up" description="Create a new account" className="mb-8" />
 
         <form onSubmit={onSubmit} className="relative flex flex-col gap-4">
+          <FormField name="name" error={errors.name?.message}>
+            <Input
+              id="signup-name"
+              type="text"
+              placeholder="Name"
+              autoComplete="name"
+              className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
+              {...register('name')}
+            />
+          </FormField>
+
           <FormField name="email" error={errors.email?.message}>
             <Input
               id="signup-email"

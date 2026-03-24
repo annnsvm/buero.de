@@ -1,30 +1,12 @@
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { subscriptionApi } from '@/api/subscriptionApi';
 import type { CoursesCatalogFilters } from '@/redux/slices/coursesCatalog/coursesCatalogSlice';
 import type { CourseInfoData } from '@/types/components/modal/UIModalType.types';
 import type {
   CatalogCourse,
-  NormalizedAccess,
-  RawCourseAccess,
 } from '@/types/api/myLearningCourses.types';
 
-export type { CatalogCourse, NormalizedAccess, RawCourseAccess } from '@/types/api/myLearningCourses.types';
-
-export const normalizeAccess = (row: RawCourseAccess): NormalizedAccess => ({
-  id: row.id,
-  courseId: row.course_id,
-  accessType: row.access_type,
-  trialEndsAt: row.trial_ends_at ? new Date(row.trial_ends_at) : null,
-});
-
-export const isAccessCurrentlyValid = (a: NormalizedAccess, now = new Date()): boolean => {
-  if (a.accessType === 'trial') {
-    if (!a.trialEndsAt) return false;
-    return a.trialEndsAt.getTime() > now.getTime();
-  }
-  return true;
-};
+export type { CatalogCourse } from '@/types/api/myLearningCourses.types';
 
 export const mapApiCourseToCourseInfo = (course: CatalogCourse): CourseInfoData => {
   const categoryRaw = String(course.category ?? 'language');
@@ -56,45 +38,27 @@ export const mapApiCourseToCourseInfo = (course: CatalogCourse): CourseInfoData 
           ? course.image_url
           : '/images/courses/course-1.webp',
     price: `€${Number.isFinite(priceNum) ? priceNum.toFixed(2) : '0.00'}`,
-    lessonsCount: typeof course.lessonsCount === 'number' ? course.lessonsCount : 0,
+    lessonsCount:
+      typeof course.lessonsCount === 'number'
+        ? course.lessonsCount
+        : typeof course.videoLessonCount === 'number'
+          ? course.videoLessonCount
+          : 0,
     durationHours: Number.isFinite(durationHours) && durationHours > 0 ? durationHours : 1,
     tags,
-    hasTrial: false,
+    hasTrial:
+      !!course.my_access &&
+      typeof course.my_access === 'object' &&
+      'access_type' in course.my_access &&
+      (course.my_access as { access_type?: string }).access_type === 'trial',
     variant: 'my-learning',
   };
 };
 
-
-const normalizeAccessRow = (row: unknown): NormalizedAccess | null => {
-  if (!row || typeof row !== 'object') return null;
-  const r = row as Record<string, unknown>;
-  const courseId = (r.course_id ?? r.courseId) as string | undefined;
-  const accessType = (r.access_type ?? r.accessType) as string | undefined;
-  const trialRaw = (r.trial_ends_at ?? r.trialEndsAt) as string | null | undefined;
-  const id = (r.id as string) ?? '';
-  if (!courseId || !accessType) return null;
-  return normalizeAccess({
-    id,
-    course_id: courseId,
-    access_type: accessType as RawCourseAccess['access_type'],
-    trial_ends_at: trialRaw ?? null,
-    created_at: String(r.created_at ?? r.createdAt ?? ''),
-  });
-};
-
 export const fetchMyLearningCoursesFromCatalog = async (): Promise<CourseInfoData[]> => {
-  const rawList = await subscriptionApi.getMyAccess();
-  const list = Array.isArray(rawList) ? rawList : [];
-  const normalized = list
-    .map(normalizeAccessRow)
-    .filter((a): a is NormalizedAccess => a != null)
-    .filter((a) => isAccessCurrentlyValid(a));
-  const allowedIds = new Set(normalized.map((a) => a.courseId));
-
-  const { data } = await apiInstance.get<CatalogCourse[]>(API_ENDPOINTS.courses.list);
-  const published = data.filter((c) => allowedIds.has(c.id));
-
-  return published.map((course) => mapApiCourseToCourseInfo(course));
+  const { data } = await apiInstance.get<CatalogCourse[]>(API_ENDPOINTS.courses.my);
+  const accessible = Array.isArray(data) ? data : [];
+  return accessible.map((course) => mapApiCourseToCourseInfo(course));
 };
 
 export const filterMyLearningCourses = (
