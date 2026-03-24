@@ -14,6 +14,7 @@ type LoginPayload = {
 };
 
 type SignUpPayload = {
+  name: string;
   email: string;
   password: string;
   role?: 'student' | 'teacher';

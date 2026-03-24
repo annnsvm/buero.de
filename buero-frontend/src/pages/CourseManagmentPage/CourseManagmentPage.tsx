@@ -9,10 +9,6 @@ import CourseEditorCourseFormTab from '@/features/course-managment/course-editor
 import CourseEditorMaterialPanel from '@/features/course-managment/course-editor/components/CourseEditorMaterialPanel';
 import CourseEditorModals from '@/features/course-managment/course-editor/components/CourseEditorModals';
 
-/**
- * Сторінка керування курсом (створення / редагування): композиція layout, табів і модалок.
- * Логіка стану та API — у `useCourseEditor`; презентаційні блоки — у `features/.../course-editor/components/`.
- */
 const CourseManagmentPage: React.FC = () => {
   const editor = useCourseEditor();
 
