@@ -133,7 +133,7 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
           onClick={handleOpen}
           onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleOpen()}
           aria-label="Open course structure"
-          className="fixed top-[2.25rem] left-4 z-40 rounded-full border border-[var(--color-border-default)] bg-[var(--color-surface-overlay)] px-3 py-2 shadow-sm"
+          className="fixed top-[4rem] left-4 z-40 rounded-full border border-[var(--color-border-default)] bg-[var(--color-surface-overlay)] px-3 py-2 shadow-sm"
         >
           <span className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]">
             <Icon name={ICON_NAMES.BOOK} size={18} ariaHidden />
@@ -143,9 +143,9 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
       </div>
 
       <aside className="hidden h-full min-h-0 w-[320px] shrink-0 flex-col border-r border-[var(--color-border-subtle)] bg-[var(--color-neutral-white)] lg:flex">
-        <div className="shrink-0 px-26 py-4">
+        <div className="shrink-0 px-26 py-8">
           <Link to={ROUTES.HOME}>
-            <Logo isLight={false} width={100} height={30} />
+            <Logo isLight={false} width={70} height={28} />
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col p-4">
@@ -170,7 +170,7 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
           <div className="absolute top-0 left-0 flex h-full max-h-[100vh] w-[320px] max-w-[85vw] flex-col bg-[var(--color-neutral-white)] shadow-2xl">
             <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-subtle)] p-4">
               <Link to={ROUTES.HOME} className="px-10 py-4">
-                <Logo isLight={false} width={100} height={30} />
+                <Logo isLight={false} width={70} height={28} />
               </Link>
               <button
                 type="button"

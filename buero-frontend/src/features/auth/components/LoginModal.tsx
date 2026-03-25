@@ -15,6 +15,15 @@ import { ROUTES } from '@/helpers/routes';
 import { useSelector } from 'react-redux';
 import { selectAuthStatus } from '@/redux/slices/auth';
 import { LOADING_STATUS } from '@/helpers/lodaingStatus';
+import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
+
+const PENDING_CHECKOUT_KEY = 'pending_checkout';
+
+type PendingCheckoutPayload = {
+  courseId: string;
+  successUrl?: string;
+  cancelUrl?: string;
+};
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
   const dispatch = useAppDispatch();
@@ -49,6 +58,49 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
       ).unwrap();
 
       handleClose();
+
+      const pendingCheckoutRaw = sessionStorage.getItem(PENDING_CHECKOUT_KEY);
+      if (pendingCheckoutRaw) {
+        sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
+        try {
+          const pendingCheckout = JSON.parse(pendingCheckoutRaw) as PendingCheckoutPayload;
+          if (pendingCheckout.courseId) {
+            const checkoutAction = await dispatch(
+              createCheckoutSessionThunk({
+                courseId: pendingCheckout.courseId,
+                successUrl: pendingCheckout.successUrl,
+                cancelUrl: pendingCheckout.cancelUrl,
+              }),
+            );
+            if (createCheckoutSessionThunk.fulfilled.match(checkoutAction)) {
+              const checkoutUrl = checkoutAction.payload.url;
+              if (checkoutUrl) {
+                sessionStorage.setItem('stripe_return', 'pending');
+                window.location.href = checkoutUrl;
+                return;
+              }
+            }
+            if (createCheckoutSessionThunk.rejected.match(checkoutAction)) {
+              const checkoutError =
+                typeof checkoutAction.payload === 'string'
+                  ? checkoutAction.payload
+                  : checkoutAction.error?.message ?? '';
+              const normalizedCheckoutError = checkoutError.toLowerCase();
+              const alreadyHasAccess =
+                normalizedCheckoutError.includes('already own') ||
+                normalizedCheckoutError.includes('already have access') ||
+                normalizedCheckoutError.includes('already have trial access');
+              if (alreadyHasAccess) {
+                navigate(ROUTES.COURSES);
+                return;
+              }
+            }
+          }
+        } catch {
+          // ignore malformed session payload, fallback to regular redirect
+        }
+      }
+
       navigate(redirectTo ?? ROUTES.COURSES);
     } catch (error) {
       const message =

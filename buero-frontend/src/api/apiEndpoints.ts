@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   },
   courses: {
     list: '/courses',
+    manage: '/courses/manage',
     my: '/courses/me',
     byId: (id: string) => `/courses/${id}`,
     create: '/courses',
@@ -41,6 +42,16 @@ export const API_ENDPOINTS = {
   },
   payments: {
     myPayments: '/payments/me',
+  },
+  quiz: {
+    startAttempt: '/quiz/attempts',
+    getAttempt: (attemptId: string) => `/quiz/attempts/${attemptId}`,
+    submit: (attemptId: string) => `/quiz/attempts/${attemptId}/submit`,
+  },
+  progress: {
+    course: (courseId: string) => `/courses/${courseId}/progress`,
+    complete: (courseId: string, moduleId: string, materialId: string) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${materialId}/complete`,
   },
 } as const;
 
