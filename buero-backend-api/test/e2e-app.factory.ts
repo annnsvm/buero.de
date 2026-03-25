@@ -1,5 +1,7 @@
 import { ValidationPipe, INestApplication } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
+import { AllExceptionsFilter } from "src/common/filters/all-exceptions.filter";
 import { AppModule } from "src/app.module";
 import cookieParser from "cookie-parser";
 import { json } from "express";
@@ -19,6 +21,9 @@ export async function createE2eApp(): Promise<INestApplication> {
     }),
   );
   app.use(cookieParser());
+  const config = app.get(ConfigService);
+  const isProduction = config.get<string>("NODE_ENV") === "production";
+  app.useGlobalFilters(new AllExceptionsFilter(isProduction));
   app.setGlobalPrefix("api");
   app.useGlobalPipes(
     new ValidationPipe({

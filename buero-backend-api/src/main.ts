@@ -7,6 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { json } from "express";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
@@ -39,6 +40,8 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const configService = app.get(ConfigService);
+  const isProduction = configService.get<string>("NODE_ENV") === "production";
+  app.useGlobalFilters(new AllExceptionsFilter(isProduction));
 
   const requiredEnv = [
     "DATABASE_URL",
