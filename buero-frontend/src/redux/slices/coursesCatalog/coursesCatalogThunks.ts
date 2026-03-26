@@ -12,9 +12,10 @@ type FetchCoursesResponse = {
 const buildQueryString = (filters: CoursesCatalogFilters, page: number, pageSize: number) => {
   const params = new URLSearchParams();
 
-  if (filters.category) params.set('category', filters.category);
-  if (filters.level) params.set('level', filters.level);
+
   if (filters.search?.trim()) params.set('search', filters.search.trim());
+  if (filters.tags?.trim()) params.set('tags', filters.tags.trim());
+  
 
   return params.toString();
 };
@@ -38,8 +39,9 @@ export const fetchCoursesCatalogThunk = createAsyncThunk<
     const res = await apiInstance.get<FetchCoursesResponse>(
       query ? `${endpoint}?${query}` : endpoint,
     );
-
+    
     const data = res.data;
+ 
 
     return {
       items: Array.isArray(data) ? data : [],

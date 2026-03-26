@@ -8,6 +8,7 @@ import { courseLearningReducer } from './slices/courseLearning/courseLearningSli
 import { progressQuizzesReducer } from './slices/progressQuizzes/progressQuizzesSlice';
 import { subscriptionsReducer } from './slices/subscriptions/subscriptionsSlice';
 import { lessonRequestsReducer } from './slices/lessonRequests/lessonRequestsSlice';
+import { courseDetailsReducer } from './slices/coursesCatalog/courseDetailsSlice';
 
 export const rootReducer = combineReducers({
   ui: uiReducer,
@@ -15,10 +16,12 @@ export const rootReducer = combineReducers({
   user: userReducer,
   placementTest: placementTestReducer,
   coursesCatalog: coursesCatalogReducer,
+  courseDetails: courseDetailsReducer,
   courseLearning: courseLearningReducer,
   progressQuizzes: progressQuizzesReducer,
   subscriptions: subscriptionsReducer,
   lessonRequests: lessonRequestsReducer,
+
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

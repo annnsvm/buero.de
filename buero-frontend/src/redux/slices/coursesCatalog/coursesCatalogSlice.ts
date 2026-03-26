@@ -3,15 +3,16 @@ import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCar
 import { fetchCoursesCatalogThunk } from './coursesCatalogThunks';
 
 export type CoursesCatalogFilters = {
-  level?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-  category?: 'language' | 'integration' | 'sociocultural';
   search?: string;
+  tags?: string;
+  language?: string;
+  // level?: 'A1' | 'A2' | 'B1' | 'B2';
 };
 
 export type CoursesCatalogState = {
   items: CourseCardProps[];
-  totalCount: number;
   filters: CoursesCatalogFilters;
+  totalCount: number;
   page: number;
   pageSize: number;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
@@ -20,8 +21,8 @@ export type CoursesCatalogState = {
 
 const initialState: CoursesCatalogState = {
   items: [],
-  totalCount: 0,
   filters: {},
+  totalCount: 0,
   page: 1,
   pageSize: 12,
   status: 'idle',
