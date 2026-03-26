@@ -21,101 +21,115 @@ const filterTabs = [
   { id: 'language', label: 'Language' },
   { id: 'integration', label: 'Integration' },
   { id: 'sociocultural', label: 'Culture & Life' },
+  { id: 'beginner', label: 'Beginner' },
+  { id: 'middle', label: 'Middle' },
+  { id: 'advanced', label: 'Advanced' },
 ];
 
-const mockCourses = [
-  {
-    id: '1',
-    title: 'German A1 – Foundations',
-    category: 'Language',
-    levelLabel: 'A1',
-    badge: 'Free trial',
-    imageUrl: '/images/courses/course-1.webp',
-    description:
-      'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
-    price: '€69',
-    lessonsCount: 32,
-    durationHours: 24,
-    tags: ['Beginner', 'Grammar', 'Vocabulary'],
-    rating: 4.9,
-  },
-  {
-    id: '2',
-    title: 'German A2 – Foundations',
-    category: 'Language',
-    levelLabel: 'A1',
-    badge: 'Free trial',
-    imageUrl: '/images/courses/course-1.webp',
-    description:
-      'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
-    price: '$55',
-    lessonsCount: 12,
-    durationHours: 6,
-    tags: ['Grammar', 'Vocabulary'],
-    rating: 4.8,
-  },
-  {
-    id: '3',
-    title: 'German B1 – Foundations',
-    category: 'Language',
-    levelLabel: 'A1',
-    badge: 'Free trial',
-    imageUrl: '/images/courses/course-1.webp',
-    description:
-      'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
-    price: '$55',
-    lessonsCount: 12,
-    durationHours: 6,
-    tags: ['Grammar', 'Vocabulary'],
-    rating: 4.8,
-  },
-  {
-    id: '4',
-    title: 'German A1 – Foundations',
-    category: 'Language',
-    levelLabel: 'A1',
-    badge: 'Free trial',
-    imageUrl: '/images/courses/course-1.webp',
-    description:
-      'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
-    price: '€69',
-    lessonsCount: 32,
-    durationHours: 24,
-    tags: ['Beginner', 'Grammar', 'Vocabulary'],
-    rating: 4.9,
-  },
-  {
-    id: '5',
-    title: 'German A1 – Foundations',
-    category: 'Language',
-    levelLabel: 'A1',
-    badge: 'Free trial',
-    imageUrl: '/images/courses/course-1.webp',
-    description:
-      'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
-    price: '€69',
-    lessonsCount: 32,
-    durationHours: 24,
-    tags: ['Beginner', 'Grammar', 'Vocabulary'],
-    rating: 4.9,
-  },
-];
+// const mockCourses = [
+//   {
+//     id: '1',
+//     title: 'German A1 – Foundations',
+//     category: 'Language',
+//     levelLabel: 'A1',
+//     badge: 'Free trial',
+//     imageUrl: '/images/courses/course-1.webp',
+//     description:
+//       'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
+//     price: '€69',
+//     lessonsCount: 32,
+//     durationHours: 24,
+//     tags: ['Beginner', 'Grammar', 'Vocabulary'],
+//     rating: 4.9,
+//   },
+//   {
+//     id: '2',
+//     title: 'German A2 – Foundations',
+//     category: 'Language',
+//     levelLabel: 'A1',
+//     badge: 'Free trial',
+//     imageUrl: '/images/courses/course-1.webp',
+//     description:
+//       'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
+//     price: '$55',
+//     lessonsCount: 12,
+//     durationHours: 6,
+//     tags: ['Grammar', 'Vocabulary'],
+//     rating: 4.8,
+//   },
+//   {
+//     id: '3',
+//     title: 'German B1 – Foundations',
+//     category: 'Language',
+//     levelLabel: 'A1',
+//     badge: 'Free trial',
+//     imageUrl: '/images/courses/course-1.webp',
+//     description:
+//       'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
+//     price: '$55',
+//     lessonsCount: 12,
+//     durationHours: 6,
+//     tags: ['Grammar', 'Vocabulary'],
+//     rating: 4.8,
+//   },
+//   {
+//     id: '4',
+//     title: 'German A1 – Foundations',
+//     category: 'Language',
+//     levelLabel: 'A1',
+//     badge: 'Free trial',
+//     imageUrl: '/images/courses/course-1.webp',
+//     description:
+//       'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
+//     price: '€69',
+//     lessonsCount: 32,
+//     durationHours: 24,
+//     tags: ['Beginner', 'Grammar', 'Vocabulary'],
+//     rating: 4.9,
+//   },
+//   {
+//     id: '5',
+//     title: 'German A1 – Foundations',
+//     category: 'Language',
+//     levelLabel: 'A1',
+//     badge: 'Free trial',
+//     imageUrl: '/images/courses/course-1.webp',
+//     description:
+//       'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocab.',
+//     price: '€69',
+//     lessonsCount: 32,
+//     durationHours: 24,
+//     tags: ['Beginner', 'Grammar', 'Vocabulary'],
+//     rating: 4.9,
+//   },
+// ];
 
 
 const CoursesCatalogPage: FC = () => {
   const dispatch = useAppDispatch();
+  
   const courses = useSelector(selectCoursesCatalogItems);
-  const totalCount = useSelector(selectCoursesCatalogTotalCount);
+  
   const filters = useSelector(selectCoursesCatalogFilters);
+  // console.log(filters)
   const filtersRef = useRef(filters);
+  
+  const totalCount = useSelector(selectCoursesCatalogTotalCount);
 
+  
   const activeFilterId =
-    filters.category === 'language'
+    filters.tags === 'language'
       ? 'language'
-      : filters.category === 'integration'
+      : filters.tags === 'integration'
       ? 'integration'
-      : filters.category === 'sociocultural'
+      : filters.tags === 'sociocultural'
       ? 'sociocultural'
+      : filters.tags === 'beginner'
+      ? 'beginner'
+      : filters.tags === 'middle'
+      ? 'middle'
+      : filters.tags === 'advanced'
+      ? 'advanced'
       : 'all';
 
   useEffect(() => {
@@ -124,13 +138,19 @@ const CoursesCatalogPage: FC = () => {
 
   const handleFilterChange = (id: string) => {
     if (id === 'all') {
-      dispatch(setFilters({ ...filters, category: undefined }));
+      dispatch(setFilters({ ...filters, tags: undefined }));
     } else if (id === 'language') {
-      dispatch(setFilters({ ...filters, category: 'language' }));
+      dispatch(setFilters({ ...filters, tags: 'language' }));
     } else if (id === 'integration') {
-      dispatch(setFilters({ ...filters, category: 'integration' }));
+      dispatch(setFilters({ ...filters, tags: 'integration' }));
     } else if (id === 'sociocultural') {
-      dispatch(setFilters({ ...filters, category: 'sociocultural' }));
+      dispatch(setFilters({ ...filters, tags: 'sociocultural' }));
+    } else if (id === 'beginner') {
+      dispatch(setFilters({ ...filters, tags: 'beginner' }));
+    } else if (id === 'middle') {
+      dispatch(setFilters({ ...filters, tags: 'middle' }));
+    } else if (id === 'advanced') {
+      dispatch(setFilters({ ...filters, tags: 'advanced' }));
     }
   };
 
@@ -143,10 +163,12 @@ const CoursesCatalogPage: FC = () => {
     );
   }, [dispatch]);
 
+
   return (
     <div aria-label="Courses-Catalog Page">
       <CoursesCatalogHero
         onSearchChange={handleSearchChange}
+        // initialSearch={filters.title ?? filters.description ?? ''}
         initialSearch={filters.search ?? ''}
       />
       <CoursesCatalogFilters
@@ -155,10 +177,18 @@ const CoursesCatalogPage: FC = () => {
         onFilterChange={handleFilterChange}
         totalCount={totalCount}
       />
-      <CoursesCatalogList courses={courses.length > 0?courses:mockCourses} />
-    </div>
+      
+      {courses.length > 0 ? (
+        <CoursesCatalogList courses={courses} />
+      ) : (
+        <div className="flex justify-center items-center py-20 text-lg text-[var(--color-text-primary)]">
+          No courses found. Try adjusting your filters.
+        </div>
+      )}
+    </div> 
   );
 };
+
 
 
 

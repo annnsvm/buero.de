@@ -9,4 +9,5 @@ export const persistConfig = {
   key: 'root',
   storage,
   whitelist: ['auth'],
+  blacklist: ['courseDetails'],
 };

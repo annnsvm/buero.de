@@ -7,9 +7,7 @@ import React from 'react';
 const BaseDialog: React.FC<BaseDialogProps> = ({
   isOpen,
   handleOpenChange,
-  // Додав
-  contentClassName,
-  // 
+   contentClassName, 
   children,
 }) => {
   const defaultContentClass =
@@ -28,7 +26,8 @@ const BaseDialog: React.FC<BaseDialogProps> = ({
           </Title>
           {children}
           <Close className="absolute top-4 right-4">
-            <Icon name={ICON_NAMES.X} />
+            <Icon name={ICON_NAMES.X} 
+            />
           </Close>
         </Content>
       </Portal>

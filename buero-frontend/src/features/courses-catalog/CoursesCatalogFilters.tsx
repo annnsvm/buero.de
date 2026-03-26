@@ -10,10 +10,12 @@ const CoursesCatalogFilters = ({
   besideCountSlot,
 }: CoursesCatalogFiltersProps) => {
   return (
-    <Section className="sm:pt-12 pb-20">
+    <Section className="pb-20">
       <Container className="md:px-20">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex flex-wrap gap-3">
+        <div 
+        className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-start"
+        >
+          <div className="flex flex-wrap gap-4">
             {filters.map((filter) => {
               const isActive = filter.id === activeFilterId;
               return (
@@ -21,9 +23,9 @@ const CoursesCatalogFilters = ({
                   key={filter.id}
                   type="button"
                   styleType="mobile"
-                  className={`rounded-full px-4 py-2 text-[16px] font-medium leading-[1.5] border ${
+                  className={`rounded-full px-4 py-2 text-lg font-medium leading-[1.5] border ${
                     isActive
-                      ? 'bg-[var(--color-neutral-darkest)] border-[var(--color-neutral-darkest)] text-[var(--color-text-on-accent)] hover:bg-[var(--color-neutral-dark)]'
+                      ? 'bg-[var(--color-cod-gray-base)] border-[var--color-cod-gray-base)] text-[var(--color-text-on-accent)] hover:bg-[var(--color-neutral-darkest)]'
                       : 'bg-[var(--color-white)] text-[var(--color-text-primary)] border-[var(--opacity-neutral-darkest-15)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-neutral-darkest)]'
                   }`}
                   onClick={() => onFilterChange(filter.id)}
@@ -33,11 +35,14 @@ const CoursesCatalogFilters = ({
               );
             })}
           </div>
-          <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-end sm:justify-end sm:gap-4 md:items-center">
+          <div 
+          className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-4 md:py-2"
+          
+          >
             {besideCountSlot ? (
               <div className="min-w-0 sm:max-w-[min(100%,320px)]">{besideCountSlot}</div>
             ) : null}
-            <p className="shrink-0 text-base font-medium leading-[1.5] whitespace-nowrap text-[var(--color-text-primary)]">
+            <p className="shrink-0 text-lg font-medium leading-[1.5] whitespace-nowrap text-[var(--color-text-primary)]">
               {totalCount} {totalCount === 1 ? 'course found' : 'courses found'}
             </p>
           </div>

@@ -12,6 +12,8 @@ type CoursesGridProps = {
 };
 
 const CoursesCatalogList = ({ courses }: CoursesGridProps) => {
+
+  
   const dispatch = useAppDispatch();
   const role = useAppSelector(selectUserRole);
 
@@ -20,11 +22,11 @@ const CoursesCatalogList = ({ courses }: CoursesGridProps) => {
   }, [dispatch]);
 
   return (
-    <Section className="bg-white pb-28">
+    <Section className="pb-28">
       <Container className="md:px-20">
         <ul className="flex flex-wrap justify-start gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16">
           {role === 'teacher' && <CreateCourseCard />}
-          {courses.map((course) => (
+          {courses?.length > 0 && courses.map((course) => (
             <li key={course.id} className="w-[min(100%,405px)] shrink-0">
               <CourseCard
                 {...course}

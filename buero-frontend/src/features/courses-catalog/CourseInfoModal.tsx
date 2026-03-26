@@ -1,47 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { BaseDialog, useModal } from '@/components/modal';
 import Icon from '@/components/ui/Icon';
 import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
 import type { CourseInfoData } from '@/types/components/modal/UIModalType.types';
-import { courseStructureKeyFromModules } from './courseStructure.helpers';
 import CourseStructure from './CourseStructure';
+import { courseStructureKeyFromModules } from './courseStructure.helpers';
+import { fetchCourseByIdThunk } from '@/redux/slices/coursesCatalog/courseDetailsThunks'; 
+import { clearCourseDetails } from '@/redux/slices/coursesCatalog/courseDetailsSlice'; 
+import { 
+  selectCourseDetailsData, 
+  selectCourseDetailsStatus 
+} from '@/redux/slices/coursesCatalog/courseDetailsSelectors';
 
-const MOCK_MODULES = [
-  {
-    id: '1',
-    title: 'Getting Started',
-    lessonsCount: 4,
-    lessons: [
-      { id: '1', title: 'Welcome to German A1', duration: '5:30', type: 'video' },
-      { id: '2', title: 'The German Alphabet & Pronunciation', duration: '12:15', type: 'video' },
-      { id: '3', title: 'Pronunciation Practice', duration: '8:00', type: 'video' },
-      { id: '4', title: 'Your First German Words', duration: '10:45', type: 'video' },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Greetings & Introductions',
-    lessonsCount: 4,
-    lessons: [
-      { id: '5', title: 'Saying Hello and Goodbye', duration: '6:20', type: 'video' },
-      { id: '6', title: 'Introducing Yourself', duration: '9:15', type: 'video' },
-      { id: '7', title: 'Asking Names', duration: '7:40', type: 'video' },
-      { id: '8', title: 'Formal vs Informal', duration: '11:00', type: 'video' },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Getting Started',
-    lessonsCount: 4,
-    lessons: [],
-  },
-  {
-    id: '4',
-    title: 'Getting Started',
-    lessonsCount: 4,
-    lessons: [],
-  },
-];
+
 
 type CourseInfoModalProps = {
   isOpen: boolean;
@@ -57,6 +29,24 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   course,
 }) => {
   const { pushUiModal } = useModal();
+  
+  
+  const dispatch = useDispatch();
+
+  const fullCourseData = useSelector(selectCourseDetailsData);
+  const status = useSelector(selectCourseDetailsStatus);
+  const isLoading = status === 'loading';
+
+  useEffect(() => {
+    if (isOpen && courseId) {
+      
+      dispatch(fetchCourseByIdThunk(courseId));
+    } else if (!isOpen) {
+      
+      dispatch(clearCourseDetails());
+    }
+  }, [isOpen, courseId, dispatch]);
+
   const handleClose = () => handleOpenChange(false);
 
   const handleContactSupport = () => {
@@ -67,31 +57,39 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     });
   };
 
-  const safeTitle = course?.title || 'German A2-Basics';
-  const safeCategory = course?.category || 'Language';
-  const safeDescription =
-    course?.description ||
-    'Start your German journey from zero. Build a solid base in pronunciation, grammar, and essential vocabulary.';
-  const safeImageUrl = course?.imageUrl || '/images/courses/course-1.webp';
-  const safeLevelLabel = course?.levelLabel || 'A2';
-  const safeBadge = course?.badge || undefined;
-  const safeLessonsCount = course?.lessonsCount || 12;
-  const safeDurationHours = course?.durationHours || 10;
-  const safeTags =
-    (course?.tags && course.tags.length > 0
-      ? course.tags
-      : ['Beginner', 'Grammar', 'Vocabulary']) ?? [];
+  
+  
 
-  const modules = course?.modules ?? MOCK_MODULES;
-  const basePrice = course?.price
-    ? parseFloat(String(course.price).replace(/[^\d.]/g, '')) || 84
-    : 84;
 
-  const totalPrice = `$${basePrice}`;
+  const safeCategory = course.category || 'Language';
+ 
+  // const safeImageUrl = course.imageUrl || '/images/courses/course-1.webp';
+  
+  // const safeLessonsCount = course.lessonsCount || 12;
+  // const safeDurationHours = course.durationHours || 10;
+  
 
-  const contentClassName =
-    'fixed top-1/2 left-1/2 z-[1001] w-[calc(100%-2rem)] max-w-[640px] max-h-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-[var(--color-surface-overlay)] overflow-hidden flex flex-col focus:outline-none';
+  const cleanPrice =
+    parseFloat(
+      String(course.price)
+        .replace(/[^\d.,]/g, '')
+        .replace(',', '.'),
+    ) || 69;
 
+  const totalPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(cleanPrice);
+
+  const hasAnyMaterials = fullCourseData?.modules?.some(
+    (mod) => mod.materials && mod.materials.length > 0
+  );
+  
+  const rawModules = hasAnyMaterials 
+    ? fullCourseData.modules 
+    : [];
+
+    const contentClassName = 'fixed top-1/2 left-1/2 z-[1001] w-[calc(100%-2rem)] max-w-[640px] max-h-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-[var(--color-surface-overlay)] overflow-hidden flex flex-col focus:outline-none [&>button]:top-7 [&>button]:right-7 [&>button]:h-8 [&>button]:w-8 [&>button]:text-[var(--color-neutral-white)] [&>button]:transition-colors [&>button:hover]:text-[var(--color-primary)]';
   return (
     <BaseDialog
       isOpen={isOpen}
@@ -100,26 +98,26 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         else handleOpenChange(open);
       }}
       contentClassName={contentClassName}
+      
     >
-      <div className="flex flex-1 flex-col overflow-y-auto">
+      <div className="flex flex-1 flex-col overflow-y-auto [&::-webkit-scrollbar]:w-1.5 
+  [&::-webkit-scrollbar-track]:bg-transparent 
+  [&::-webkit-scrollbar-thumb]:rounded-full 
+  [&::-webkit-scrollbar-thumb]:bg-[var(--opacity-neutral-darkest-15)] 
+  ">
         <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden">
-          <img src={safeImageUrl} alt={safeTitle} className="h-full w-full object-cover" />
-          <div className="absolute top-4 left-4 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[25px] bg-[var(--color-neutral-white)] text-[11px] font-bold text-[var(--color-text-primary)] shadow-sm">
-              {safeLevelLabel}
+          <img src={course.imageUrl} alt={course.title} className="h-full w-full object-cover" />
+          <div className="absolute top-7 left-8.5 sm:top-8.5 sm:left-10.5 flex items-center gap-2">
+            <span className="flex items-center justify-center rounded-full bg-[var(--color-neutral-white)] text-xs sm:text-base font-semibold text-[var(--color-text-primary)] px-2.5 py-1 border border-[var(--opacity-neutral-darkest-15)]">
+              {course.levelLabel}
             </span>
-            {safeBadge && (
-              <span className="rounded-full bg-[var(--color-primary)] px-3 py-1.5 text-[10px] font-bold tracking-wider text-[var(--color-text-on-accent)] uppercase">
-                {safeBadge}
-              </span>
-            )}
           </div>
 
-          <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-            {safeTags.map((tag: string) => (
+          <div className="absolute bottom-7 left-8.5 sm:bottom-8.5 sm:left-10.5 flex flex-wrap gap-2 sm:gap-4">
+            {course.tags.map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full bg-[var(--color-neutral-white)]/90 px-3 py-1 text-[10px] font-medium text-[var(--color-text-primary)] shadow-sm"
+                className="rounded-full text-xs border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-2.5 py-1 font-semibold text-[var(--color-text-primary)] sm:text-base"
               >
                 {tag}
               </span>
@@ -127,89 +125,87 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col px-4 pb-6 sm:px-6">
-          <p className="mt-4 text-[10px] font-bold tracking-[0.15em] text-[var(--color-primary)] uppercase">
-            {safeCategory.toUpperCase()}
-          </p>
-          <h2 className="mt-2 text-[22px] leading-tight font-bold text-[var(--color-text-primary)] sm:text-[24px]">
-            {safeTitle}
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-            {safeDescription}
-          </p>
-
-          <div className="align-items-left mt-6 flex gap-20 pb-6">
-            <div className="align-items-left">
-              <p className="text-[10px] font-bold tracking-wider text-[var(--color-text-secondary)] uppercase">
-                Duration
-              </p>
-              <div className="flex items-center gap-3">
-                <Icon
-                  name="icon-schedule"
-                  size={24}
-                  className="text-[var(--color-neutral-light)]"
-                />
-                <p className="text-lg font-bold text-[var(--color-text-primary)]">
-                  {safeDurationHours}h
-                </p>
-              </div>
-            </div>
-            <div className="align-items-left">
-              <p className="text-[10px] font-bold tracking-wider text-[var(--color-text-secondary)] uppercase">
-                Lessons
-              </p>
-              <div className="flex items-center gap-3">
-                <Icon name="icon-book" size={24} className="text-[var(--color-neutral-light)]" />
-                <p className="text-lg font-bold text-[var(--color-text-primary)]">
-                  {safeLessonsCount}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <CourseStructure
-            key={`${courseId}-${courseStructureKeyFromModules(modules)}`}
-            modules={modules}
-          />
-
-          <div className="mt-8">
-            <h3 className="text-base font-bold text-[var(--color-text-primary)]">Add on top</h3>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in
-              eros.
+        <div className="flex flex-1 flex-col px-8.5 py-8 sm:px-10.5 sm:py-10">
+          <div className="flex flex-1 flex-col px-4 py-4 sm:px-6 sm:py-6">
+            <p className="text-sm font-semibold text-[var(--color-primary)] uppercase sm:text-base">
+              {/* {course.category.toUpperCase()} */}
+              {safeCategory.toUpperCase()}
+            </p>
+            <h2 className="mt-4 text-[22px] sm:text-[26px] leading-tight font-semibold tracking-[-0.01em] text-[var(--color-neutral-darkest)]">
+              {course.title}
+            </h2>
+            <p className="mt-2 line-clamp-3 text-base sm:text-lg text-[var(--color-neutral-darkest)]">
+              {course.description}
             </p>
           </div>
 
-          <div className="mt-6 rounded-lg bg-[var(--color-burnt-siena-lightest)] p-4">
-            <p className="font-bold text-[var(--color-text-primary)]">
+          <div className="align-items-left mt-6 flex gap-18 sm:gap-50 px-4 py-4 sm:px-6 sm:py-6">
+            <div className="align-items-left">
+              <p className="text-base font-semibold text-[var(--color-text-secondary)] uppercase">
+                Duration
+              </p>
+              <div className="flex items-center gap-0.5">
+                <Icon name="icon-schedule"  className="w-8 h-8 sm:w-12 sm:h-12 text-[var(--color-text-primary)]" />
+                <p className="text-[33px] sm:text-[40px] font-semibold text-[var(--color-text-primary)]">
+                  {course.durationHours}h
+                </p>
+              </div>
+            </div>
+            <div className="align-items-left">
+              <p className="text-base font-semibold text-[var(--color-text-secondary)] uppercase">
+                Lessons
+              </p>
+              <div className="flex items-center gap-0.5">
+                <Icon name="icon-book" className="w-8 h-8 sm:w-12 sm:h-12 text-[var(--color-text-primary)]" />
+                <p className="text-[33px] sm:text-[40px] font-semibold text-[var(--color-text-primary)]">
+                  {course.lessonsCount}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {isLoading && rawModules.length === 0 ? (
+            <div className="mt-6 flex items-center justify-center p-4">
+              <p className="text-[var(--color-text-secondary)] text-lg">Завантаження структури курсу...</p>
+            </div>
+          ) : (
+            <CourseStructure
+              key={`${courseId}-${courseStructureKeyFromModules(rawModules)}`}
+              modules={rawModules}
+            />
+          )}
+
+          <div className="mt-6 py-6 px-6 sm:py-12 rounded-lg bg-[var(--color-dawn-pink-base)] border border-[var(--opacity-neutral-darkest-15)]">
+            <p className="text-[24px] sm:text-[28px] font-semibold text-[var(--color-text-primary)] leading-[1.3] tracking-[-0.01em]">
               Have questions about this course?
             </p>
             <button
               type="button"
               onClick={handleContactSupport}
-              className="mt-3 flex items-center gap-2 rounded-lg bg-[var(--color-black)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-on-accent)] hover:opacity-90"
+              className="mt-8 flex items-center gap-3 rounded-full bg-[var(--color-black)] px-4 py-1.5  sm:px-6 sm:py-2.5 text-xs sm:text-lg font-medium text-[var(--color-neutral-white)] hover:opacity-90"
             >
-              <Icon name="icon-mail" size={18} />
+              <Icon name="icon-mail" size={24} className="text-[var(--color-neutral-white)]" />
               Contact Support
             </button>
           </div>
-        </div>
-      </div>
-
-      <div className="flex shrink-0 flex-col gap-3 border-t border-[var(--color-border-default)] bg-[var(--color-surface-overlay)] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <span className="text-2xl font-bold text-[var(--color-primary)]">{totalPrice}</span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="rounded-full border border-[var(--color-border-default)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-dawn-pink-light)]"
-          >
-            Try for free
-          </button>
-          <CheckoutButton
-            courseId={courseId}
-            className="rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-semibold text-[var(--color-text-on-accent)] hover:bg-[var(--color-primary-hover)]"
-          />
+          <div className="flex shrink-0 mt-6 flex-row items-center justify-between py-4">
+            <span className="text-[24spx] mr-1 sm:mr-0 sm:text-[32px] font-semibold text-[var(--color-primary)] leading-[1.3] tracking-[-0.01em]">
+              {totalPrice}
+            </span>
+            <div className="flex gap-2 sm:gap-4">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="rounded-full border border-[var(--opacity-neutral-darkest-15)] px-3 py-1 sm:px-6 sm:py-2.5 text-xs sm:text-lg font-medium text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-neutral-darkest)]"
+              >
+                Try for free
+              </button>
+              <CheckoutButton
+                courseId={courseId}
+                className="rounded-full bg-[var(--color-primary)] px-3 py-1 sm:px-6 sm:py-2.5 text-xs sm:text-lg font-medium text-[var(--color-text-on-accent)] hover:bg-[var(--color-primary-hover)]"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </BaseDialog>
