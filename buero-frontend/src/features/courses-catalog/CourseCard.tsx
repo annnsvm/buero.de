@@ -168,7 +168,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
             onClick={handleRemoveCourseClick}
            
             
-            aria-label={`Remove course ${displayTitle}`}
+            aria-label={`Remove course ${title}`}
           >
             Remove course
           </Button>
