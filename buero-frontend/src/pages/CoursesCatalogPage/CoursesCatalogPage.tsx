@@ -55,7 +55,7 @@ const CoursesCatalogPage: FC = () => {
 
   useEffect(() => {
     dispatch(fetchCoursesCatalogThunk());
-  }, [dispatch, filters]);
+  }, [dispatch, filters, role]);
 
   const handleFilterChange = (id: string) => {
     if (id === 'all') {
