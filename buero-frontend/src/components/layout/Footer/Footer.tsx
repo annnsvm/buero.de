@@ -31,7 +31,7 @@ const Footer: React.FC = () => (
         <div className="lg:max-w-[500px]">
           <FooterBrand />
         </div>
-        <div className="grid grid-cols-1 gap-24 sm:grid-cols-3 lg:min-w-0 lg:flex-1">
+        <div className="grid grid-cols-1 gap-24 text-center sm:grid-cols-3 sm:text-start lg:min-w-0 lg:flex-1">
           <FooterNavSection title="Platform" ariaLabel="Platform navigation">
             <FooterNavLinks links={PLATFORM_LINKS} />
           </FooterNavSection>

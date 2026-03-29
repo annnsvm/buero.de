@@ -7,7 +7,7 @@ type FooterNavSectionProps = {
 };
 
 const FooterNavSection: React.FC<FooterNavSectionProps> = ({ title, ariaLabel, children }) => (
-  <nav aria-label={ariaLabel} className="min-w-max">
+  <nav aria-label={ariaLabel} className="w-full min-w-0 sm:min-w-max">
     <h3 className="mb-4 text-[0.6875rem] font-semibold uppercase tracking-wider text-[var(--color-neutral-white)]">
       {title}
     </h3>

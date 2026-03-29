@@ -7,7 +7,7 @@ const linkClass =
   'text-[0.9375rem] text-[var(--color-neutral-light)] transition-colors hover:text-[var(--color-neutral-white)]';
 
 const FooterNavLinks: React.FC<{ links: readonly NavLink[] }> = ({ links }) => (
-  <ul className="flex flex-col gap-3">
+  <ul className="flex flex-col items-center gap-3 sm:items-start">
     {links.map(({ to, label }) => (
       <li key={label}>
         <Link to={to} className={linkClass}>
