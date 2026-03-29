@@ -1,6 +1,6 @@
 import React from 'react';
 import { ModalRootProps } from '@/types/components/modal/ModalRoot.types';
-import { LoginModal, SignUpModal } from '@/features/auth';
+import { LoginModal, SignUpModal, LogoutConfirmModal, ProfileModal } from '@/features/auth';
 import { CourseInfoModal, ContactSupportModal } from '@/features/courses-catalog';
 import AddVocabularyModal from '@/features/course-learning/AddVocabularyModal/AddVocabularyModal';
 import { closeGlobalModal } from '@/redux/slices/ui/uiSlice';
@@ -36,6 +36,27 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
             if (!open) dispatch(closeGlobalModal());
           }}
           redirectTo={globalModal.redirectTo}
+        />
+      );
+    }
+    if (globalModal.type === 'profile') {
+      return (
+        <ProfileModal
+          isOpen
+          handleOpenChange={(open) => {
+            if (!open) dispatch(closeGlobalModal());
+          }}
+        />
+      );
+    }
+
+    if (globalModal.type === 'logoutConfirm') {
+      return (
+        <LogoutConfirmModal
+          isOpen
+          handleOpenChange={(open) => {
+            if (!open) dispatch(closeGlobalModal());
+          }}
         />
       );
     }
