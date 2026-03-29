@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import HeaderAuthTrialBar from './HeaderAuthTrialBar';
+import HeaderAuthBar from './HeaderAuthBar';
 import HeaderLearningNav from './HeaderLearningNav';
 import type { HeaderMobileMenuProps } from '@/types/components/layout/Header.types';
 import { Button } from '@/components/ui';
@@ -165,7 +165,7 @@ const HeaderLearningMobileMenu: React.FC<HeaderMobileMenuProps> = ({
           </div>
 
           <div className="mt-6 flex flex-col gap-4 items-center">
-            <HeaderAuthTrialBar
+            <HeaderAuthBar
               isLight={true}
               className="mx-auto flex w-full max-w-[280px] flex-col gap-4"
               from="mobile"
