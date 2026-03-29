@@ -2,6 +2,7 @@ import React from 'react';
 import { ModalRootProps } from '@/types/components/modal/ModalRoot.types';
 import { LoginModal, SignUpModal } from '@/features/auth';
 import { CourseInfoModal, ContactSupportModal } from '@/features/courses-catalog';
+import AddVocabularyModal from '@/features/course-learning/AddVocabularyModal/AddVocabularyModal';
 import { closeGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { useDispatch } from 'react-redux';
 import useModal from './context/useModal';
@@ -75,6 +76,13 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
         );
 
       case 'addVocabulary':
+        return (
+          <AddVocabularyModal
+            key={modalKey}
+            {...commonProps}
+          />
+        );
+
       case 'addVocabularySuccess':
       case 'confirm':
       default:

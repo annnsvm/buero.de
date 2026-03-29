@@ -9,6 +9,7 @@ import { progressQuizzesReducer } from './slices/progressQuizzes/progressQuizzes
 import { subscriptionsReducer } from './slices/subscriptions/subscriptionsSlice';
 import { lessonRequestsReducer } from './slices/lessonRequests/lessonRequestsSlice';
 import { courseDetailsReducer } from './slices/coursesCatalog/courseDetailsSlice';
+import { vocabularyReducer } from './slices/vocabulary/vocabularySlice';
 
 export const rootReducer = combineReducers({
   ui: uiReducer,
@@ -21,7 +22,7 @@ export const rootReducer = combineReducers({
   progressQuizzes: progressQuizzesReducer,
   subscriptions: subscriptionsReducer,
   lessonRequests: lessonRequestsReducer,
-
+  vocabulary: vocabularyReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

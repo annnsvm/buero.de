@@ -25,6 +25,7 @@ const MyLearningPage = lazy(() => import('../pages/MyLearningPage/MyLearningPage
 const CoursePage = lazy(() => import('../pages/CoursePage/CoursePage'));
 const CourseManagmentPage = lazy(() => import('../pages/CourseManagmentPage/CourseManagmentPage'));
 const UserProfilePage = lazy(() => import('../pages/UserProfilePage/UserProfilePage'));
+const VocabularyPage = lazy(() => import('../pages/VocabularyPage/VocabularyPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'));
 
 export const router = createBrowserRouter([
@@ -139,6 +140,14 @@ export const router = createBrowserRouter([
             element: (
               <PrivateGuard>
                 <TeacherDirectoryPage />
+              </PrivateGuard>
+            ),
+          },
+          {
+            path: ROUTES.VOCABULARY,
+            element: (
+              <PrivateGuard>
+                <VocabularyPage />
               </PrivateGuard>
             ),
           },

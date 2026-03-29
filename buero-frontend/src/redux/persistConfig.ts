@@ -8,6 +8,6 @@ const storage = {
 export const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth'],
+  whitelist: ['auth', 'vocabulary'],
   blacklist: ['courseDetails'],
 };

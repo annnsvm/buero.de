@@ -200,6 +200,7 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
   isVideoCompletionSaving = false,
   videoCompletionError = null,
   fallbackMarkReadyAfterSeconds = null,
+  onAddWord,
 }) => {
   const [videoEnded, setVideoEnded] = useState(false);
 
@@ -343,6 +344,7 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
         <div className="mt-4 sm:mt-5 md:mt-6">
           <button
             type="button"
+            onClick={onAddWord}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 sm:w-auto"
           >
             <BookOpen className="h-4 w-4" />
