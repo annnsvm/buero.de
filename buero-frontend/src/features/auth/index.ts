@@ -8,4 +8,6 @@
 export { default as LoginModal } from './components/LoginModal';
 export { default as LoginSchema } from './validation/loginSchema';
 export { default as SignUpModal } from './components/SignUpModal';
+export { default as ProfileModal } from './components/ProfileModal';
+export { default as LogoutConfirmModal } from './components/LogoutConfirmModal';
 export { default as Logout } from './components/Logout';

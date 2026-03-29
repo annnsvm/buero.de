@@ -1,41 +1,31 @@
-const UserProfilePage = () => {
-  return (
-    <div>
-      <h1>My Profile page</h1>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-        temporibus doloremque.
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-        temporibus doloremque.
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-          temporibus doloremque.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-          temporibus doloremque.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-          temporibus doloremque.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-          temporibus doloremque.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-          temporibus doloremque.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, cumque. Accusamus dolore
-          temporibus doloremque.
-        </p>
-      </p>
-    </div>
-  );
-};
+// import React, { useEffect } from 'react';
+// import { useAppDispatch } from '@/redux/hooks';
+// import { refreshUserThunk } from '@/redux/slices/auth/authThunks';
+// import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
+// import { fetchSubscriptionStatusThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
+// // import { ProfileErrorBoundary, ProfileLayout } from '@/features/profile';
 
-export default UserProfilePage;
+// import { ProfileLayout } from '@/features/profile';
+
+
+// const UserProfilePage = () => {
+//   const dispatch = useAppDispatch();
+
+//   useEffect(() => {
+//     void dispatch(refreshUserThunk());
+//     void dispatch(fetchCoursesCatalogThunk());
+//     void dispatch(fetchSubscriptionStatusThunk());
+//   }, [dispatch]);
+
+//   return (
+//     // <ProfileErrorBoundary>
+//       <ProfileLayout
+//         onAvatarSelect={(file) =>
+//           console.info('[UserProfilePage] avatar file (stub)', file?.name ?? null, file)
+//         }
+//       />
+//     // </ProfileErrorBoundary>
+//   );
+// };
+
+// export default UserProfilePage;
