@@ -5,7 +5,7 @@ const CreateCourseCard: React.FC = () => {
   return (
     <li
       key="create-new-course-card"
-      className="group flex w-full flex-col items-center justify-center gap-6 overflow-hidden rounded-2xl border border-gray-100 bg-[var(--color-burnt-siena-lighter)] p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="group flex min-h-[629px] w-full flex-col items-center justify-center gap-6 overflow-hidden rounded-2xl border border-gray-100 bg-[var(--color-burnt-siena-lighter)] p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
       style={{ maxWidth: '405px' }}
     >
       <AddNewCourse type="icon" />

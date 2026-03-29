@@ -6,6 +6,10 @@ type BaseDialogProps = {
   titleId?: string;
   descriptionId?: string;
   contentClassName?: string;
+  /** Додаткові класи для кнопки закриття (напр. text-white / text-neutral для контрасту). */
+  closeButtonClassName?: string;
+  /** Явний колір іконки X (SVG fill) — надійніше за text-* для спрайт-іконок. */
+  closeIconColor?: string;
   children: ReactNode;
 };
 

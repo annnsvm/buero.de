@@ -25,7 +25,7 @@ const CoursesCatalogFilters = ({
                   styleType="mobile"
                   className={`rounded-full px-4 py-2 text-lg font-medium leading-[1.5] border ${
                     isActive
-                      ? 'bg-[var(--color-cod-gray-base)] border-[var--color-cod-gray-base)] text-[var(--color-text-on-accent)] hover:bg-[var(--color-neutral-darkest)]'
+                      ? 'bg-[var(--color-cod-gray-base)] border-[var(--color-cod-gray-base)] text-[var(--color-text-on-accent)] hover:bg-[var(--color-neutral-darkest)]'
                       : 'bg-[var(--color-white)] text-[var(--color-text-primary)] border-[var(--opacity-neutral-darkest-15)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-neutral-darkest)]'
                   }`}
                   onClick={() => onFilterChange(filter.id)}
