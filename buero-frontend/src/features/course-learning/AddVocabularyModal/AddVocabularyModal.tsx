@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { BaseDialog } from '@/components/modal';
 import { FormField, Input, Icon } from '@/components/ui';
 import { ICON_NAMES } from '@/helpers/iconNames';
+import { ROUTES } from '@/helpers/routes';
 import { useAppDispatch } from '@/redux/hooks';
 import { addWord } from '@/redux/slices/vocabulary/vocabularySlice';
 import type { VocabularyCategory } from '@/types/features/vocabulary/Vocabulary.types';
@@ -36,6 +38,8 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
   handleOpenChange,
 }) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { courseId } = useParams<{ courseId: string }>();
   const [view, setView] = useState<'form' | 'success'>('form');
   const [addedWord, setAddedWord] = useState('');
 
@@ -222,10 +226,13 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
             </button>
             <button
               type="button"
-              onClick={handleClose}
-              className="rounded-full bg-[var(--color-cod-gray-base)] px-6 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+              onClick={() => {
+                handleClose();
+                if (courseId) navigate(ROUTES.VOCABULARY.replace(':courseId', courseId));
+              }}
+              className="rounded-full border border-[var(--opacity-neutral-darkest-15)] px-6 py-2.5 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface-section)]"
             >
-              Close
+              Go to Vocabulary
             </button>
           </div>
         </div>
