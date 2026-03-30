@@ -111,7 +111,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
             </button>
           </div>
 
-          <div className="flex flex-1 flex-col items-center justify-center gap-3">
+          <div className="flex flex-1 flex-col items-center justify-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
               Translation
             </span>
@@ -121,6 +121,11 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
             <span className="rounded-full bg-[var(--color-surface-section)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
               {entry.category}
             </span>
+            {entry.notes ? (
+              <p className="mt-1 w-full text-center text-xs italic text-[var(--color-text-secondary)]">
+                {entry.notes}
+              </p>
+            ) : null}
           </div>
 
           <p className="text-center text-xs text-[var(--color-text-secondary)]">Click to flip</p>

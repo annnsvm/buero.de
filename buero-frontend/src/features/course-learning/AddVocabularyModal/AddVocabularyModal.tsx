@@ -20,7 +20,7 @@ const addVocabularySchema = z.object({
     .min(1, { message: 'Translation is required' })
     .max(200, { message: 'Translation is too long' }),
   category: z.enum(['Vocabulary', 'Idiom', 'Phrase', 'Grammar', 'Other']),
-  notes: z.string().max(1000, { message: 'Notes are too long' }).optional(),
+  notes: z.string().max(80, { message: 'Notes must be 80 characters or fewer' }).optional(),
 });
 
 type AddVocabularyFormValues = z.infer<typeof addVocabularySchema>;
@@ -42,6 +42,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors, isValid },
     reset,
   } = useForm<AddVocabularyFormValues>({
@@ -175,11 +176,15 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
               </label>
               <textarea
                 id="vocab-notes"
-                rows={3}
+                rows={2}
+                maxLength={80}
                 placeholder="Add example sentences, context, or pronunciation tips"
                 className="w-full resize-none rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-primary)] focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
                 {...register('notes')}
               />
+              <p className="mt-1 text-right text-xs text-[var(--color-text-secondary)]">
+                {watch('notes')?.length ?? 0}/80
+              </p>
             </div>
 
             <button
