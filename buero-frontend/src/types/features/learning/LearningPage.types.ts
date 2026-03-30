@@ -20,4 +20,5 @@ export type LearningPageProps = {
   isVideoCompletionSaving?: boolean;
   videoCompletionError?: string | null;
   fallbackMarkReadyAfterSeconds?: number | null;
+  onAddWord?: () => void;
 };

@@ -32,6 +32,7 @@ const CoursesCatalogList = ({ courses }: CoursesGridProps) => {
                 {...course}
                 variant={role === 'teacher' ? 'teacher-catalog' : 'catalog'}
                 onCourseDeleted={role === 'teacher' ? handleCourseDeleted : undefined}
+                onPublicationChange={role === 'teacher' ? handleCourseDeleted : undefined}
               />
             </li>
           ))}

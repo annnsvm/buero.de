@@ -14,9 +14,10 @@ export type CourseCardProps = {
   rating?: number;
   isAdded?: boolean;
   hasTrial?: boolean;
+  isPublished?: boolean;
   onClick?: () => void;
-  /** Якщо задано — показується в модалці видалення; інакше кількість підвантажується з GET /courses/:id */
   modulesCount?: number;
-  /** Після успішного DELETE /courses/:id (наприклад refetch каталогу) */
   onCourseDeleted?: () => void;
+  /** Після зміни публікації (наприклад refetch каталогу). */
+  onPublicationChange?: () => void;
 };

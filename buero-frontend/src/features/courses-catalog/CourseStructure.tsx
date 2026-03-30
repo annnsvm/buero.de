@@ -7,8 +7,8 @@ export type CourseMaterial = {
   moduleId: string;
   type: string;
   title: string;
-  type: string;
-  orderIndex?: number; 
+  duration?: string;
+  orderIndex?: number;
 };
 
 export type CourseModule = {

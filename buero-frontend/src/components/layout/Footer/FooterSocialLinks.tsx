@@ -14,10 +14,10 @@ const SOCIAL_LINKS: SocialLink[] = [
 ];
 
 const linkClass =
-  'flex items-center gap-3 text-[0.9375rem] text-[var(--color-neutral-light)] transition-colors hover:text-[var(--color-neutral-white)]';
+  'flex items-center justify-center gap-3 text-[0.9375rem] text-[var(--color-neutral-light)] transition-colors hover:text-[var(--color-neutral-white)] sm:justify-start';
 
 const FooterSocialLinks: React.FC = () => (
-  <ul className="flex flex-col gap-3">
+  <ul className="flex flex-col items-center gap-3 sm:items-start">
     {SOCIAL_LINKS.map(({ name, icon, href }) => (
       <li key={name}>
         <Link to={href} target="_blank" rel="noopener noreferrer" className={linkClass}>

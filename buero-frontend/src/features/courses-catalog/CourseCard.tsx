@@ -9,7 +9,6 @@ import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import ConfirmDeleteEntityModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmDeleteEntityModal';
 import { buildDeleteCourseDescription } from '@/features/course-managment/helpers/courseEntityDeleteCopy.helpers';
 import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
-import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
 export type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 
 const CourseCard: FC<CourseCardProps> = (rawProps) => {
@@ -28,21 +27,15 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     rating,
     isAdded,
     hasTrial = true,
+    isPublished,
     variant = '',
     modulesCount: modulesCountProp,
     onCourseDeleted,
+    onPublicationChange,
   } = rawProps;
   
 
   const displayCategory = category || 'LANGUAGE';
-  // const displayImageUrl = imageUrl || '/images/courses/course-1.webp';
-
-  // const displayLessonsCount = lessonsCount || 12;
-  // const displayDurationHours = durationHours || 10;
-  
-  
-  
-
 
   const cleanPrice =
     parseFloat(
@@ -63,6 +56,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
   const [resolvedModuleCount, setResolvedModuleCount] = useState<number | null>(null);
   const [isLoadingDeleteInfo, setIsLoadingDeleteInfo] = useState(false);
   const [isDeletingCourse, setIsDeletingCourse] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const openCourseInfo = () => {
     pushUiModal({
@@ -83,6 +77,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
         rating,
         isAdded,
         hasTrial,
+        isPublished,
       },
     });
   };
@@ -100,6 +95,9 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     e.stopPropagation();
     openCourseInfo();
   };
+
+  const showPublicationBadge =
+    variant === 'teacher-catalog' && typeof isPublished === 'boolean';
 
   const handleDeleteModalOpenChange = useCallback((open: boolean) => {
     setIsDeleteModalOpen(open);
@@ -148,30 +146,46 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     setIsDeleteModalOpen(true);
   };
 
+  const handlePublishToggleClick = async (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof isPublished !== 'boolean' || isPublishing) return;
+    setIsPublishing(true);
+    try {
+      await apiInstance.patch(API_ENDPOINTS.courses.update(id), {
+        is_published: !isPublished,
+      });
+      onPublicationChange?.();
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   let buttonsComponent = null;
   switch (variant) {
     case 'teacher-catalog': {
       buttonsComponent = (
-        <div className="flex w-full min-w-0 flex-row items-stretch gap-2 sm:gap-3">
-          <LinkBtn
-            to={getTeacherCourseEditPath(id)}
-            variant="dark"
-            className="min-w-0 flex-1 !w-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Edit course
-          </LinkBtn>
-          <Button
-            type="button"
-            variant="outlineDark"
-            className="min-w-0 flex-1"
-            onClick={handleRemoveCourseClick}
-           
-            
-            aria-label={`Remove course ${title}`}
-          >
-            Remove course
-          </Button>
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:gap-3">
+          <div className="flex w-full min-w-0 flex-row items-stretch gap-2 sm:gap-3">
+            <span className="min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
+              <LinkBtn
+                to={getTeacherCourseEditPath(id)}
+                variant="dark"
+                className="min-w-0 w-full !w-auto"
+              >
+                Edit course
+              </LinkBtn>
+            </span>
+            <Button
+              type="button"
+              variant="outlineDark"
+              className="min-w-0 flex-1"
+              onClick={handleRemoveCourseClick}
+              aria-label={`Remove course ${title}`}
+            >
+              Remove course
+            </Button>
+          </div>
         </div>
       );
       break;
@@ -232,10 +246,21 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
             alt={title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute top-4 left-4 flex items-center gap-2">
+          <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
             <span className="flex items-center justify-center rounded-full bg-[var(--color-neutral-white)] text-xs sm:text-base font-semibold text-[var(--color-text-primary)] px-2.5 py-1 border border-[var(--opacity-neutral-darkest-15)]">  
               {levelLabel}
             </span>
+            {showPublicationBadge ? (
+              <span
+                className={
+                  isPublished
+                    ? 'inline-flex items-center justify-center rounded-full bg-[#16a34a] px-3.5 py-1.5 text-xs font-semibold leading-none text-white shadow-sm sm:text-sm'
+                    : 'inline-flex items-center justify-center rounded-full bg-[#f06a4d] px-3.5 py-1.5 text-xs font-semibold leading-none text-white shadow-sm sm:text-sm'
+                }
+              >
+                {isPublished ? 'Published' : 'Unpublished'}
+              </span>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-1 flex-col p-4 sm:p-6">

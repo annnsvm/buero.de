@@ -6,11 +6,15 @@ import React from 'react';
 const HeroActionBtn: React.FC = () => {
   return (
     <ul
-      className="flex flex-col flex-wrap items-center gap-5 sm:flex-row sm:gap-4 lg:items-start"
+      className="flex w-full flex-col flex-nowrap gap-6 sm:w-fit sm:flex-row sm:gap-4 sm:items-center lg:items-start"
       aria-label="Hero Links"
     >
-      <li>
-        <LinkBtn to={'/'} variant="primary" className="flex items-center gap-3">
+      <li className="w-full sm:w-auto">
+        <LinkBtn
+          to={'/'}
+          variant="primary"
+          className="flex w-full items-center gap-3 sm:w-auto"
+        >
           <span>Get started</span>
           <Icon
             name={ICON_NAMES.ARROW_RIGHT}

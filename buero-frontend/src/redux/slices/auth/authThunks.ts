@@ -1,6 +1,7 @@
 import type { LoginPayload, SignUpPayload } from '@/types/redux/auth.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { addUser } from '../user/userSlice';
+import { resetCoursesCatalog } from '../coursesCatalog/coursesCatalogSlice';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import type { RootState } from '@/redux/rootReducer';
 import { getErrorMessage } from '@/helpers/getErrorMessage';
@@ -52,6 +53,7 @@ export const logOutThunk = createAsyncThunk<void, void>(
       const { apiInstance } = await import('@/api/apiInstance');
       await apiInstance.post(API_ENDPOINTS.auth.logout);
       dispatch(addUser(null));
+      dispatch(resetCoursesCatalog());
       return;
     } catch (error) {
       const message = getErrorMessage(error, 'Logout failed');

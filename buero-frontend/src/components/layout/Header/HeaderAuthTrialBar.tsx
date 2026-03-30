@@ -23,7 +23,7 @@ const HeaderAuthTrialBar: React.FC<HeaderNavAuthTrialProps> = ({
     );
   };
   return (
-    <div className={['flex gap-2', className].join(' ')}>
+    <div className={['flex gap-4', className].join(' ')}>
       {isAuthenticate ? (
         <Logout isLight={isLight}/>
       ) : (

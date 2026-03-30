@@ -16,6 +16,7 @@ export const ROUTES = Object.freeze({
   COURSES: '/courses',
   MY_LEARNING: '/my-learning',
   COURSE: '/courses/:courseId',
+  VOCABULARY: '/courses/:courseId/vocabulary',
   PROFILE: '/profile',
   NOT_FOUND: '/404',
 } as const);

@@ -2,11 +2,16 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 import { fetchCoursesCatalogThunk } from './coursesCatalogThunks';
 
+export type PublicationFilter = 'all' | 'published' | 'unpublished';
+
 export type CoursesCatalogFilters = {
   search?: string;
   tags?: string;
   language?: string;
-  // level?: 'A1' | 'A2' | 'B1' | 'B2';
+  /** Лише для GET /courses/manage (вчитель). */
+  publicationStatus?: PublicationFilter;
+  /** Використовується на сторінці «Моє навчання» (локальний фільтр). */
+  category?: string;
 };
 
 export type CoursesCatalogState = {
@@ -44,6 +49,12 @@ const coursesCatalogSlice = createSlice({
       state.filters = {};
       state.page = 1;
     },
+    resetCoursesCatalog: (state) => {
+      state.items = [];
+      state.totalCount = 0;
+      state.status = 'idle';
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -64,4 +75,4 @@ const coursesCatalogSlice = createSlice({
 });
 
 export const coursesCatalogReducer = coursesCatalogSlice.reducer;
-export const { setFilters, setPage, resetFilters } = coursesCatalogSlice.actions;
+export const { setFilters, setPage, resetFilters, resetCoursesCatalog } = coursesCatalogSlice.actions;

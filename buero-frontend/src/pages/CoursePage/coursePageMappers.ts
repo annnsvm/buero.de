@@ -51,9 +51,9 @@ export const mapApiModulesToCourseStructure = (
   return sortByOrder(modules).map((mod) => ({
     id: mod.id,
     title: mod.title,
-    lessonsCount: mod.materials?.length ?? 0,
-    lessons: sortByOrder(mod.materials ?? []).map((mat) => ({
+    materials: sortByOrder(mod.materials ?? []).map((mat) => ({
       id: mat.id,
+      moduleId: mod.id,
       title: mat.title,
       duration: formatMaterialDuration(mat),
       type: mat.type,
