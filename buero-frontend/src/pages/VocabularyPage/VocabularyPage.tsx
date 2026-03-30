@@ -93,7 +93,7 @@ const VocabularyPage: React.FC = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search words..."
-                className="w-full rounded-xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] py-3 pl-12 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-primary)] focus:outline-none transition-colors"
+                className="w-full rounded-xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] py-3 pl-12 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-neutral-darkest)]/40 focus:outline-none transition-colors"
               />
             </div>
 

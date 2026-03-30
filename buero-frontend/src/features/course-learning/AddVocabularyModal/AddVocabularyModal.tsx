@@ -117,7 +117,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
                 id="vocab-word"
                 type="text"
                 placeholder="e.g., Wanderlust"
-                className="w-full rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-primary)] focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-neutral-darkest)]/40 focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
                 {...register('word')}
               />
             </FormField>
@@ -133,7 +133,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
                 id="vocab-translation"
                 type="text"
                 placeholder="Translation"
-                className="w-full rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-primary)] focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-neutral-darkest)]/40 focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
                 {...register('translation')}
               />
             </FormField>
@@ -154,7 +154,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
                     value={field.value}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
-                    className="w-full rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-primary)] focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
+                    className="w-full rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-neutral-darkest)]/40 focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -179,7 +179,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
                 rows={2}
                 maxLength={80}
                 placeholder="Add example sentences, context, or pronunciation tips"
-                className="w-full resize-none rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-primary)] focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
+                className="w-full resize-none rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--opacity-neutral-darkest-5)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-neutral-darkest)]/40 focus:bg-[var(--color-surface-card)] focus:outline-none transition-colors"
                 {...register('notes')}
               />
               <p className="mt-1 text-right text-xs text-[var(--color-text-secondary)]">
