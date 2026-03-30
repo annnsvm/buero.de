@@ -27,7 +27,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
 
   return (
     <div
-      className="h-[290px] w-full max-w-[312px] cursor-pointer [perspective:800px]"
+      className="h-[290px] w-full cursor-pointer [perspective:800px]"
       onClick={() => setFlipped((p) => !p)}
       role="button"
       tabIndex={0}
