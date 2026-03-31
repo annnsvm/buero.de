@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { HeaderMobileMenuProps } from '@/types/components/layout/Header.types';
 import { Button } from '@/components/ui';
 import HeaderNavBar from './HeaderNavBar';
-import HeaderAuthTrialBar from './HeaderAuthTrialBar';
-
+import HeaderAuthBar from './HeaderAuthBar';
+import { useAppSelector } from '@/redux/hooks';
+import { selectCurrentUser } from '@/redux/slices/user/userSelectors';
 
 const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   setIsOpen,
@@ -14,6 +15,7 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
 }) => {
   const [isAnimated, setIsAnimated] = useState(false);
   const hambuergerLine = `w-full h-0.5 transition-all duration-300 ease-in-out ${isLight ? 'bg-[var(--color-surface-card)]' : 'bg-[var(--color-text-primary)]'}`;
+  const user = useAppSelector(selectCurrentUser);
   const toggleMenu = () => {
     if (window.innerWidth < 1024) {
       setIsOpen(!isOpen);
@@ -121,6 +123,15 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
       </div>
       <div className={overlayClasses} onClick={closeMenu}>
         <div className={panelClasses} onClick={(event) => event.stopPropagation()}>
+        {user && (
+            <div className="flex w-full justify-start mt-4 lg:hidden">
+              <HeaderAuthBar
+                isLight={isLight}
+                from="mobile"
+                className="mr-auto"
+              />
+            </div>
+          )}
           <div className="flex flex-1 items-center justify-center">
             <HeaderNavBar
               pathname={pathname}
@@ -129,13 +140,15 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             />
           </div>
 
-          <div className="mt-6 flex flex-col gap-4 lg:hidden">
-            <HeaderAuthTrialBar
-              isLight={isLight}
-              className="mx-auto flex w-full max-w-[280px] flex-col gap-4"
-              from="mobile"
-            />
-          </div>
+          {!user && (
+            <div className="mt-6 flex flex-col gap-4 lg:hidden">
+              <HeaderAuthBar
+                isLight={isLight}
+                className="mx-auto flex w-full max-w-[280px] flex-col gap-4"
+                from="mobile"
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

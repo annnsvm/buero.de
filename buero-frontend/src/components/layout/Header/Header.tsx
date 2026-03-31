@@ -4,7 +4,7 @@ import { ROUTES, isHeaderLightByPath } from '../../../helpers/routes';
 import { Logo } from '@/components/ui';
 import Container from '../Container/Container';
 import HeaderNavBar from '@/components/layout/Header/HeaderNavBar';
-import HeaderAuthTrialBar from '@/components/layout/Header/HeaderAuthTrialBar';
+import HeaderAuthBar from './HeaderAuthBar';
 import HeaderMobileMenu from './HeaderMobileMenu';
 
 const Header = () => {
@@ -30,7 +30,7 @@ const Header = () => {
             isLight={isLight}
             className="hidden lg:flex"
           />
-          <HeaderAuthTrialBar isLight={isLight} className="hidden lg:flex" />
+          <HeaderAuthBar isLight={isLight} className="hidden lg:flex" />
           <HeaderMobileMenu
             isOpen={isOpen}
             setIsOpen={setIsOpen}
