@@ -68,13 +68,13 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
         className="hidden h-full min-h-0 w-[320px] shrink-0 flex-col border-r border-[var(--color-border-subtle)] bg-[var(--color-neutral-white)] lg:flex"
         aria-label="Course outline"
       >
-        <div className="shrink-0 px-28 py-5">
+        <div className="shrink-0 px-6 py-6">
           <Link to={ROUTES.HOME}>
             <Logo isLight={false} width={70} height={28} />
           </Link>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col p-4">
-          <div className="mt-2 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">
             {renderStructure(false)}
           </div>
         </div>

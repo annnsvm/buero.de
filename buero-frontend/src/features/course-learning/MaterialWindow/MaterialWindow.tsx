@@ -157,7 +157,7 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
     return (
       <div
         ref={wrapperRef}
-        className="h-full w-full min-h-[200px]"
+        className="h-full min-h-[200px] w-full"
         title={title}
         aria-label={title}
       />
@@ -229,7 +229,7 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
   const markButtonDisabled = isVideoCompletionSaving || !videoEnded;
 
   return (
-    <article className="flex-1 bg-[var(--color-surface-section)] py-31" aria-label={lesson.title}>
+    <article className="flex-1 bg-[var(--color-surface-section)] py-8 md:py-12" aria-label={lesson.title}>
       <Container className="max-w-5xl px-6 lg:px-12">
         <section className="rounded-[20px] bg-[var(--color-neutral-white)] p-4 shadow-sm sm:rounded-[22px] sm:p-5 md:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
@@ -264,7 +264,7 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
           </div>
         </section>
 
-        <section className="mt-6 bg-[var(--color-neutral-white)] sm:mt-5 md:mt-12">
+        <section className="mt-5 bg-[var(--color-neutral-white)] sm:mt-6 md:mt-8">
           <div className="overflow-hidden rounded-[20px] bg-[#8f8f8f] sm:rounded-[22px]">
             <div className="aspect-video w-full">
               <LazyYouTubeEmbed

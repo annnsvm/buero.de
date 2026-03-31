@@ -64,35 +64,40 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
   const sortedModules = [...modules].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
 
   return (
-    <div className="mt-6 p-4 sm:p-6">
-      <h3 className="text-[26px] leading-tight font-semibold tracking-[-0.01em] text-[var(--color-neutral-darkest)]">Course Structure</h3>
-      <div className="mt-1 space-y-4 px-4 sm:px-6 py-4">
-        {sortedModules.map((mod, modIdx) => (
-          
-          <div
-            key={mod.id}
-            className="rounded-lg bg-[var(--color-surface-card)]"
-          >
+    <div className="space-y-6 py-2">
+      {sortedModules.map((mod, modIdx) => {
+        const completedCount = mod.materials?.filter(
+          (m) => completedMaterialIds?.has(m.id),
+        ).length ?? 0;
+        const totalCount = mod.materials?.length ?? 0;
+
+        return (
+          <div key={mod.id}>
             <button
               type="button"
               onClick={() => toggleModule(mod.id)}
-              className="flex w-full items-center justify-between text-left"
+              className="flex w-full items-center justify-between px-2 py-1 text-left"
             >
-              <div>
-                <div className="font-bold text-[var(--color-text-primary)] flex flex-col">
-                  <span className="font-semibold text-[var(--color-neutral-dark)] uppercase text-base">MODULE {modIdx + 1}</span>
-                  <span className="text-lg leading-tight font-semibold tracking-[-0.01em] text-[var(--color-neutral-darkest)]">{mod.title}</span>
-                </div>
-                <p className="text-[var(--color-neutral-dark)] text-base">{mod.materials?.length||0} lessons</p>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-neutral-dark)]">
+                  MODULE&nbsp;&nbsp;{modIdx + 1}
+                </span>
+                <span className="mt-0.5 text-base font-semibold leading-tight text-[var(--color-neutral-darkest)]">
+                  {mod.title}
+                </span>
+                <span className="mt-0.5 text-sm text-[var(--color-neutral-dark)]">
+                  {completedCount}/{totalCount} completed
+                </span>
               </div>
               <Icon
                 name={expandedModules.has(mod.id) ? 'icon-chevron-up' : 'icon-chevron-down'}
                 size={20}
-                className="text-[var(--color-neutral-darkest)]"
+                className="shrink-0 text-[var(--color-neutral-darkest)]"
               />
             </button>
+
             {expandedModules.has(mod.id) && mod.materials && mod.materials.length > 0 && (
-              <div className="px-4 py-2 sm:px-6 sm:py-4">
+              <div className="mt-3 space-y-3 pl-2">
                 {mod.materials.map((lesson) => {
                   const isQuiz = String(lesson.type).toLowerCase() === 'quiz';
                   const isVideo = String(lesson.type).toLowerCase() === 'video';
@@ -119,16 +124,13 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
                         ? ICON_NAMES.HELP
                         : ICON_NAMES.PLAY_ARROW;
                   return (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center justify-between mb-4"
-                  >
                     <button
+                      key={lesson.id}
                       type="button"
                       onClick={() =>
                         onSelectLesson?.({ moduleId: mod.id, materialId: lesson.id })
                       }
-                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${rowBgClass}`}
+                      className={`flex w-full min-w-0 items-center gap-3 rounded-lg p-2 text-left outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] ${rowBgClass}`}
                     >
                       <span
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconWrapClass}`}
@@ -140,24 +142,24 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
                           color="var(--color-white)"
                         />
                       </span>
-                      <div className="flex min-w-0 flex-col gap-1">
-                        <span className="text-base font-semibold text-[var(--color-neutral-darkest)]">
+                      <div className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm font-semibold text-[var(--color-neutral-darkest)]">
                           {lesson.title}
                         </span>
                         {!isQuiz ? (
-                          <span className="font-semibold text-[var(--color-neutral-dark)] text-xs">{lesson.duration}</span>
+                          <span className="text-xs text-[var(--color-neutral-dark)]">
+                            {lesson.duration}
+                          </span>
                         ) : null}
                       </div>
                     </button>
-                  </div>
                   );
                 })}
               </div>
             )}
           </div>
-        ))}
-
-      </div>
+        );
+      })}
     </div>
   );
 };
