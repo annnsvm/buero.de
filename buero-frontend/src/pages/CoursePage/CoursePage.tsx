@@ -267,7 +267,7 @@ const CoursePage: React.FC = () => {
       />
 
       <div ref={mainScrollRef} className="min-w-0 flex-1 overflow-y-auto">
-        <div className="fixed top-0 z-10 flex gap-4 w-full justify-center border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)] px-4 py-6 lg:justify-start lg:px-10">
+        <div className="sticky top-0 z-10 flex gap-4 w-full justify-center border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)] px-4 py-4 lg:justify-start lg:px-10">
           <NavLink
             to={ROUTES.VOCABULARY.replace(':courseId', courseId)}
             className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
