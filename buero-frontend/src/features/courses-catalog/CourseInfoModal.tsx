@@ -190,7 +190,8 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         {/* Єдиний скрол: зображення + увесь контент; футер поза цим блоком */}
         <div
           ref={scrollRef}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[var(--opacity-neutral-darkest-15)]"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-t-xl sm:rounded-t-2xl [&::-webkit-scrollbar]:absolute [&::-webkit-scrollbar]:right-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/20 hover:[&::-webkit-scrollbar-thumb]:bg-black/30"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(0,0,0,0.2) transparent' }}
         >
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl">
             <img src={course.imageUrl} alt={course.title} className="h-full w-full object-cover" />
