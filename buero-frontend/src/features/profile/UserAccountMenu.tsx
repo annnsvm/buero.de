@@ -10,27 +10,16 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/helpers/routes';
 
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 const displayLabelFromUser = (email: string, displayName?: string) => {
-  if (displayName?.trim()) return displayName.trim();
+  if (displayName?.trim()) return capitalize(displayName.trim());
   const local = email.split('@')[0];
-  return local ? local.replace(/[._-]/g, ' ') : 'Account';
+  return local ? capitalize(local.replace(/[._-]/g, ' ')) : 'Account';
 };
 
 const firstLetterFromLabel = (label: string) => {
   return label.trim().charAt(0).toUpperCase() || '?';
-};
-
-const stringToColor = (string: string) => {
-  let hash = 0;
-  for (let i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  let color = '#';
-  for (let i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  return color;
 };
 
 
@@ -56,7 +45,6 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
   // const label = user ? displayLabelFromUser(user.email, user.displayName) : 'Account';
   const label = user ? displayLabelFromUser(user.email, user.name) : 'Account';
   const avatarLetter = firstLetterFromLabel(label);
-  const avatarBgColor = stringToColor(label); 
 
   const closeMenu = useCallback(() => setOpen(false), []);
 
@@ -105,11 +93,10 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
         onClick={() => setOpen((v) => !v)}
       >
         <span 
-          className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full flex items-center justify-center shadow-sm"
-          style={!user?.avatarUrl ? { backgroundColor: avatarBgColor } : {}}
+          className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--color-primary)]"
         >
           {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
           ) : (
             <span className="text-[15px] font-bold text-white">
               {avatarLetter}
@@ -127,65 +114,67 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
 
      
       {open ? (
+        <>
+        <div
+          className="fixed inset-0 z-[119] bg-black/40 backdrop-blur-[2px]"
+          aria-hidden="true"
+          onClick={closeMenu}
+        />
         <div className={panelClasses} role="menu">
-          
-          <div className="flex items-center justify-between px-6 pb-4">
+          <div className="flex items-center justify-between px-6 pb-3">
             <Link to={ROUTES.HOME} onClick={closeMenu} className="hover:opacity-80 transition-opacity">
-              <Logo width={86} height={44} isLight={false} />
+              <Logo width={60} height={24} isLight={false} />
             </Link>
             <button onClick={closeMenu} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
-              <Icon name="icon-chevrons-double" size={24} className="text-[var(--color-neutral-darkest)]"/>
+              <Icon name="icon-chevrons-double" size={20} className="text-[var(--color-neutral-darkest)]"/>
             </button>
-          </div> 
+          </div>
+
+          <div className="flex items-center gap-3 px-6 py-3">
+            <span
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--color-primary)]"
+            >
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+              ) : (
+                <span className="text-[15px] font-bold text-white">{avatarLetter}</span>
+              )}
+            </span>
+            <div className="flex min-w-0 flex-col">
+              <span className="text-sm font-bold text-[var(--color-text-primary)]">{label}</span>
+              <span className="max-w-[180px] truncate text-xs text-[var(--color-text-secondary)]">{user?.email || 'email@example.com'}</span>
+            </div>
+          </div>
+
+          <div className="my-2 border-t border-[var(--opacity-neutral-darkest-10)]" />
+
           <button
             type="button"
             className={itemClasses}
             onClick={() => { closeMenu(); dispatch(openGlobalModal({ type: 'profile' })); }}
           >
-            <Icon name="icon-cog" size={24} className="text-[var(--color-neutral-darkest)]" />
-            <span className="text-lg font-normal text-[var(--color-neutral-darkest)]">Profile</span>
+            <Icon name={ICON_NAMES.COG} size={22} className="text-[var(--color-neutral-darkest)]" />
+            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">Profile</span>
           </button>
-          <button 
-            type="button" 
-            className={itemClasses} 
+          <button
+            type="button"
+            className={itemClasses}
             onClick={handleContactSupport}
           >
-           <Icon name="icon-help" size={24} className="text-[var(--color-neutral-darkest)]" />
-            <span className="text-lg font-normal text-[var(--color-neutral-darkest)]">Support</span>
+            <Icon name={ICON_NAMES.HELP} size={22} className="text-[var(--color-neutral-darkest)]" />
+            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">Support</span>
           </button>
-         
-          <button 
-              type="button" 
-              onClick={() => { closeMenu(); dispatch(openGlobalModal({ type: 'logoutConfirm' })); }}
-              // className={itemClasses} 
-              className="ml-6 py-2 px-3 border radius-lg text-[var(--color-neutral-darker)] hover:text-[var(--color-text-primary)] transition-colors rounded-full hover:bg-[var(--opacity-neutral-darkest-10)]"
-              aria-label="Logout options"
-            > Logout
-               
-            </button>
-          <div className="flex items-center justify-between px-6 pt-2 pb-1">
-            <div className="flex items-center gap-3">
-              <span 
-                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full flex items-center justify-center shadow-sm"
-                style={!user?.avatarUrl ? { backgroundColor: avatarBgColor } : {}}
-              >
-                {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-[16px] font-bold text-white">
-                    {avatarLetter}
-                  </span>
-                )}
-              </span>
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-[var(--color-text-primary)]">{label}</span>
-                <span className="text-xs text-[var(--color-text-secondary)] truncate max-w-[130px]">{user?.email || 'email@example.com'}</span>
-              </div>
-            </div>
-            
-           
-          </div>
+          <button
+            type="button"
+            className={itemClasses}
+            onClick={() => { closeMenu(); dispatch(openGlobalModal({ type: 'logoutConfirm' })); }}
+            aria-label="Logout"
+          >
+            <Icon name={ICON_NAMES.ARROW_RIGHT} size={22} className="text-[var(--color-neutral-darkest)]" />
+            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">Logout</span>
+          </button>
         </div>
+        </>
       ) : null}
     </div>
   );
