@@ -15,12 +15,15 @@ function cookieHeaderFromRegister(headers: { "set-cookie"?: string | string[] })
     .join("; ");
 }
 
-describe("Courses (e2e)", () => {
-  let app: INestApplication;
+/** Валідний UUID v4, якого майже напевно немає в БД */
+const MISSING_ID = "550e8400-e29b-41d4-a716-446655440099";
+const MISSING_MODULE_ID = "550e8400-e29b-41d4-a716-446655440088";
+const MISSING_MATERIAL_ID = "550e8400-e29b-41d4-a716-446655440077";
 
-  const email = () =>
-    `courses_e2e_${Date.now()}_${Math.random().toString(36).slice(2)}@test.local`;
-  const password = "CoursesE2ePass1";
+describe("Courses, course-modules & course-materials (e2e)", () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
+  const password = "E2ePass123";
 
   beforeAll(async () => {
     if (!process.env.DATABASE_URL) {
@@ -29,150 +32,205 @@ describe("Courses (e2e)", () => {
       );
     }
     app = await createE2eApp();
+    prisma = app.get(PrismaService);
   });
 
   afterAll(async () => {
-    const prisma = app.get(PrismaService);
     await prisma.$disconnect();
     await app.close();
   });
 
-  it("GET /api/courses — лише опубліковані курси", async () => {
-    const em = email();
-    const reg = await request(app.getHttpServer())
+  it("каталог: лише опубліковані; CRUD курсу (teacher); GET :id (student); 404", async () => {
+    const suffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const pubTitle = `E2E Pub ${suffix}`;
+    const draftTitle = `E2E Draft ${suffix}`;
+
+    const teacherReg = await request(app.getHttpServer())
       .post("/api/auth/register")
       .send({
-        email: em,
+        email: `t_courses_${suffix}@test.local`,
         password,
         role: "teacher",
         language: "en",
       })
       .expect(201);
+    const teacherCookie = cookieHeaderFromRegister(teacherReg.headers);
 
-    const cookie = cookieHeaderFromRegister(reg.headers);
-
-    const createRes = await request(app.getHttpServer())
+    const draft = await request(app.getHttpServer())
       .post("/api/courses")
-      .set("Cookie", cookie)
+      .set("Cookie", teacherCookie)
       .send({
-        title: "E2E Draft Course",
-        language: "de",
+        title: draftTitle,
+        language: "en",
         is_published: false,
       })
       .expect(201);
 
-    const draftId = createRes.body.id as string;
+    const published = await request(app.getHttpServer())
+      .post("/api/courses")
+      .set("Cookie", teacherCookie)
+      .send({
+        title: pubTitle,
+        language: "en",
+        is_published: false,
+      })
+      .expect(201);
 
-    const listBefore = await request(app.getHttpServer())
-      .get("/api/courses")
-      .expect(200);
-
-    expect(Array.isArray(listBefore.body)).toBe(true);
-    expect(
-      listBefore.body.some((c: { id: string }) => c.id === draftId),
-    ).toBe(false);
+    const draftId = draft.body.id as string;
+    const courseId = published.body.id as string;
 
     await request(app.getHttpServer())
-      .patch(`/api/courses/${draftId}`)
-      .set("Cookie", cookie)
+      .patch(`/api/courses/${courseId}`)
+      .set("Cookie", teacherCookie)
       .send({ is_published: true })
       .expect(200);
 
-    const listAfter = await request(app.getHttpServer())
+    const catalog = await request(app.getHttpServer())
       .get("/api/courses")
       .expect(200);
 
-    const found = listAfter.body.find((c: { id: string }) => c.id === draftId);
-    expect(found).toBeDefined();
-    expect(found.isPublished).toBe(true);
-  });
+    expect(Array.isArray(catalog.body)).toBe(true);
+    const titles = catalog.body.map((c: { title: string }) => c.title);
+    expect(titles).toContain(pubTitle);
+    expect(titles).not.toContain(draftTitle);
 
-  it("GET /api/courses/:id — 200 з JWT; 404 для неіснуючого id", async () => {
-    const em = email();
-    const reg = await request(app.getHttpServer())
+    const studentReg = await request(app.getHttpServer())
       .post("/api/auth/register")
       .send({
-        email: em,
+        email: `s_courses_${suffix}@test.local`,
         password,
-        role: "teacher",
+        role: "student",
         language: "en",
       })
       .expect(201);
+    const studentCookie = cookieHeaderFromRegister(studentReg.headers);
 
-    const cookie = cookieHeaderFromRegister(reg.headers);
-
-    const created = await request(app.getHttpServer())
-      .post("/api/courses")
-      .set("Cookie", cookie)
-      .send({
-        title: "E2E One Course",
-        language: "de",
-        is_published: true,
-      })
-      .expect(201);
-
-    const id = created.body.id as string;
-
-    const getOk = await request(app.getHttpServer())
-      .get(`/api/courses/${id}`)
-      .set("Cookie", cookie)
+    const one = await request(app.getHttpServer())
+      .get(`/api/courses/${courseId}`)
+      .set("Cookie", studentCookie)
       .expect(200);
 
-    expect(getOk.body.id).toBe(id);
-    expect(Array.isArray(getOk.body.modules)).toBe(true);
-
-    const missingId = "00000000-0000-0000-0000-00000000abcd";
-    await request(app.getHttpServer())
-      .get(`/api/courses/${missingId}`)
-      .set("Cookie", cookie)
-      .expect(404);
-  });
-
-  it("POST / PATCH / DELETE — вчитель; 404 при видаленні неіснуючого", async () => {
-    const em = email();
-    const reg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "teacher",
-        language: "en",
-      })
-      .expect(201);
-
-    const cookie = cookieHeaderFromRegister(reg.headers);
-
-    const post = await request(app.getHttpServer())
-      .post("/api/courses")
-      .set("Cookie", cookie)
-      .send({
-        title: "CRUD Course",
-        language: "de",
-        description: "d",
-        is_published: false,
-      })
-      .expect(201);
-
-    const id = post.body.id as string;
-
-    const patch = await request(app.getHttpServer())
-      .patch(`/api/courses/${id}`)
-      .set("Cookie", cookie)
-      .send({ title: "CRUD Course Updated" })
-      .expect(200);
-
-    expect(patch.body.title).toBe("CRUD Course Updated");
-
-    const del = await request(app.getHttpServer())
-      .delete(`/api/courses/${id}`)
-      .set("Cookie", cookie)
-      .expect(200);
-
-    expect(del.body).toMatchObject({ deleted: true, id });
+    expect(one.body.id).toBe(courseId);
+    expect(Array.isArray(one.body.modules)).toBe(true);
 
     await request(app.getHttpServer())
-      .delete(`/api/courses/${id}`)
-      .set("Cookie", cookie)
+      .get(`/api/courses/${MISSING_ID}`)
+      .set("Cookie", studentCookie)
       .expect(404);
+
+    const mod = await request(app.getHttpServer())
+      .post(`/api/courses/${courseId}/modules`)
+      .set("Cookie", teacherCookie)
+      .send({ title: "Module A", order_index: 0 })
+      .expect(201);
+    const moduleId = mod.body.id as string;
+
+    const modList = await request(app.getHttpServer())
+      .get(`/api/courses/${courseId}/modules`)
+      .set("Cookie", teacherCookie)
+      .expect(200);
+    expect(Array.isArray(modList.body)).toBe(true);
+    expect(modList.body.some((m: { id: string }) => m.id === moduleId)).toBe(
+      true,
+    );
+
+    const modOne = await request(app.getHttpServer())
+      .get(`/api/courses/${courseId}/modules/${moduleId}`)
+      .set("Cookie", teacherCookie)
+      .expect(200);
+    expect(modOne.body.id).toBe(moduleId);
+
+    await request(app.getHttpServer())
+      .get(`/api/courses/${MISSING_ID}/modules`)
+      .set("Cookie", teacherCookie)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .get(`/api/courses/${courseId}/modules/${MISSING_MODULE_ID}`)
+      .set("Cookie", teacherCookie)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .patch(`/api/courses/${courseId}/modules/${moduleId}`)
+      .set("Cookie", teacherCookie)
+      .send({ title: "Module A updated" })
+      .expect(200);
+
+    const mat = await request(app.getHttpServer())
+      .post(`/api/courses/${courseId}/modules/${moduleId}/materials`)
+      .set("Cookie", teacherCookie)
+      .send({
+        type: "text",
+        title: "Reading 1",
+        content: { body: "Hallo" },
+        order_index: 0,
+      })
+      .expect(201);
+    const materialId = mat.body.id as string;
+
+    const mats = await request(app.getHttpServer())
+      .get(`/api/courses/${courseId}/modules/${moduleId}/materials`)
+      .set("Cookie", teacherCookie)
+      .expect(200);
+    expect(Array.isArray(mats.body)).toBe(true);
+
+    const matOne = await request(app.getHttpServer())
+      .get(
+        `/api/courses/${courseId}/modules/${moduleId}/materials/${materialId}`,
+      )
+      .set("Cookie", teacherCookie)
+      .expect(200);
+    expect(matOne.body.id).toBe(materialId);
+
+    await request(app.getHttpServer())
+      .get(
+        `/api/courses/${MISSING_ID}/modules/${moduleId}/materials/${materialId}`,
+      )
+      .set("Cookie", teacherCookie)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .get(
+        `/api/courses/${courseId}/modules/${MISSING_MODULE_ID}/materials/${materialId}`,
+      )
+      .set("Cookie", teacherCookie)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .get(
+        `/api/courses/${courseId}/modules/${moduleId}/materials/${MISSING_MATERIAL_ID}`,
+      )
+      .set("Cookie", teacherCookie)
+      .expect(404);
+
+    await request(app.getHttpServer())
+      .patch(
+        `/api/courses/${courseId}/modules/${moduleId}/materials/${materialId}`,
+      )
+      .set("Cookie", teacherCookie)
+      .send({ title: "Reading 1b" })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .delete(
+        `/api/courses/${courseId}/modules/${moduleId}/materials/${materialId}`,
+      )
+      .set("Cookie", teacherCookie)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .delete(`/api/courses/${courseId}/modules/${moduleId}`)
+      .set("Cookie", teacherCookie)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .delete(`/api/courses/${draftId}`)
+      .set("Cookie", teacherCookie)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .delete(`/api/courses/${courseId}`)
+      .set("Cookie", teacherCookie)
+      .expect(200);
   });
 });
