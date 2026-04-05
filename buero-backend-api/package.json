@@ -38,6 +38,11 @@
     "rxjs": "^7.8.1",
     "stripe": "^20.4.1"
   },
+  "overrides": {
+    "@nestjs/mapped-types": {
+      "class-validator": "$class-validator"
+    }
+  },
   "devDependencies": {
     "@nestjs/testing": "^11.1.17",
     "@types/bcrypt": "^6.0.0",

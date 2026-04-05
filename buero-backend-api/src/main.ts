@@ -100,6 +100,10 @@ async function bootstrap() {
     .addTag("subscriptions", "Підписки та Checkout, Customer Portal")
     .addTag("payments", "Історія платежів")
     .addTag("health", "Перевірка стану сервера")
+    .addTag(
+      "lesson-requests",
+      "Запити на заняття: студент створює, вчитель приймає/відхиляє та виставляє статус після прийняття"
+    )
     .addBearerAuth(
       { type: "http", scheme: "bearer", bearerFormat: "JWT", in: "header" },
       "access_token"

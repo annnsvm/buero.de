@@ -205,4 +205,36 @@ describe("CourseMaterialService", () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
+
+  describe("assertCanAccessCourse", () => {
+    it("allows teacher without DB access row", async () => {
+      prisma.course.findUnique.mockResolvedValue({ id: courseId });
+      await expect(
+        service.assertCanAccessCourse("t1", Role.teacher, courseId),
+      ).resolves.toBeUndefined();
+      expect(prisma.userCourseAccess.findUnique).not.toHaveBeenCalled();
+    });
+
+    it("forbids student without course access", async () => {
+      prisma.course.findUnique.mockResolvedValue({ id: courseId });
+      prisma.userCourseAccess.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.assertCanAccessCourse("stu", Role.student, courseId),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it("forbids student when trial expired", async () => {
+      prisma.course.findUnique.mockResolvedValue({ id: courseId });
+      prisma.userCourseAccess.findUnique.mockResolvedValue({
+        accessType: "trial",
+        trialEndsAt: new Date("2000-01-01"),
+      });
+
+      await expect(
+        service.assertCanAccessCourse("stu", Role.student, courseId),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
 });
+

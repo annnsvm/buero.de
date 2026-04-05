@@ -15,6 +15,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { ProgressQuizModule } from './modules/progress-quiz/progress-quiz.module';
 import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
+import { LessonRequestsModule } from './modules/lesson-requests/lesson-requests.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
     SubscriptionsModule,
     ProgressQuizModule,
     VocabularyModule,
+    LessonRequestsModule,
   ],
   providers: [
     {
