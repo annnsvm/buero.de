@@ -7,14 +7,24 @@ import {
   HttpStatus,
   HttpCode,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import { LoginDto } from "./dto/login.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { CookieService } from "./cookie.service";
 import { UserService } from "../user/user.service";
 import { Response, Request } from "express";
 import { CreateUserDto } from "../user/dto/create-user.dto";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { CurrentUser } from "./decorators/current-user.decorator";
 
 @ApiTags("auth")
 @Controller("auth")
@@ -107,5 +117,40 @@ export class AuthController {
     if (token) await this.userService.revokeRefreshToken(token);
     this.cookieService.clearAuthCookies(res);
     res.status(HttpStatus.OK).send();
+  }
+
+  @Post("change-password")
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth("access_token")
+  @ApiOperation({
+    summary: "Зміна пароля",
+    description:
+      "Потрібен JWT (cookie access_token або Bearer). Перевіряється поточний пароль; усі refresh-токени відкликаються; видаються нові access і refresh у cookie. Тіло { user }.",
+  })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: "Пароль змінено, нові токени в cookie, тіло { user }",
+  })
+  @ApiResponse({ status: 400, description: "Новий пароль збігається з поточним" })
+  @ApiResponse({ status: 401, description: "Невірний поточний пароль або немає JWT" })
+  @ApiResponse({ status: 404, description: "Користувач не знайдено" })
+  @ApiResponse({ status: 429, description: "Too Many Requests" })
+  async changePassword(
+    @CurrentUser("id") userId: string,
+    @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.userService.changePassword(
+      userId,
+      dto.current_password,
+      dto.new_password,
+    );
+    const accessToken = this.userService.signAccessToken(user.id);
+    const refreshToken = await this.userService.createRefreshToken(user.id);
+    this.cookieService.setAuthCookies(res, accessToken, refreshToken);
+    res.status(HttpStatus.OK).json({ user });
   }
 }

@@ -155,6 +155,59 @@ describe("Auth (e2e)", () => {
     ).toBe(true);
   });
 
+  it("POST /api/auth/change-password — 401 wrong current, 200 then login with new password", async () => {
+    const em = email();
+    const reg = await request(app.getHttpServer())
+      .post("/api/auth/register")
+      .send({
+        email: em,
+        password,
+        role: "student",
+        language: "en",
+      })
+      .expect(201);
+
+    const cookieHeader = getSetCookieHeaders(reg.headers)
+      .map((c) => c.split(";")[0])
+      .join("; ");
+
+    await request(app.getHttpServer())
+      .post("/api/auth/change-password")
+      .set("Cookie", cookieHeader)
+      .send({
+        current_password: "WrongPass999",
+        new_password: "NewE2ePass456",
+      })
+      .expect(401);
+
+    const newPass = "NewE2ePass456";
+    const changed = await request(app.getHttpServer())
+      .post("/api/auth/change-password")
+      .set("Cookie", cookieHeader)
+      .send({
+        current_password: password,
+        new_password: newPass,
+      })
+      .expect(200);
+
+    expect(changed.body.user).toBeDefined();
+    expect(changed.body.user.email).toBe(em);
+    const afterChangeCookies = getSetCookieHeaders(changed.headers);
+    expect(afterChangeCookies.some((c) => c.startsWith("access_token="))).toBe(
+      true,
+    );
+
+    await request(app.getHttpServer())
+      .post("/api/auth/login")
+      .send({ email: em, password })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post("/api/auth/login")
+      .send({ email: em, password: newPass })
+      .expect(200);
+  });
+
   it("GET /api/users/me — 401 without JWT cookie", async () => {
     await request(app.getHttpServer()).get("/api/users/me").expect(401);
   });

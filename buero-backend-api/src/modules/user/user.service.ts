@@ -1,4 +1,10 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
@@ -242,5 +248,45 @@ export class UserService {
     });
     if (!user) return null;
     return user;
+  }
+
+  async findUserByIdWithPassword(id: string): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+    });
+  }
+
+  /**
+   * Зміна пароля: перевірка поточного, оновлення хешу, відкликання всіх refresh-токенів.
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<UserWithoutPassword> {
+    const user = await this.findUserByIdWithPassword(userId);
+    if (!user) throw new NotFoundException("User not found");
+    const valid = await this.validatePassword(user, currentPassword);
+    if (!valid) {
+      throw new UnauthorizedException("Invalid current password");
+    }
+    const same = await bcrypt.compare(newPassword, user.passwordHash);
+    if (same) {
+      throw new BadRequestException(
+        "New password must be different from the current password",
+      );
+    }
+    const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    const updated = await this.findUserById(userId);
+    if (!updated) throw new NotFoundException("User not found");
+    return updated;
   }
 }
