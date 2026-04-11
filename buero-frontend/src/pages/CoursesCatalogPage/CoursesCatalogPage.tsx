@@ -15,6 +15,7 @@ import {
 } from '@/redux/slices/coursesCatalog/coursesCatalogSelectors';
 import { setFilters } from '@/redux/slices/coursesCatalog/coursesCatalogSlice';
 import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
+import { selectIsAuthenticated } from '@/redux/slices/auth';
 import { selectUserRole } from '@/redux/slices/user/userSelectors';
 
 const baseFilterTabs = [
@@ -38,6 +39,7 @@ const CoursesCatalogPage: FC = () => {
   const courses = useSelector(selectCoursesCatalogItems);
 
   const filters = useSelector(selectCoursesCatalogFilters);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const role = useAppSelector(selectUserRole);
   const filtersRef = useRef(filters);
 
@@ -66,7 +68,7 @@ const CoursesCatalogPage: FC = () => {
 
   useEffect(() => {
     dispatch(fetchCoursesCatalogThunk());
-  }, [dispatch, filters, role]);
+  }, [dispatch, filters, role, isAuthenticated]);
 
   const handleFilterChange = (id: string) => {
     if (role === 'teacher') {

@@ -11,3 +11,5 @@ export const selectCoursesCatalogTotalCount = (state: RootState) =>
   state.coursesCatalog.totalCount;
 export const selectCoursesCatalogError = (state: RootState) => state.coursesCatalog.error;
 
+export const selectCatalogActiveTrialCourseId = (state: RootState) =>
+  state.coursesCatalog.activeTrialCourseId;

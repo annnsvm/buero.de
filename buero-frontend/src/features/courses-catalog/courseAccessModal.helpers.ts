@@ -1,3 +1,28 @@
+const isActiveTrialRow = (row: Record<string, unknown>): boolean => {
+  const accessType = String(row.accessType ?? row.access_type ?? '');
+  if (accessType !== 'trial') return false;
+  const trialEnd = row.trialEndsAt ?? row.trial_ends_at;
+  if (trialEnd == null || trialEnd === '') return true;
+  return new Date(String(trialEnd)).getTime() >= Date.now();
+};
+
+/** Перший курс з активним trial у списку доступів (GET /subscriptions/me). */
+export const getActiveTrialCourseIdFromAccessList = (accessList: unknown[]): string | null => {
+  for (const raw of accessList) {
+    if (!raw || typeof raw !== 'object') continue;
+    const row = raw as Record<string, unknown>;
+    if (!isActiveTrialRow(row)) continue;
+    const cid =
+      typeof row.courseId === 'string'
+        ? row.courseId
+        : typeof row.course_id === 'string'
+          ? row.course_id
+          : null;
+    if (cid) return cid;
+  }
+  return null;
+};
+
 /** GET /subscriptions/me — елементи можуть бути camelCase або snake_case. */
 export const userHasAccessToCourse = (accessList: unknown[], courseId: string): boolean => {
   const now = Date.now();

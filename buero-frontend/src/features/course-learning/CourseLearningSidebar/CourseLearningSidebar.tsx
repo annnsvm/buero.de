@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { courseStructureKeyFromModules } from '@/features/courses-catalog/courseStructure.helpers';
@@ -8,12 +8,16 @@ import Icon from '@/components/ui/Icon';
 import { Logo } from '@/components/ui';
 import { ICON_NAMES } from '@/helpers/iconNames';
 import { ROUTES } from '@/helpers/routes';
+import TrialSidebarBlurTail from './TrialSidebarBlurTail';
 
 export type CourseLearningSidebarProps = {
   modules: CourseModule[];
   onSelectLesson: (payload: { moduleId: string; materialId: string }) => void;
   selectedMaterialId: string | null;
   completedMaterialIds?: ReadonlySet<string>;
+  lockedModuleIds?: ReadonlySet<string>;
+  /** Якщо є заблоковані модулі (trial), показуємо CTA на повний курс. */
+  checkoutCourseId?: string;
 };
 
 const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
@@ -21,6 +25,8 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
   onSelectLesson,
   selectedMaterialId,
   completedMaterialIds,
+  lockedModuleIds,
+  checkoutCourseId,
 }) => {
   const [isOpenMobile, setIsOpenMobile] = useState(false);
 
@@ -32,17 +38,47 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
     handleClose();
   };
 
-  const structureKey = courseStructureKeyFromModules(modules);
+  const trialOutline =
+    Boolean(checkoutCourseId) && Boolean(lockedModuleIds && lockedModuleIds.size > 0);
 
-  const renderStructure = (isMobile: boolean) => (
-    <CourseStructure
-      key={structureKey}
-      modules={modules}
-      onSelectLesson={isMobile ? handleLessonSelect : onSelectLesson}
-      selectedMaterialId={selectedMaterialId}
-      completedMaterialIds={completedMaterialIds}
-    />
-  );
+  const displayModules = useMemo(() => {
+    if (!trialOutline) return modules;
+    const sorted = [...modules].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+    return sorted.slice(0, 1);
+  }, [modules, trialOutline]);
+
+  const nextLockedModulePreview = useMemo(() => {
+    const sorted = [...modules].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+    const second = sorted[1];
+    if (!second) return null;
+    return { title: second.title, materialCount: second.materials?.length ?? 0 };
+  }, [modules]);
+
+  const structureKey = courseStructureKeyFromModules(displayModules);
+
+  const renderStructure = (isMobile: boolean) => {
+    const inner = (
+      <>
+        <CourseStructure
+          key={structureKey}
+          modules={displayModules}
+          onSelectLesson={isMobile ? handleLessonSelect : onSelectLesson}
+          selectedMaterialId={selectedMaterialId}
+          completedMaterialIds={completedMaterialIds}
+        />
+        {trialOutline && checkoutCourseId ? (
+          <TrialSidebarBlurTail
+            courseId={checkoutCourseId}
+            previewModule={nextLockedModulePreview}
+          />
+        ) : null}
+      </>
+    );
+
+    if (!trialOutline) return inner;
+
+    return <div className="flex min-h-full flex-1 flex-col">{inner}</div>;
+  };
 
   return (
     <>
@@ -74,7 +110,7 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4">
             {renderStructure(false)}
           </div>
         </div>
@@ -102,7 +138,7 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
                 <Icon name={ICON_NAMES.X} size={30} ariaHidden />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4">
               {renderStructure(true)}
             </div>
           </div>

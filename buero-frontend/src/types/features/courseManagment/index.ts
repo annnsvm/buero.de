@@ -15,3 +15,4 @@ export type {
   UseCourseEditorTreeReturn,
 } from './CourseEditorHooksReturn.types';
 export type { CourseMaterialInitialState } from './CourseMaterialInitialState.types';
+export type { TrialSidebarBlurTailProps } from './getFullCourse.types';

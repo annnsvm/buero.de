@@ -16,11 +16,31 @@ export type ApiCourseModule = {
   materials?: ApiCourseMaterial[];
 };
 
+/** Поля з GET /courses/:id для студента з доступом (snake_case з API). */
+export type ApiCourseMyAccess = {
+  access_type?: string;
+  first_module_id?: string;
+};
+
 export type ApiCourseWithTree = {
   id: string;
   title: string;
   description?: string | null;
   modules?: ApiCourseModule[];
+  my_access?: ApiCourseMyAccess;
+};
+
+/**
+ * Trial у відповіді API все ще може містити всі модулі — для UI залишаємо лише перший модуль.
+ */
+export const applyTrialModuleScope = (course: ApiCourseWithTree): ApiCourseWithTree => {
+  const access = course.my_access;
+  if (!access || access.access_type !== 'trial') return course;
+  const modules = course.modules ?? [];
+  const targetId = access.first_module_id ?? modules[0]?.id;
+  if (!targetId) return { ...course, modules: [] };
+  const only = modules.find((m) => m.id === targetId);
+  return { ...course, modules: only ? [only] : [] };
 };
 
 const sortByOrder = <T extends { orderIndex?: number }>(items: T[]): T[] =>

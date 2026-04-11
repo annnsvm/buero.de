@@ -19,6 +19,7 @@ import { LOADING_STATUS } from '@/helpers/lodaingStatus';
 import { useSelector } from 'react-redux';
 import { selectAuthStatus } from '@/redux/slices/auth';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
+import { consumePendingCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
 
 const PENDING_CHECKOUT_KEY = 'pending_checkout';
 
@@ -91,6 +92,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, handleOpenChange, red
           // ignore malformed session payload, fallback to regular redirect
         }
       }
+
+      const didTrial = await consumePendingCourseTrial(navigate, dispatch);
+      if (didTrial) return;
 
       navigate(redirectTo ?? ROUTES.COURSES);
     } catch (error) {

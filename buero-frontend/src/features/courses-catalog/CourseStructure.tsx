@@ -16,7 +16,7 @@ export type CourseModule = {
   title: string;
   orderIndex?: number;
   materials: CourseMaterial[];
-}; 
+};
 
 type CourseStructureProps = {
   modules: CourseModule[];
@@ -32,7 +32,8 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
   completedMaterialIds,
 }) => {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
-    const first = modules[0]?.id;
+    const sorted = [...modules].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+    const first = sorted[0]?.id;
     return first ? new Set([first]) : new Set();
   });
 
@@ -66,9 +67,8 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
   return (
     <div className="space-y-6 py-2">
       {sortedModules.map((mod, modIdx) => {
-        const completedCount = mod.materials?.filter(
-          (m) => completedMaterialIds?.has(m.id),
-        ).length ?? 0;
+        const completedCount =
+          mod.materials?.filter((m) => completedMaterialIds?.has(m.id)).length ?? 0;
         const totalCount = mod.materials?.length ?? 0;
 
         return (
@@ -96,7 +96,7 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
               />
             </button>
 
-            {expandedModules.has(mod.id) && mod.materials && mod.materials.length > 0 && (
+            {expandedModules.has(mod.id) && mod.materials && mod.materials.length > 0 ? (
               <div className="mt-3 space-y-3 pl-2">
                 {mod.materials.map((lesson) => {
                   const isQuiz = String(lesson.type).toLowerCase() === 'quiz';
@@ -156,7 +156,7 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
                   );
                 })}
               </div>
-            )}
+            ) : null}
           </div>
         );
       })}

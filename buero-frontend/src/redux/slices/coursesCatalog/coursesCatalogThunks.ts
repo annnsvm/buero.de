@@ -4,11 +4,13 @@ import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import { mapApiCourseToCourseCard } from '@/api/myLearningCourses';
 import type { CatalogCourse } from '@/types/api/myLearningCourses.types';
 import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
+import { getActiveTrialCourseIdFromMyCourses } from '@/features/courses-catalog/activeTrialFromMyCourses';
 import type { CoursesCatalogFilters } from './coursesCatalogSlice';
 
 type FetchCoursesResponse = {
   items: CourseCardProps[];
   totalCount: number;
+  activeTrialCourseId: string | null;
 };
 
 const buildQueryString = (
@@ -52,11 +54,13 @@ export const fetchCoursesCatalogThunk = createAsyncThunk<
 
     const isAuthenticated = Boolean(state.auth?.isAuthenticated);
     let accessibleCourseIds = new Set<string>();
+    let activeTrialCourseId: string | null = null;
     if (!isTeacherManage && isAuthenticated) {
       try {
         const myRes = await apiInstance.get<CatalogCourse[]>(API_ENDPOINTS.courses.my);
         const mine = Array.isArray(myRes.data) ? myRes.data : [];
         accessibleCourseIds = new Set(mine.map((c) => String(c.id)));
+        activeTrialCourseId = getActiveTrialCourseIdFromMyCourses(mine);
       } catch {
         accessibleCourseIds = new Set();
       }
@@ -72,6 +76,7 @@ export const fetchCoursesCatalogThunk = createAsyncThunk<
     return {
       items,
       totalCount: items.length,
+      activeTrialCourseId,
     };
   } catch (error: any) {
     const message =

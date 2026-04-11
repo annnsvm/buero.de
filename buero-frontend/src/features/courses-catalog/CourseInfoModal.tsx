@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hooks';
@@ -14,7 +14,10 @@ import type { CourseInfoData } from '@/types/components/modal/UIModalType.types'
 import { selectIsAuthenticated } from '@/redux/slices/auth';
 import CourseStructure from './CourseStructure';
 import { courseStructureKeyFromModules } from './courseStructure.helpers';
-import { userHasAccessToCourse } from './courseAccessModal.helpers';
+import {
+  getActiveTrialCourseIdFromAccessList,
+  userHasAccessToCourse,
+} from './courseAccessModal.helpers';
 import { fetchCourseByIdThunk } from '@/redux/slices/coursesCatalog/courseDetailsThunks';
 import { clearCourseDetails } from '@/redux/slices/coursesCatalog/courseDetailsSlice';
 import {
@@ -23,6 +26,11 @@ import {
 } from '@/redux/slices/coursesCatalog/courseDetailsSelectors';
 import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
 import { selectUserRole } from '@/redux/slices/user/userSelectors';
+import { requestCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
+import {
+  applyTrialModuleScope,
+  type ApiCourseWithTree,
+} from '@/pages/CoursePage/coursePageMappers';
 
 type CourseInfoModalProps = {
   isOpen: boolean;
@@ -50,6 +58,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
 
   const [accessResolved, setAccessResolved] = useState(false);
   const [hasCourseAccess, setHasCourseAccess] = useState(false);
+  const [activeTrialCourseIdFromApi, setActiveTrialCourseIdFromApi] = useState<string | null>(null);
   const [localPublished, setLocalPublished] = useState<boolean | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -72,6 +81,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     if (!isOpen) {
       setAccessResolved(false);
       setHasCourseAccess(false);
+      setActiveTrialCourseIdFromApi(null);
       setLocalPublished(null);
     } else {
       setLocalPublished(null);
@@ -94,9 +104,14 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
       try {
         const list = await subscriptionApi.getMyAccess();
         if (cancelled) return;
-        setHasCourseAccess(userHasAccessToCourse(Array.isArray(list) ? list : [], courseId));
+        const arr = Array.isArray(list) ? list : [];
+        setHasCourseAccess(userHasAccessToCourse(arr, courseId));
+        setActiveTrialCourseIdFromApi(getActiveTrialCourseIdFromAccessList(arr));
       } catch {
-        if (!cancelled) setHasCourseAccess(false);
+        if (!cancelled) {
+          setHasCourseAccess(false);
+          setActiveTrialCourseIdFromApi(null);
+        }
       } finally {
         if (!cancelled) setAccessResolved(true);
       }
@@ -112,6 +127,12 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   const handleContinueLearning = () => {
     handleClose();
     navigate(getCoursePath(courseId));
+  };
+
+  const handleTryForFree = async () => {
+    if (course.hasTrial === false) return;
+    await requestCourseTrial(courseId, isAuthenticated, dispatch, navigate);
+    handleClose();
   };
 
   const handleTogglePublication = useCallback(async () => {
@@ -158,12 +179,23 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     currency: 'EUR',
   }).format(cleanPrice);
 
-  const hasAnyMaterials = fullCourseData?.modules?.some(
+  const canShowTryForFree =
+    course.hasTrial !== false &&
+    (activeTrialCourseIdFromApi == null ||
+      activeTrialCourseIdFromApi === '' ||
+      activeTrialCourseIdFromApi === courseId);
+
+  const scopedCourseDetails = useMemo(() => {
+    if (!fullCourseData) return null;
+    return applyTrialModuleScope(fullCourseData as ApiCourseWithTree);
+  }, [fullCourseData]);
+
+  const hasAnyMaterials = scopedCourseDetails?.modules?.some(
     (mod) => mod.materials && mod.materials.length > 0,
   );
 
   const rawModules =
-    hasAnyMaterials && fullCourseData?.modules ? fullCourseData.modules : [];
+    hasAnyMaterials && scopedCourseDetails?.modules ? scopedCourseDetails.modules : [];
 
   useEffect(() => {
     if (isOpen && scrollRef.current) {
@@ -324,16 +356,20 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                 Continue Learning
               </Button>
             ) : (
-              <div className="flex gap-2 sm:gap-4">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="rounded-full border border-[var(--opacity-neutral-darkest-15)] px-3 py-1 text-xs font-medium text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-neutral-darkest)] sm:px-6 sm:py-2.5 sm:text-lg"
-                >
-                  Try for free
-                </button>
+              <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
+                {canShowTryForFree ? (
+                  <button
+                    type="button"
+                    onClick={handleTryForFree}
+                    className="rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-3 py-1 text-xs font-medium text-[var(--color-text-primary)] shadow-sm hover:border-[var(--color-border-strong)] hover:bg-[var(--opacity-neutral-darkest-5)] sm:px-6 sm:py-2.5 sm:text-lg"
+                    aria-label="Try this course for free"
+                  >
+                    Try for free
+                  </button>
+                ) : null}
                 <CheckoutButton
                   courseId={courseId}
+                  label="Buy Course"
                   className="rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-[var(--color-text-on-accent)] hover:bg-[var(--color-primary-hover)] sm:px-6 sm:py-2.5 sm:text-lg"
                 />
               </div>
