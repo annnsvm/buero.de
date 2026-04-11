@@ -1,13 +1,6 @@
 import React from 'react';
 import { Container, Text, Title } from '@/components/layout';
-import type { CourseManagementRightTab } from '@/types/features/courseManagment/CourseManagementPage.types';
-
-export type CourseEditorHeaderProps = {
-  watchedTitle: string;
-  watchedDescription: string;
-  activeRightTab: CourseManagementRightTab;
-  activeModuleTitle: string;
-};
+import type { CourseEditorHeaderProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
 const CourseEditorHeader: React.FC<CourseEditorHeaderProps> = ({
   watchedTitle,

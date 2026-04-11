@@ -6,37 +6,7 @@ import {
   PUBLISH_COURSE_MODAL_DESCRIPTION,
   UNPUBLISH_COURSE_MODAL_DESCRIPTION,
 } from '@/features/course-managment/helpers/courseEntityPublishCopy.helpers';
-
-export type CourseEditorModalsProps = {
-  createModuleModalProps: {
-    isOpen: boolean;
-    mode: 'create' | 'edit';
-    initialTitle: string;
-    handleOpenChange: (open: boolean) => void;
-    onSubmitModule: (args: { title: string }) => Promise<void>;
-  };
-  deleteModalProps: {
-    isOpen: boolean;
-    handleOpenChange: (open: boolean) => void;
-    title: string;
-    description: string;
-    isSubmitting: boolean;
-    onConfirm: () => void | Promise<void>;
-  };
-  publishModalProps: {
-    isOpen: boolean;
-    handleOpenChange: (open: boolean) => void;
-    isSubmitting: boolean;
-    onConfirm: () => void | Promise<void>;
-  };
-  unpublishModalProps: {
-    isOpen: boolean;
-    handleOpenChange: (open: boolean) => void;
-    isSubmitting: boolean;
-    onConfirm: () => void | Promise<void>;
-  };
-  createModuleModalKey: string;
-};
+import type { CourseEditorModalsProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
 const CourseEditorModals: React.FC<CourseEditorModalsProps> = ({
   createModuleModalProps,

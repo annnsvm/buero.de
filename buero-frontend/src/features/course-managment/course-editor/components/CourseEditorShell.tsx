@@ -1,11 +1,7 @@
 import React, { type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ROUTES } from '@/helpers/routes';
-
-export type CourseEditorShellProps = {
-  aside: ReactNode;
-  children: ReactNode;
-};
+import type { CourseEditorShellProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
 const CourseEditorShell: React.FC<CourseEditorShellProps> = ({ aside, children }) => (
   <div className="flex h-[100vh] overflow-hidden bg-[var(--color-surface-section)]">

@@ -1,9 +1,6 @@
 import type { CreateCourseMaterialModalValues } from '@/types/features/courseManagment/CreateCourseMaterialModal.types';
 
-/**
- * Тіло `content` для POST/PATCH матеріалу (video | quiz) з форми редактора.
- */
-export const buildCourseMaterialContentPayload = (
+export const materialContentPayload = (
   payload: CreateCourseMaterialModalValues,
 ): Record<string, unknown> => {
   if (payload.type === 'video') {

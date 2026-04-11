@@ -37,8 +37,6 @@ export const createCourseSchema = z.object({
     z.string().trim().min(1, { message: 'Tag cannot be empty' }),
   ),
 
-  // Note: keep '' in the input type, and validate it at object-level
-  // so RHF defaultValues (level: '') remain type-safe.
   level: z.union([levelSchema, z.literal('')]),
 }).superRefine((values, ctx) => {
   if (!values.price.trim()) {

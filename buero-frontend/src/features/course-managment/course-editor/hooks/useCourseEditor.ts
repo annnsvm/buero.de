@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { useCourseEditorEffects } from './effects/useCourseEditorEffects';
 import { useCourseEditorHandlers } from './handlers/useCourseEditorHandlers';
 import { useCourseEditorRouter } from './router/useCourseEditorRouter';
@@ -28,6 +30,7 @@ export const useCourseEditor = () => {
     isCoursePublished,
     setIsEditingCourse,
     handleSubmit,
+    isDirty,
     errors,
     isFormDisabled,
     canCreate,
@@ -82,6 +85,7 @@ export const useCourseEditor = () => {
     handleFormSubmit,
     handleCreateCourseSubmit,
     handleUpdateCourseSubmit,
+    submitCourseCoverOnly,
     handleRequestDeleteModule,
     handleRequestDeleteMaterial,
     handleConfirmDelete,
@@ -92,6 +96,20 @@ export const useCourseEditor = () => {
     handleConfirmPublishCourse,
     handleConfirmUnpublishCourse,
   } = handlers;
+
+  const runCourseUpdate = useCallback(() => {
+    if (coverFile !== null && !isDirty) {
+      void submitCourseCoverOnly();
+      return;
+    }
+    void handleSubmit(handleUpdateCourseSubmit)();
+  }, [
+    coverFile,
+    isDirty,
+    handleSubmit,
+    handleUpdateCourseSubmit,
+    submitCourseCoverOnly,
+  ]);
 
   const showBootstrapLoading = Boolean(router.routeCourseId && isBootstrappingCourse);
 
@@ -157,7 +175,7 @@ export const useCourseEditor = () => {
       handleSubmit,
       handleFormSubmit,
       handleCreateCourseSubmit,
-      handleUpdateCourseSubmit,
+      runCourseUpdate,
       errors,
       isFormDisabled,
       canCreate,

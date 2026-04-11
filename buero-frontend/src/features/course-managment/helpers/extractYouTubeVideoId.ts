@@ -1,6 +1,3 @@
-/**
- * Витягує 11-символьний YouTube video id з сирого id або типового URL (watch, youtu.be, embed, shorts).
- */
 export const extractYouTubeVideoId = (input: string): string | null => {
   const trimmed = input.trim();
   if (!trimmed) return null;

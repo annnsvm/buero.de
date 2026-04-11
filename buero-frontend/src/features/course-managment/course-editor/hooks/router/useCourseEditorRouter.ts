@@ -8,5 +8,3 @@ export const useCourseEditorRouter = () => {
 
   return { navigate, location, routeCourseId };
 };
-
-export type UseCourseEditorRouterReturn = ReturnType<typeof useCourseEditorRouter>;

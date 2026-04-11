@@ -3,14 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
-  countTotalMaterialsAcrossModules,
-  countVideoLessonMaterials,
-  sumVideoDurationMinutesAcrossModules,
-} from '@/features/course-managment/helpers/courseTreeStats.helpers';
-import {
   createCourseSchema,
   type CreateCourseFormValues,
 } from '@/features/course-managment/validation/createCourseSchema';
+import { totalMaterialCount } from '@/features/course-managment/domain/totalMaterialCount';
+import { videoMaterialCount } from '@/features/course-managment/domain/videoMaterialCount';
+import { videoMinutesSum } from '@/features/course-managment/domain/videoMinutesSum';
 import type { Modules } from '@/types/components/ui/ModuleMaterial.types';
 import type {
   CourseEntityDeleteTarget,
@@ -52,8 +50,8 @@ export const useCourseEditorState = () => {
   const watchedTags = watch('tags') ?? [];
   const watchedPrice = watch('price') ?? '';
   const watchedLevel = watch('level') ?? '';
-  const watchedVideoLessonsCount = countVideoLessonMaterials(modules);
-  const computedDurationMinutes = sumVideoDurationMinutesAcrossModules(modules);
+  const watchedVideoLessonsCount = videoMaterialCount(modules);
+  const computedDurationMinutes = videoMinutesSum(modules);
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
@@ -85,7 +83,7 @@ export const useCourseEditorState = () => {
   const [isBootstrappingCourse, setIsBootstrappingCourse] = useState(false);
 
   const totalMaterialsCount = useMemo(
-    () => countTotalMaterialsAcrossModules(modules),
+    () => totalMaterialCount(modules),
     [modules],
   );
 
@@ -95,7 +93,11 @@ export const useCourseEditorState = () => {
   const isFormDisabled = courseId !== null && !isEditingCourse;
   const canCreate = !courseId && !isCreatingCourse && !isUpdatingCourse;
   const canUpdate =
-    !!courseId && isEditingCourse && !isCreatingCourse && !isUpdatingCourse && isDirty && isValid;
+    !!courseId &&
+    isEditingCourse &&
+    !isCreatingCourse &&
+    !isUpdatingCourse &&
+    ((isDirty && isValid) || coverFile !== null);
 
   const resetEditorToEmpty = useCallback(() => {
     setCourseId(null);
@@ -199,5 +201,3 @@ export const useCourseEditorState = () => {
     resetEditorToEmpty,
   };
 };
-
-export type UseCourseEditorStateReturn = ReturnType<typeof useCourseEditorState>;

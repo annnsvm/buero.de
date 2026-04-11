@@ -7,7 +7,7 @@ import { Button } from '@/components/ui';
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import ConfirmDeleteEntityModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmDeleteEntityModal';
-import { buildDeleteCourseDescription } from '@/features/course-managment/helpers/courseEntityDeleteCopy.helpers';
+import { deleteCourseCopy } from '@/features/course-managment/domain/deleteCourseCopy';
 import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 export type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 
@@ -222,7 +222,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
   const deleteDescription =
     moduleCountForModal === null && isLoadingDeleteInfo
       ? 'Loading course details…'
-      : buildDeleteCourseDescription(moduleCountForModal ?? 0);
+      : deleteCourseCopy(moduleCountForModal ?? 0);
 
   const isDeleteSubmitBlocked =
     isDeletingCourse || (moduleCountForModal === null && isLoadingDeleteInfo);

@@ -1,33 +1,23 @@
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
-import type { UseFormSetValue } from 'react-hook-form';
+import { useCallback } from 'react';
 
-import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { apiInstance } from '@/api/apiInstance';
-import { computeCourseDurationHoursFromVideoModules } from '@/features/course-managment/helpers/courseTreeStats.helpers';
-import type { CreateCourseFormValues } from '@/features/course-managment/validation/createCourseSchema';
+import * as courseApi from '@/api/courseManagementApi';
+import { hoursFromVideos } from '@/features/course-managment/domain/hoursFromVideos';
 import type { Modules } from '@/types/components/ui/ModuleMaterial.types';
-
-type UseCourseEditorTreeParams = {
-  setValue: UseFormSetValue<CreateCourseFormValues>;
-  setModules: Dispatch<SetStateAction<Modules[]>>;
-  setIsCoursePublished: Dispatch<SetStateAction<boolean>>;
-};
+import type { UseCourseEditorTreeParams } from '@/types/features/courseManagment/CourseEditorHookParams.types';
 
 export const useCourseEditorTree = ({
   setValue,
   setModules,
   setIsCoursePublished,
-}: UseCourseEditorTreeParams) => {
-  const syncCourseDurationHours = useCallback(
+}: UseCourseEditorTreeParams) => {  const syncCourseDurationHours = useCallback(
     async (cid: string, nextModules: Modules[]) => {
-      const hours = computeCourseDurationHoursFromVideoModules(nextModules);
+      const hours = hoursFromVideos(nextModules);
       try {
-        await apiInstance.patch(API_ENDPOINTS.courses.update(cid), {
+        await courseApi.patchCourse(cid, {
           duration_hours: hours ?? null,
         });
         setValue('durationHours', hours === null ? '' : String(hours), { shouldDirty: false });
       } catch {
-        /* ignore */
       }
     },
     [setValue],
@@ -35,11 +25,7 @@ export const useCourseEditorTree = ({
 
   const fetchCourseTree = useCallback(
     async (id: string) => {
-      const res = await apiInstance.get<{
-        modules?: Modules[];
-        is_published?: boolean;
-        isPublished?: boolean;
-      }>(API_ENDPOINTS.courses.byId(id));
+      const res = await courseApi.fetchCourseById(id);
       const mods = res.data.modules ?? [];
       setModules(mods);
       const published = res.data.is_published ?? res.data.isPublished ?? false;
@@ -51,5 +37,3 @@ export const useCourseEditorTree = ({
 
   return { syncCourseDurationHours, fetchCourseTree };
 };
-
-export type UseCourseEditorTreeReturn = ReturnType<typeof useCourseEditorTree>;

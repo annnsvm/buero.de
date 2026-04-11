@@ -9,6 +9,9 @@ import CourseEditorCourseFormTab from '@/features/course-managment/course-editor
 import CourseEditorMaterialPanel from '@/features/course-managment/course-editor/components/CourseEditorMaterialPanel';
 import CourseEditorModals from '@/features/course-managment/course-editor/components/CourseEditorModals';
 
+/**
+ * Сторінка керування курсом для вчителя.
+ */
 const CourseManagmentPage: React.FC = () => {
   const editor = useCourseEditor();
 

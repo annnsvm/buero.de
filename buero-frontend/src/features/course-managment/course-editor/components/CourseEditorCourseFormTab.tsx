@@ -1,52 +1,19 @@
 import React from 'react';
-import type { FieldErrors, UseFormHandleSubmit, UseFormSetValue } from 'react-hook-form';
 import { Container, Section } from '@/components/layout';
-import CourseCoverSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseCoverSection';
-import CourseDetailsSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseDetailsSection';
+import CourseCoverSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseCoverSection';import CourseDetailsSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseDetailsSection';
 import CourseTagsSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseTagsSection';
 import CoursePriceSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CoursePriceSection';
 import CourseDurationSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseDurationSection';
 import CourseCreateActions from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseCreateActions';
-import type { CreateCourseFormValues } from '@/features/course-managment/validation/createCourseSchema';
-import type { CourseEditorMode } from '@/types/features/courseManagment/CourseEditorMode.types';
-import type { CurrencySymbol } from '@/types/features/courseManagment/CoursePricing.types';
 import type { CourseLevel } from '@/types/features/courseManagment/CourseLevel.types';
-
-export type CourseEditorCourseFormTabProps = {
-  mode: CourseEditorMode;
-  handleSubmit: UseFormHandleSubmit<CreateCourseFormValues>;
-  handleFormSubmit: (values: CreateCourseFormValues) => Promise<void>;
-  handleCreateCourseSubmit: (values: CreateCourseFormValues) => Promise<void>;
-  handleUpdateCourseSubmit: (values: CreateCourseFormValues) => Promise<void>;
-  errors: FieldErrors<CreateCourseFormValues>;
-  isFormDisabled: boolean;
-  canCreate: boolean;
-  canUpdate: boolean;
-  isCreatingCourse: boolean;
-  isUpdatingCourse: boolean;
-  createCourseError: string | null;
-  coverPreviewUrl: string | null;
-  setCoverFile: (f: File | null) => void;
-  setCoverPreviewUrl: (url: string | null) => void;
-  watchedTitle: string;
-  watchedDescription: string;
-  watchedLevel: string;
-  watchedTags: string[];
-  watchedPrice: string;
-  priceCurrencySymbol: CurrencySymbol;
-  setPriceCurrencySymbol: (v: CurrencySymbol) => void;
-  setValue: UseFormSetValue<CreateCourseFormValues>;
-  computedDurationMinutes: number;
-  watchedVideoLessonsCount: number;
-  coverFile: File | null;
-};
+import type { CourseEditorCourseFormTabProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
 const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
   mode,
   handleSubmit,
   handleFormSubmit,
   handleCreateCourseSubmit,
-  handleUpdateCourseSubmit,
+  runCourseUpdate,
   errors,
   isFormDisabled,
   canCreate,
@@ -137,7 +104,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
           canUpdate={canUpdate}
           isUpdating={isUpdatingCourse}
           onCreateCourse={handleSubmit(handleCreateCourseSubmit)}
-          onUpdateCourse={handleSubmit(handleUpdateCourseSubmit)}
+          onUpdateCourse={runCourseUpdate}
         />
 
         <input type="hidden" value={coverFile ? coverFile.name : ''} readOnly />

@@ -1,18 +1,7 @@
 import React from 'react';
 import { Container, Section } from '@/components/layout';
 import CourseMaterialCreateTab from '@/features/course-managment/components/CourseManagementWorkspace/courseMaterial';
-import type { Modules } from '@/types/components/ui/ModuleMaterial.types';
-import type { CreateCourseMaterialModalValues } from '@/types/features/courseManagment/CreateCourseMaterialModal.types';
-
-export type CourseEditorMaterialPanelProps = {
-  modules: Modules[];
-  activeModuleIdForMaterial: string | null;
-  activeMaterialIdForEdit: string | null;
-  isCreatingMaterial: boolean;
-  onRequestDeleteMaterial?: () => void;
-  onCreate: (payload: CreateCourseMaterialModalValues) => Promise<{ id: string }>;
-  onUpdate: (materialId: string, payload: CreateCourseMaterialModalValues) => Promise<void>;
-};
+import type { CourseEditorMaterialPanelProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
 const CourseEditorMaterialPanel: React.FC<CourseEditorMaterialPanelProps> = ({
   modules,

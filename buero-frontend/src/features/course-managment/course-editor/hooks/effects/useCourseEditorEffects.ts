@@ -1,25 +1,14 @@
 import { useEffect, useLayoutEffect } from 'react';
 
-import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { apiInstance } from '@/api/apiInstance';
-import {
-  getCoursePublishedFromApi,
-  mapApiCourseToCourseEditorFormValues,
-  type ApiCourseTreeResponse,
-} from '@/features/course-managment/helpers/mapApiCourseToCourseEditorForm.helpers';
 import { ROUTES } from '@/helpers/routes';
 
-import { parseApiErrorMessage } from '@/features/course-managment/course-editor/utils/parseApiErrorMessage';
-
-import type { UseCourseEditorStateReturn } from '../state/useCourseEditorState';
-import type { UseCourseEditorTreeReturn } from '../tree/useCourseEditorTree';
-
-type UseCourseEditorEffectsParams = {
-  pathname: string;
-  routeCourseId: string | undefined;
-  state: UseCourseEditorStateReturn;
-  tree: UseCourseEditorTreeReturn;
-};
+import * as courseApi from '@/api/courseManagementApi';
+import { parseApiErrorMessage } from '@/helpers/parseApiErrorMessage';
+import { coverUrlFromApi } from '@/features/course-managment/domain/coverUrlFromApi';
+import { mapCourseToForm } from '@/features/course-managment/domain/mapCourseToForm';
+import { publishedFromApi } from '@/features/course-managment/domain/publishedFromApi';
+import type { ApiCourseTreeResponse } from '@/types/features/courseManagment';
+import type { UseCourseEditorEffectsParams } from '@/types/features/courseManagment/CourseEditorHooksReturn.types';
 
 export const useCourseEditorEffects = ({
   pathname,
@@ -41,6 +30,7 @@ export const useCourseEditorEffects = ({
   } = state;
 
   const { syncCourseDurationHours } = tree;
+
   useEffect(() => {
     const isBlankEditor =
       pathname === ROUTES.TEACHER_COURSES_CREATE || pathname === ROUTES.COURSE_MANAGEMENT;
@@ -60,17 +50,17 @@ export const useCourseEditorEffects = ({
 
     const load = async () => {
       try {
-        const res = await apiInstance.get(API_ENDPOINTS.courses.byId(routeCourseId));
+        const res = await courseApi.fetchCourseById(routeCourseId);
         if (cancelled) return;
         const data = res.data as ApiCourseTreeResponse;
-        const formValues = mapApiCourseToCourseEditorFormValues(data);
+        const formValues = mapCourseToForm(data);
         reset(formValues);
         setCourseId(routeCourseId);
         setModules(data.modules ?? []);
-        setIsCoursePublished(getCoursePublishedFromApi(data));
+        setIsCoursePublished(publishedFromApi(data));
         setIsEditingCourse(true);
         setCoverFile(null);
-        setCoverPreviewUrl(null);
+        setCoverPreviewUrl(coverUrlFromApi(data));
         await syncCourseDurationHours(routeCourseId, data.modules ?? []);
       } catch (err: unknown) {
         if (cancelled) return;

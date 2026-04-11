@@ -1,7 +1,6 @@
 import type { ModuleMaterialType } from '@/types/components/ui/ModuleMaterial.types';
 
-/** Розбивка матеріалів модуля: відео-уроки, квізи, інші типи. */
-export const countModuleMaterialsByKind = (materials: ModuleMaterialType[] | undefined) => {
+export const materialKindCounts = (materials: ModuleMaterialType[] | undefined) => {
   const list = materials ?? [];
   let videoLessons = 0;
   let quizzes = 0;

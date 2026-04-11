@@ -3,7 +3,7 @@ import type {
   QuizAnswerFormItem,
   QuizQuestionFormItem,
 } from '@/types/features/courseManagment/CreateCourseMaterialModal.types';
-import type { CourseMaterialType } from '@/types/features/courseManagment/CourseMaterialCreateTab.types';
+import type { CourseMaterialInitialState } from '@/types/features/courseManagment/CourseMaterialInitialState.types';
 import type { ModuleMaterialType } from '@/types/components/ui/ModuleMaterial.types';
 
 export const createLocalId = (prefix: string) =>
@@ -17,16 +17,6 @@ export const createDefaultQuizQuestion = (): QuizQuestionFormItem => ({
     { id: createLocalId('opt'), text: '', isCorrect: false },
   ],
 });
-
-export type CourseMaterialInitialState = {
-  materialType: CourseMaterialType;
-  title: string;
-  youtubeVideoId: string;
-  youtubeVideoDuration: string;
-  quizQuestions: QuizQuestionFormItem[];
-  createdMaterialId: string | null;
-  savedSnapshot: string | null;
-};
 
 export const getInitialMaterialState = (
   selectedMaterial: ModuleMaterialType | null,

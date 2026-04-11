@@ -1,20 +1,5 @@
 import type { CreateCourseFormValues } from '@/features/course-managment/validation/createCourseSchema';
-import type { Modules } from '@/types/components/ui/ModuleMaterial.types';
-
-export type ApiCourseTreeResponse = {
-  title?: string;
-  description?: string | null;
-  language?: string;
-  category?: string;
-  price?: number | null;
-  durationHours?: number | null;
-  duration_hours?: number | null;
-  tags?: string[];
-  level?: string | null;
-  isPublished?: boolean;
-  is_published?: boolean;
-  modules?: Modules[];
-};
+import type { ApiCourseTreeResponse } from '@/types/features/courseManagment';
 
 const isLanguage = (v: string): v is CreateCourseFormValues['language'] =>
   v === 'en' || v === 'de';
@@ -25,12 +10,7 @@ const isCategory = (v: string): v is CreateCourseFormValues['category'] =>
 const isLevel = (v: string): v is Exclude<CreateCourseFormValues['level'], ''> =>
   v === 'A1' || v === 'A2' || v === 'B1' || v === 'B2';
 
-/**
- * Мапінг відповіді GET /courses/:id (дерево курсу) у значення форми редактора.
- */
-export const mapApiCourseToCourseEditorFormValues = (
-  data: ApiCourseTreeResponse,
-): CreateCourseFormValues => {
+export const mapCourseToForm = (data: ApiCourseTreeResponse): CreateCourseFormValues => {
   const langRaw = String(data.language ?? 'en');
   const catRaw = String(data.category ?? 'language');
   const levelRaw = data.level != null ? String(data.level) : '';
@@ -55,6 +35,3 @@ export const mapApiCourseToCourseEditorFormValues = (
     level: isLevel(levelRaw) ? levelRaw : '',
   };
 };
-
-export const getCoursePublishedFromApi = (data: ApiCourseTreeResponse): boolean =>
-  data.isPublished === true || data.is_published === true;

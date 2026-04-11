@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { BookOpen, CircleHelp, FileText, Flame, Play, SkipForward, Trophy } from 'lucide-react';
+import { BookOpen, CircleHelp, FileText, Play, SkipForward, Trophy } from 'lucide-react';
 
 import { Container, Text, Title } from '@/components/layout';
 import useModal from '@/components/modal/context/useModal';

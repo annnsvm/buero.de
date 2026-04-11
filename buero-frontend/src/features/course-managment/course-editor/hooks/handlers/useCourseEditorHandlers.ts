@@ -1,33 +1,20 @@
 import { useCallback, useMemo } from 'react';
 
-import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { apiInstance } from '@/api/apiInstance';
-import {
-  buildCourseCreatePayload,
-  buildCourseUpdatePayload,
-} from '@/features/course-managment/helpers/courseEditorFormApiPayload.helpers';
-import { buildCourseMaterialContentPayload } from '@/features/course-managment/helpers/courseMaterialApiPayload.helpers';
-import {
-  buildDeleteCourseDescription,
-  buildDeleteMaterialDescription,
-  buildDeleteModuleDescription,
-} from '@/features/course-managment/helpers/courseEntityDeleteCopy.helpers';
-import { countModuleMaterialsByKind } from '@/features/course-managment/helpers/courseModuleMaterialCounts.helpers';
 import type { CreateCourseFormValues } from '@/features/course-managment/validation/createCourseSchema';
 import { getTeacherCourseEditPath, ROUTES } from '@/helpers/routes';
 import type { CreateCourseMaterialModalValues } from '@/types/features/courseManagment/CreateCourseMaterialModal.types';
 
-import { parseApiErrorMessage } from '@/features/course-managment/course-editor/utils/parseApiErrorMessage';
-
-import type { UseCourseEditorRouterReturn } from '../router/useCourseEditorRouter';
-import type { UseCourseEditorStateReturn } from '../state/useCourseEditorState';
-import type { UseCourseEditorTreeReturn } from '../tree/useCourseEditorTree';
-
-type UseCourseEditorHandlersParams = {
-  state: UseCourseEditorStateReturn;
-  tree: UseCourseEditorTreeReturn;
-  router: UseCourseEditorRouterReturn;
-};
+import * as courseApi from '@/api/courseManagementApi';
+import { coverUrlFromApi } from '@/features/course-managment/domain/coverUrlFromApi';
+import { courseCreatePayload } from '@/features/course-managment/domain/courseCreatePayload';
+import { courseUpdatePayload } from '@/features/course-managment/domain/courseUpdatePayload';
+import { deleteCourseCopy } from '@/features/course-managment/domain/deleteCourseCopy';
+import { deleteMaterialCopy } from '@/features/course-managment/domain/deleteMaterialCopy';
+import { deleteModuleCopy } from '@/features/course-managment/domain/deleteModuleCopy';
+import { materialContentPayload } from '@/features/course-managment/domain/materialContentPayload';
+import { materialKindCounts } from '@/features/course-managment/domain/materialKindCounts';
+import { parseApiErrorMessage } from '@/helpers/parseApiErrorMessage';
+import type { UseCourseEditorHandlersParams } from '@/types/features/courseManagment/CourseEditorHooksReturn.types';
 
 export const useCourseEditorHandlers = ({
   state,
@@ -62,6 +49,9 @@ export const useCourseEditorHandlers = ({
     activeModuleIdForEdit,
     setIsCreatingMaterial,
     resetEditorToEmpty,
+    coverFile,
+    setCoverFile,
+    setCoverPreviewUrl,
   } = state;
 
   const handleCreateCourseSubmit = async (values: CreateCourseFormValues) => {
@@ -69,11 +59,19 @@ export const useCourseEditorHandlers = ({
     setIsCreatingCourse(true);
 
     try {
-      const payload = buildCourseCreatePayload(values);
+      const payload = courseCreatePayload(values);
 
-      const res = await apiInstance.post<{ id: string }>(API_ENDPOINTS.courses.create, payload);
+      const res = await courseApi.createCourse(payload);
+      const newCourseId = res.data.id;
+
+      if (coverFile) {
+        await courseApi.uploadCourseCover(newCourseId, coverFile);
+      }
+
+      setCoverFile(null);
+      setCoverPreviewUrl(null);
       setCreateCourseError(null);
-      navigate(getTeacherCourseEditPath(res.data.id), { replace: true });
+      navigate(getTeacherCourseEditPath(newCourseId), { replace: true });
     } catch (err: unknown) {
       setCreateCourseError(parseApiErrorMessage(err, 'Failed to create course'));
     } finally {
@@ -88,9 +86,16 @@ export const useCourseEditorHandlers = ({
     setIsUpdatingCourse(true);
 
     try {
-      const payload = buildCourseUpdatePayload(values);
+      const payload = courseUpdatePayload(values);
 
-      await apiInstance.patch(API_ENDPOINTS.courses.update(courseId), payload);
+      await courseApi.patchCourse(courseId, payload);
+
+      if (coverFile) {
+        const up = await courseApi.uploadCourseCover(courseId, coverFile);
+        setCoverPreviewUrl(coverUrlFromApi(up.data));
+      }
+
+      setCoverFile(null);
       reset(values);
     } catch (err: unknown) {
       setCreateCourseError(parseApiErrorMessage(err, 'Failed to update course'));
@@ -98,6 +103,29 @@ export const useCourseEditorHandlers = ({
       setIsUpdatingCourse(false);
     }
   };
+
+  const submitCourseCoverOnly = useCallback(async () => {
+    if (!courseId || !coverFile) return;
+
+    setCreateCourseError(null);
+    setIsUpdatingCourse(true);
+    try {
+      const up = await courseApi.uploadCourseCover(courseId, coverFile);
+      setCoverFile(null);
+      setCoverPreviewUrl(coverUrlFromApi(up.data));
+    } catch (err: unknown) {
+      setCreateCourseError(parseApiErrorMessage(err, 'Failed to upload cover'));
+    } finally {
+      setIsUpdatingCourse(false);
+    }
+  }, [
+    courseId,
+    coverFile,
+    setCoverFile,
+    setCoverPreviewUrl,
+    setCreateCourseError,
+    setIsUpdatingCourse,
+  ]);
 
   const handleFormSubmit = async (values: CreateCourseFormValues) => {
     if (!courseId) return handleCreateCourseSubmit(values);
@@ -110,7 +138,7 @@ export const useCourseEditorHandlers = ({
     if (!cid) return;
     setIsPublishingCourse(true);
     try {
-      await apiInstance.patch(API_ENDPOINTS.courses.update(cid), { is_published: true });
+      await courseApi.patchCourse(cid, { is_published: true });
       setIsCoursePublished(true);
     } finally {
       setIsPublishingCourse(false);
@@ -122,7 +150,7 @@ export const useCourseEditorHandlers = ({
     if (!cid) return;
     setIsUnpublishingCourse(true);
     try {
-      await apiInstance.patch(API_ENDPOINTS.courses.update(cid), { is_published: false });
+      await courseApi.patchCourse(cid, { is_published: false });
       setIsCoursePublished(false);
     } finally {
       setIsUnpublishingCourse(false);
@@ -132,7 +160,7 @@ export const useCourseEditorHandlers = ({
   const handleRequestDeleteModule = useCallback(
     (moduleId: string, moduleTitle: string) => {
       const mod = modules.find((m) => m.id === moduleId);
-      const { videoLessons, quizzes, other } = countModuleMaterialsByKind(mod?.materials);
+      const { videoLessons, quizzes, other } = materialKindCounts(mod?.materials);
       setDeleteTarget({
         kind: 'module',
         moduleId,
@@ -171,14 +199,14 @@ export const useCourseEditorHandlers = ({
     setIsDeletingEntity(true);
     try {
       if (target.kind === 'course') {
-        await apiInstance.delete(API_ENDPOINTS.courses.delete(cid));
+        await courseApi.deleteCourse(cid);
         resetEditorToEmpty();
         navigate(ROUTES.COURSES);
         return;
       }
 
       if (target.kind === 'module') {
-        await apiInstance.delete(API_ENDPOINTS.courseModules.delete(cid, target.moduleId));
+        await courseApi.deleteModule(cid, target.moduleId);
         const nextModules = modules.filter((m) => m.id !== target.moduleId);
         setModules(nextModules);
         await syncCourseDurationHours(cid, nextModules);
@@ -190,9 +218,7 @@ export const useCourseEditorHandlers = ({
         return;
       }
 
-      await apiInstance.delete(
-        API_ENDPOINTS.courseMaterials.delete(cid, target.moduleId, target.materialId),
-      );
+      await courseApi.deleteMaterial(cid, target.moduleId, target.materialId);
       const nextModulesAfterMaterialDelete = modules.map((m) => {
         if (m.id !== target.moduleId) return m;
         return {
@@ -217,13 +243,13 @@ export const useCourseEditorHandlers = ({
     if (deleteTarget.kind === 'course') {
       return {
         title: 'Delete course?',
-        description: buildDeleteCourseDescription(deleteTarget.moduleCount),
+        description: deleteCourseCopy(deleteTarget.moduleCount),
       };
     }
     if (deleteTarget.kind === 'module') {
       return {
         title: `Delete module "${deleteTarget.moduleTitle.trim() || 'Untitled'}"?`,
-        description: buildDeleteModuleDescription({
+        description: deleteModuleCopy({
           videoLessons: deleteTarget.videoLessons,
           quizzes: deleteTarget.quizzes,
           otherMaterials: deleteTarget.otherMaterials,
@@ -232,7 +258,7 @@ export const useCourseEditorHandlers = ({
     }
     return {
       title: 'Delete material?',
-      description: buildDeleteMaterialDescription({
+      description: deleteMaterialCopy({
         title: deleteTarget.title,
         kind: deleteTarget.materialKind,
       }),
@@ -247,17 +273,14 @@ export const useCourseEditorHandlers = ({
     try {
       const targetModule = modules.find((m) => m.id === activeModuleIdForMaterial);
       const nextOrderIndex = targetModule?.materials?.length ?? 0;
-      const content = buildCourseMaterialContentPayload(payload);
+      const content = materialContentPayload(payload);
 
-      const created = await apiInstance.post<{ id: string }>(
-        API_ENDPOINTS.courseMaterials.create(courseId, activeModuleIdForMaterial),
-        {
-          type: payload.type,
-          title: payload.title,
-          content,
-          order_index: nextOrderIndex,
-        },
-      );
+      const created = await courseApi.createMaterial(courseId, activeModuleIdForMaterial, {
+        type: payload.type,
+        title: payload.title,
+        content,
+        order_index: nextOrderIndex,
+      });
 
       const nextModulesAfterCreate = modules.map((m) => {
         if (m.id !== activeModuleIdForMaterial) return m;
@@ -291,16 +314,13 @@ export const useCourseEditorHandlers = ({
     if (!courseId || !activeModuleIdForMaterial) return;
     setIsCreatingMaterial(true);
     try {
-      const content = buildCourseMaterialContentPayload(payload);
+      const content = materialContentPayload(payload);
 
-      await apiInstance.patch(
-        API_ENDPOINTS.courseMaterials.update(courseId, activeModuleIdForMaterial, materialId),
-        {
-          type: payload.type,
-          title: payload.title,
-          content,
-        },
-      );
+      await courseApi.updateMaterial(courseId, activeModuleIdForMaterial, materialId, {
+        type: payload.type,
+        title: payload.title,
+        content,
+      });
 
       const nextModulesAfterUpdate = modules.map((m) => {
         if (m.id !== activeModuleIdForMaterial) return m;
@@ -329,7 +349,7 @@ export const useCourseEditorHandlers = ({
 
     if (moduleModalMode === 'edit') {
       if (!activeModuleIdForEdit) return;
-      await apiInstance.patch(API_ENDPOINTS.courseModules.update(courseId, activeModuleIdForEdit), {
+      await courseApi.updateModule(courseId, activeModuleIdForEdit, {
         title,
       });
       setModules((prev) =>
@@ -340,7 +360,7 @@ export const useCourseEditorHandlers = ({
 
     const currentOrders = modules.map((m) => m.orderIndex ?? 0);
     const nextOrderIndex = currentOrders.length ? Math.max(...currentOrders) + 1 : 0;
-    await apiInstance.post(API_ENDPOINTS.courseModules.create(courseId), {
+    await courseApi.createModule(courseId, {
       title,
       order_index: nextOrderIndex,
     });
@@ -350,6 +370,7 @@ export const useCourseEditorHandlers = ({
   return {
     handleCreateCourseSubmit,
     handleUpdateCourseSubmit,
+    submitCourseCoverOnly,
     handleFormSubmit,
     handleConfirmPublishCourse,
     handleConfirmUnpublishCourse,

@@ -1,6 +1,6 @@
 import type { CreateCourseFormValues } from '@/features/course-managment/validation/createCourseSchema';
 
-export const getCourseEditorFormApiFields = (
+export const courseFormFields = (
   values: CreateCourseFormValues,
 ): Record<string, unknown> => ({
   title: values.title.trim(),
@@ -13,14 +13,3 @@ export const getCourseEditorFormApiFields = (
     ? { duration_hours: Number(values.durationHours.trim()) }
     : {}),
 });
-
-export const buildCourseCreatePayload = (
-  values: CreateCourseFormValues,
-): Record<string, unknown> => ({
-  ...getCourseEditorFormApiFields(values),
-  is_published: false,
-});
-
-export const buildCourseUpdatePayload = (
-  values: CreateCourseFormValues,
-): Record<string, unknown> => getCourseEditorFormApiFields(values);
