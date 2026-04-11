@@ -81,6 +81,12 @@ export const mapApiCourseToCourseCard = (course: CatalogCourse): CourseCardProps
 
   const tags = Array.isArray(course.tags) ? (course.tags as string[]) : [];
 
+  const myAccess = course.my_access;
+  const isAdded =
+    myAccess != null &&
+    typeof myAccess === 'object' &&
+    'access_type' in (myAccess as object);
+
   return {
     id: String(course.id),
     title: String(course.title ?? ''),
@@ -103,6 +109,7 @@ export const mapApiCourseToCourseCard = (course: CatalogCourse): CourseCardProps
     durationHours: Number.isFinite(durationHours) && durationHours > 0 ? durationHours : 1,
     tags,
     isPublished: readIsPublished(course),
+    isAdded,
   };
 };
 

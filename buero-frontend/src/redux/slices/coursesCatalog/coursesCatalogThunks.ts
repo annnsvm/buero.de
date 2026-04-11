@@ -49,7 +49,25 @@ export const fetchCoursesCatalogThunk = createAsyncThunk<
     );
 
     const raw = Array.isArray(res.data) ? res.data : [];
-    const items = raw.map((row) => mapApiCourseToCourseCard(row as CatalogCourse));
+
+    const isAuthenticated = Boolean(state.auth?.isAuthenticated);
+    let accessibleCourseIds = new Set<string>();
+    if (!isTeacherManage && isAuthenticated) {
+      try {
+        const myRes = await apiInstance.get<CatalogCourse[]>(API_ENDPOINTS.courses.my);
+        const mine = Array.isArray(myRes.data) ? myRes.data : [];
+        accessibleCourseIds = new Set(mine.map((c) => String(c.id)));
+      } catch {
+        accessibleCourseIds = new Set();
+      }
+    }
+
+    const items = raw.map((row) => {
+      const card = mapApiCourseToCourseCard(row as CatalogCourse);
+      const hasAccess =
+        card.isAdded === true || accessibleCourseIds.has(card.id);
+      return { ...card, isAdded: hasAccess };
+    });
 
     return {
       items,
