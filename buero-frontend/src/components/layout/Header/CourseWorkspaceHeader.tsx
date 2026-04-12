@@ -15,7 +15,7 @@ export type CourseWorkspaceHeaderProps = {
 };
 
 const courseStructureBtnClassName =
-  'inline-flex shrink-0 items-center px-0 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:text-[var(--color-primary)]';
+  'inline-flex shrink-0 items-center px-0 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:text-[var(--color-primary)] lg:hidden';
 
 const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
   isLight = false,
@@ -28,7 +28,6 @@ const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
 
   return (
     <div className="sticky top-0 z-20 w-full border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)]">
-      <Container>
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
           <button
             type="button"
@@ -64,7 +63,6 @@ const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
           </div>
           <HeaderAuthBar isLight={isLight} from="courseWorkspace" className="shrink-0" />
         </div>
-      </Container>
     </div>
   );
 };
