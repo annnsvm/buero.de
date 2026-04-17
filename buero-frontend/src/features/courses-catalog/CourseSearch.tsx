@@ -20,7 +20,13 @@ const CourseSearch: React.FC<CourseSearchProps> = ({ onSearch, initialSearch = '
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
-
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      e.currentTarget.blur(); 
+    }
+  };
   return (
     <div className="w-full max-w-[560px]">
       <div className="relative h-[43px]">
@@ -31,7 +37,7 @@ const CourseSearch: React.FC<CourseSearchProps> = ({ onSearch, initialSearch = '
           type="text"
           value={query}
           onChange={handleChange}
-          // placeholder="Search courses, topics, or levels..."
+          onKeyDown={handleKeyDown}
           placeholder="Search courses, topics..."
           className="h-full w-full rounded-[12px] border border-[var(--opacity-white-60)] bg-[var(--opacity-neutral-darkest-15)] pl-10 pr-3 text-lg leading-[1.5] py-2 text-[var(--color-white)] placeholder:text-[var(--opacity-white-60)] shadow-2xl focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 transition-all"
         />
