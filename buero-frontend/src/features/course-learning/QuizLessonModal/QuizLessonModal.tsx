@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BaseDialog from '@/components/modal/BaseDialog/BaseDialog';
+import ModalScrollArea from '@/components/modal/ModalScrollArea';
 import { startQuizAttempt, submitQuizAttempt } from '@/api/quizApi';
 import { getErrorMessage } from '@/helpers/getErrorMessage';
 import type { ParsedQuizQuestion } from '@/pages/CoursePage/coursePageMappers';
@@ -326,18 +327,22 @@ const QuizLessonModal: React.FC<QuizLessonModalProps> = ({
     <BaseDialog
       isOpen={isOpen}
       handleOpenChange={onOpenChange}
-      contentClassName="fixed top-1/2 left-1/2 -translate-y-1/2 z-[1001] flex max-h-[calc(100vh-48px-24px)] w-full max-w-[min(96vw,720px)] flex-col gap-0 -translate-x-1/2 overflow-y-auto rounded-[12px] bg-[var(--color-neutral-white)] p-6 shadow-xl focus:outline-none sm:p-8 md:p-10"
+      contentClassName="fixed top-1/2 left-1/2 z-[1001] flex max-h-[calc(100vh-48px-24px)] w-full max-w-[min(96vw,720px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[12px] bg-[var(--color-neutral-white)] pt-6 pr-0 pb-6 pl-6 shadow-xl focus:outline-none sm:pl-8 md:pb-10 md:pl-10 lg:pr-0"
     >
       {isOpen ? (
-        <QuizLessonModalBody
-          key={bodyKey}
-          courseMaterialId={courseMaterialId}
-          greetingName={greetingName}
-          quizMaterialTitle={quizMaterialTitle}
-          questions={questions}
-          onOpenChange={onOpenChange}
-          onQuizResult={onQuizResult}
-        />
+        <ModalScrollArea contentGutter>
+          <div className="flex flex-col">
+            <QuizLessonModalBody
+              key={bodyKey}
+              courseMaterialId={courseMaterialId}
+              greetingName={greetingName}
+              quizMaterialTitle={quizMaterialTitle}
+              questions={questions}
+              onOpenChange={onOpenChange}
+              onQuizResult={onQuizResult}
+            />
+          </div>
+        </ModalScrollArea>
       ) : null}
     </BaseDialog>
   );

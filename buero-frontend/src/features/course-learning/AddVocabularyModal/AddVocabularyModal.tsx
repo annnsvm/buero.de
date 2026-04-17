@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { BaseDialog } from '@/components/modal';
+import { BaseDialog, ModalScrollArea } from '@/components/modal';
 import { FormField, Input, Icon } from '@/components/ui';
 import { ICON_NAMES } from '@/helpers/iconNames';
 import { ROUTES } from '@/helpers/routes';
@@ -90,7 +90,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
   };
 
   const customDialogClass =
-    'fixed top-1/2 left-1/2 z-[1001] w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 focus:outline-none sm:p-8 [&>button:hover]:text-[var(--color-primary)]';
+    'fixed top-1/2 left-1/2 z-[1001] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 sm:pb-8 lg:pr-0 [&>button:hover]:text-[var(--color-primary)]';
 
   return (
     <BaseDialog
@@ -101,6 +101,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
       }}
       contentClassName={customDialogClass}
     >
+      <ModalScrollArea contentGutter>
       {view === 'form' ? (
         <div className="flex flex-col">
           <h2 className="text-2xl font-semibold text-[var(--color-neutral-darkest)]">
@@ -237,6 +238,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
           </div>
         </div>
       )}
+      </ModalScrollArea>
     </BaseDialog>
   );
 };

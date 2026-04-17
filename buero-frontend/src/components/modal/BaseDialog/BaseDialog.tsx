@@ -15,7 +15,7 @@ const BaseDialog: React.FC<BaseDialogProps> = ({
   const defaultContentClass =
     'fixed top-1/2 left-1/2 z-[1001] w-full max-w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 focus:outline-none lg:p-12';
   const closeClasses = [
-    'absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200 sm:right-6 sm:top-6 md:right-8 md:top-8',
+    'absolute right-4 top-4 z-30 flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200 sm:right-6 sm:top-6 md:right-8 md:top-8',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]',
     closeButtonClassName ?? 'text-[var(--color-neutral-darkest)] hover:text-[var(--color-primary)]',
   ].join(' ');

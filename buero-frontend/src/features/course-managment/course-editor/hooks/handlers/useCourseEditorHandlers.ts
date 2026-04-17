@@ -31,7 +31,6 @@ export const useCourseEditorHandlers = ({
     setIsCoursePublished,
     reset,
     setCreateCourseError,
-    setIsEditingCourse,
     setIsCreatingCourse,
     setIsUpdatingCourse,
     setLastCourseCommitKind,

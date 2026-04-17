@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type SimpleBarCore from 'simplebar-core';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hooks';
-import { BaseDialog, useModal } from '@/components/modal';
+import { BaseDialog, ModalScrollArea, useModal } from '@/components/modal';
 import Icon from '@/components/ui/Icon';
 import { Button } from '@/components/ui';
 import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
@@ -62,7 +63,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   const [localPublished, setLocalPublished] = useState<boolean | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<SimpleBarCore | null>(null);
 
   const isTeacher = role === 'teacher';
   const isStudent = role === 'student';
@@ -198,9 +199,9 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     hasAnyMaterials && scopedCourseDetails?.modules ? scopedCourseDetails.modules : [];
 
   useEffect(() => {
-    if (isOpen && scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
+    if (!isOpen) return;
+    const el = scrollAreaRef.current?.getScrollElement();
+    if (el) el.scrollTop = 0;
   }, [isOpen, courseId]);
 
   const contentClassName = [
@@ -219,11 +220,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
       closeButtonClassName="text-white hover:text-[var(--color-primary)]"
     >
       <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div
-          ref={scrollRef}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-t-xl sm:rounded-t-2xl [&::-webkit-scrollbar]:absolute [&::-webkit-scrollbar]:right-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/20 hover:[&::-webkit-scrollbar-thumb]:bg-black/30"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(0,0,0,0.2) transparent' }}
-        >
+        <ModalScrollArea ref={scrollAreaRef} className="rounded-t-xl sm:rounded-t-2xl">
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl">
             <img src={course.imageUrl} alt={course.title} className="h-full w-full object-cover" />
             <div className="absolute left-4 top-4 flex items-center gap-2 sm:left-6 sm:top-6 md:left-8 md:top-7 lg:left-10 lg:top-8">
@@ -320,7 +317,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </ModalScrollArea>
 
         <div
           className="shrink-0 border-t border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-surface-overlay)] px-5 py-4 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] sm:px-7 sm:py-5 md:px-10 lg:px-12 xl:px-14"

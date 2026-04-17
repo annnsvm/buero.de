@@ -368,3 +368,38 @@
     background-position: -100% 0;
   }
 }
+
+/* SimpleBar — модалки: трек біля правого краю, нижче зони «X»; gutter — лише з модифікатором --content-gutter */
+.simplebar-buero-modal--content-gutter .simplebar-content {
+  box-sizing: border-box;
+  padding-right: calc(1.5rem + 10px);
+}
+
+@media (min-width: 640px) {
+  .simplebar-buero-modal--content-gutter .simplebar-content {
+    padding-right: calc(2rem + 10px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .simplebar-buero-modal--content-gutter .simplebar-content {
+    padding-right: calc(2.5rem + 10px);
+  }
+}
+
+.simplebar-buero-modal .simplebar-scrollbar::before {
+  background-color: color-mix(in srgb, var(--color-primary) 42%, var(--color-neutral-white));
+  border-radius: 9999px;
+}
+
+.simplebar-buero-modal .simplebar-scrollbar.simplebar-visible::before {
+  opacity: 0.72;
+}
+
+.simplebar-buero-modal .simplebar-track.simplebar-vertical {
+  top: 3.5rem;
+  bottom: 0.625rem;
+  right: 2px;
+  width: 6px;
+  margin-right: 0;
+}
