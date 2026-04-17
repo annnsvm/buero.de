@@ -39,6 +39,9 @@ const ICON_NAMES = {
   TRASH: 'icon-trash',
   ADD_PHOTO: 'icon-add-photo',
   BURO_LOGO: 'icon-buro-logo',
+  FLIP_AVATAR : 'icon-flip-avatar',
+  EYE_PSW_SHOW:'icon-eye-show',
+  EYE_PSW_HIDE:'icon-eye-hide',
 } as const;
 
 const SPRITE_URL = '/icons/sprite.svg';
