@@ -203,7 +203,6 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     }
   }, [isOpen, courseId]);
 
-  /** Висота ~90vh; ширина до 960px. Футер (ціна + CTA) поза скролом. */
   const contentClassName = [
     'fixed left-1/2 top-1/2 z-[1001] flex h-[90vh] max-h-[90vh] min-h-0 -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden',
     'w-[min(960px,calc(100vw-1rem))] sm:w-[min(960px,calc(100vw-2rem))] md:w-[min(960px,calc(100vw-3rem))] lg:w-[min(960px,calc(100vw-4rem))]',
@@ -217,9 +216,9 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         else handleOpenChange(open);
       }}
       contentClassName={contentClassName}
+      closeButtonClassName="text-white hover:text-[var(--color-primary)]"
     >
       <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/* Єдиний скрол: зображення + увесь контент; футер поза цим блоком */}
         <div
           ref={scrollRef}
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-t-xl sm:rounded-t-2xl [&::-webkit-scrollbar]:absolute [&::-webkit-scrollbar]:right-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/20 hover:[&::-webkit-scrollbar-thumb]:bg-black/30"
@@ -234,14 +233,21 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
             </div>
 
             <div className="absolute bottom-4 left-4 flex flex-wrap gap-2 sm:bottom-6 sm:left-6 md:bottom-7 md:left-8 lg:bottom-8 lg:left-10 sm:gap-3 md:gap-4">
-              {(course.tags ?? []).map((tag: string) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-primary)] sm:text-base"
-                >
-                  {tag}
-                </span>
-              ))}
+            {(course.tags ?? []).map((tag: string) => {
+    
+    if (!tag) return null;
+
+    const displayTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+
+    return (
+      <span
+        key={tag}
+        className="rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-primary)] sm:text-base"
+      >
+        {displayTag}
+      </span>
+    );
+  })}
             </div>
           </div>
 
