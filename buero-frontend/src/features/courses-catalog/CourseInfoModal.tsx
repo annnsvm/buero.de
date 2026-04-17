@@ -36,6 +36,7 @@ import {
 type CourseInfoModalProps = {
   isOpen: boolean;
   handleOpenChange: (open: boolean) => void;
+  onExitAnimationComplete?: () => void;
   courseId: string;
   course: CourseInfoData;
 };
@@ -43,6 +44,7 @@ type CourseInfoModalProps = {
 const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
   courseId,
   course,
 }) => {
@@ -205,7 +207,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   }, [isOpen, courseId]);
 
   const contentClassName = [
-    'fixed left-1/2 top-1/2 z-[1001] flex h-[90vh] max-h-[90vh] min-h-0 -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden',
+    'relative z-[1] flex h-[90vh] max-h-[90vh] min-h-0 flex-col overflow-hidden',
     'w-[min(960px,calc(100vw-1rem))] sm:w-[min(960px,calc(100vw-2rem))] md:w-[min(960px,calc(100vw-3rem))] lg:w-[min(960px,calc(100vw-4rem))]',
     'rounded-xl sm:rounded-2xl bg-[var(--color-surface-overlay)] focus:outline-none',
   ].join(' ');
@@ -216,6 +218,8 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
       contentClassName={contentClassName}
       closeButtonClassName="text-white hover:text-[var(--color-primary)]"
     >

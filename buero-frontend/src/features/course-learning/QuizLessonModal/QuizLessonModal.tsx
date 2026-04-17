@@ -327,23 +327,22 @@ const QuizLessonModal: React.FC<QuizLessonModalProps> = ({
     <BaseDialog
       isOpen={isOpen}
       handleOpenChange={onOpenChange}
-      contentClassName="fixed top-1/2 left-1/2 z-[1001] flex max-h-[calc(100vh-48px-24px)] w-full max-w-[min(96vw,720px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[12px] bg-[var(--color-neutral-white)] pt-6 pr-0 pb-6 pl-6 shadow-xl focus:outline-none sm:pl-8 md:pb-10 md:pl-10 lg:pr-0"
+      openCloseAnimation
+      contentClassName="relative z-[1] flex max-h-[calc(100vh-48px-24px)] w-full max-w-[min(96vw,720px)] flex-col overflow-hidden rounded-[12px] bg-[var(--color-neutral-white)] pt-6 pr-0 pb-6 pl-6 shadow-xl focus:outline-none sm:pl-8 md:pb-10 md:pl-10 lg:pr-0"
     >
-      {isOpen ? (
-        <ModalScrollArea contentGutter>
-          <div className="flex flex-col">
-            <QuizLessonModalBody
-              key={bodyKey}
-              courseMaterialId={courseMaterialId}
-              greetingName={greetingName}
-              quizMaterialTitle={quizMaterialTitle}
-              questions={questions}
-              onOpenChange={onOpenChange}
-              onQuizResult={onQuizResult}
-            />
-          </div>
-        </ModalScrollArea>
-      ) : null}
+      <ModalScrollArea contentGutter>
+        <div className="flex flex-col">
+          <QuizLessonModalBody
+            key={bodyKey}
+            courseMaterialId={courseMaterialId}
+            greetingName={greetingName}
+            quizMaterialTitle={quizMaterialTitle}
+            questions={questions}
+            onOpenChange={onOpenChange}
+            onQuizResult={onQuizResult}
+          />
+        </div>
+      </ModalScrollArea>
     </BaseDialog>
   );
 };

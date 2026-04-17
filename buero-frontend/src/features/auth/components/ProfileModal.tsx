@@ -32,6 +32,7 @@ const greetingName = (label: string) => {
 const ProfileModal: React.FC<ProfileModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
   onProfileSave,
   onAvatarSelect,
 }) => {
@@ -164,7 +165,9 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
-      contentClassName="fixed top-1/2 left-1/2 z-[1001] flex max-h-[min(90vh,800px)] w-full max-w-[min(100vw-2rem,760px)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 lg:pt-10 lg:pb-10 lg:pl-10 lg:pr-0"
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
+      contentClassName="relative z-[1] flex max-h-[min(90vh,800px)] w-full max-w-[min(100vw-2rem,760px)] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 lg:pt-10 lg:pb-10 lg:pl-10 lg:pr-0"
     >
       <ModalScrollArea contentGutter>
         <div className="flex flex-col">

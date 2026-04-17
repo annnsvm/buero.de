@@ -31,11 +31,13 @@ type AddVocabularyFormValues = z.infer<typeof addVocabularySchema>;
 type AddVocabularyModalProps = {
   isOpen: boolean;
   handleOpenChange: (open: boolean) => void;
+  onExitAnimationComplete?: () => void;
 };
 
 const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
 }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -90,7 +92,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
   };
 
   const customDialogClass =
-    'fixed top-1/2 left-1/2 z-[1001] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 sm:pb-8 lg:pr-0 [&>button:hover]:text-[var(--color-primary)]';
+    'relative z-[1] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 sm:pb-8 lg:pr-0 [&>button:hover]:text-[var(--color-primary)]';
 
   return (
     <BaseDialog
@@ -99,6 +101,8 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
       contentClassName={customDialogClass}
     >
       <ModalScrollArea contentGutter>
