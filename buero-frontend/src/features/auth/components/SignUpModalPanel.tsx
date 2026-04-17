@@ -18,8 +18,7 @@ import { useSelector } from 'react-redux';
 import { selectAuthStatus } from '@/redux/slices/auth';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
 import { consumePendingCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
-
-const PENDING_CHECKOUT_KEY = 'pending_checkout';
+import { PENDING_CHECKOUT_KEY } from '@/helpers/sessionPendingAuth';
 
 type PendingCheckoutPayload = {
   courseId: string;
@@ -62,8 +61,6 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
         }),
       ).unwrap();
 
-      onDismiss();
-
       const pendingCheckoutRaw = sessionStorage.getItem(PENDING_CHECKOUT_KEY);
       if (pendingCheckoutRaw) {
         sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
@@ -81,7 +78,24 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
               const checkoutUrl = checkoutAction.payload.url;
               if (checkoutUrl) {
                 sessionStorage.setItem('stripe_return', 'pending');
+                onDismiss();
                 window.location.href = checkoutUrl;
+                return;
+              }
+            }
+            if (createCheckoutSessionThunk.rejected.match(checkoutAction)) {
+              const checkoutError =
+                typeof checkoutAction.payload === 'string'
+                  ? checkoutAction.payload
+                  : checkoutAction.error?.message ?? '';
+              const normalizedCheckoutError = checkoutError.toLowerCase();
+              const alreadyHasAccess =
+                normalizedCheckoutError.includes('already own') ||
+                normalizedCheckoutError.includes('already have access') ||
+                normalizedCheckoutError.includes('already have trial access');
+              if (alreadyHasAccess) {
+                onDismiss();
+                navigate(ROUTES.COURSES);
                 return;
               }
             }
@@ -92,8 +106,12 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
       }
 
       const didTrial = await consumePendingCourseTrial(navigate, dispatch);
-      if (didTrial) return;
+      if (didTrial) {
+        onDismiss();
+        return;
+      }
 
+      onDismiss();
       navigate(redirectTo ?? ROUTES.COURSES);
     } catch (error) {
       const message =

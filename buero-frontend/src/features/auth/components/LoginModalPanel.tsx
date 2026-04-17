@@ -16,8 +16,7 @@ import { selectAuthStatus } from '@/redux/slices/auth';
 import { LOADING_STATUS } from '@/helpers/lodaingStatus';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
 import { consumePendingCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
-
-const PENDING_CHECKOUT_KEY = 'pending_checkout';
+import { PENDING_CHECKOUT_KEY } from '@/helpers/sessionPendingAuth';
 
 type PendingCheckoutPayload = {
   courseId: string;
@@ -58,8 +57,6 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
         }),
       ).unwrap();
 
-      onDismiss();
-
       const pendingCheckoutRaw = sessionStorage.getItem(PENDING_CHECKOUT_KEY);
       if (pendingCheckoutRaw) {
         sessionStorage.removeItem(PENDING_CHECKOUT_KEY);
@@ -77,6 +74,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
               const checkoutUrl = checkoutAction.payload.url;
               if (checkoutUrl) {
                 sessionStorage.setItem('stripe_return', 'pending');
+                onDismiss();
                 window.location.href = checkoutUrl;
                 return;
               }
@@ -92,6 +90,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
                 normalizedCheckoutError.includes('already have access') ||
                 normalizedCheckoutError.includes('already have trial access');
               if (alreadyHasAccess) {
+                onDismiss();
                 navigate(ROUTES.COURSES);
                 return;
               }
@@ -103,8 +102,12 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
       }
 
       const didTrial = await consumePendingCourseTrial(navigate, dispatch);
-      if (didTrial) return;
+      if (didTrial) {
+        onDismiss();
+        return;
+      }
 
+      onDismiss();
       navigate(redirectTo ?? ROUTES.COURSES);
     } catch (error) {
       const message =

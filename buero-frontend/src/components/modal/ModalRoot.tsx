@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import useModal from './context/useModal';
 import type { UiModalPayload } from '@/types/components/modal/UIModalType.types';
 import type { GlobalModalType } from '@/types/components/modal/GlobalModalType.types';
+import { clearAllPendingAuthCourseSession } from '@/helpers/sessionPendingAuth';
 
 const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
   const dispatch = useDispatch();
@@ -99,7 +100,10 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
         variant={variant}
         isOpen={globalModal.type === 'login' || globalModal.type === 'signup'}
         redirectTo={redirectTo}
-        onRequestClose={() => dispatch(closeGlobalModal())}
+        onRequestClose={() => {
+          clearAllPendingAuthCourseSession();
+          dispatch(closeGlobalModal());
+        }}
         onExitAnimationComplete={() => setAuthExitHold(false)}
       />
     );

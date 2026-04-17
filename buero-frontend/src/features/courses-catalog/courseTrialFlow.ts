@@ -1,12 +1,16 @@
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
+import {
+  PENDING_TRIAL_KEY,
+  clearPendingCheckoutSession,
+} from '@/helpers/sessionPendingAuth';
 import { ROUTES, getCoursePath } from '@/helpers/routes';
 import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
 import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import type { AppDispatch } from '@/redux/store';
 import type { NavigateFunction } from 'react-router-dom';
 
-export const PENDING_TRIAL_KEY = 'pending_trial';
+export { PENDING_TRIAL_KEY } from '@/helpers/sessionPendingAuth';
 
 export const startCourseTrialRequest = async (courseId: string): Promise<void> => {
   await apiInstance.post(API_ENDPOINTS.courses.startTrial(courseId));
@@ -44,6 +48,7 @@ export const requestCourseTrial = async (
   navigate: NavigateFunction,
 ): Promise<void> => {
   if (!isAuthenticated) {
+    clearPendingCheckoutSession();
     sessionStorage.setItem(PENDING_TRIAL_KEY, JSON.stringify({ courseId }));
     dispatch(
       openGlobalModal({
