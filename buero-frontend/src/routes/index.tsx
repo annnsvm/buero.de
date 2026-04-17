@@ -171,12 +171,12 @@ export const router = createBrowserRouter([
             path: ROUTES.NOT_FOUND,
             element: <NotFoundPage />,
           },
+          {
+            path: '*',
+            element: <NotFoundPage />,
+          },
         ],
       },
     ],
-  },
-  {
-    path: '*',
-    element: <NotFoundPage />,
   },
 ]);

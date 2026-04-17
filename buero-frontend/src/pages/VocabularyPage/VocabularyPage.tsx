@@ -84,7 +84,6 @@ const VocabularyPage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Search */}
             <div className="relative mt-8">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-text-secondary)]" />
               <input
@@ -96,7 +95,6 @@ const VocabularyPage: React.FC = () => {
               />
             </div>
 
-            {/* Category filters */}
             <div className="mt-6">
               <h3 className="text-sm font-semibold text-[var(--color-neutral-darkest)]">
                 Categories
@@ -119,7 +117,6 @@ const VocabularyPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Cards grid */}
             <div className="mt-8 grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
               {filtered.map((w) => (
                 <VocabularyCard key={w.id} entry={w} onDelete={handleDelete} />

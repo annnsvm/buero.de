@@ -4,11 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { selectCurrentUser, selectUserError } from '@/redux/slices/user/userSelectors';
 import { patchUserProfileThunk } from '@/redux/slices/user/userThunks';
-import { BaseDialog } from '@/components/modal';
+import { BaseDialog, ModalScrollArea } from '@/components/modal';
 import { Button, FormField, Icon, Input, Spinner } from '@/components/ui';
 import { apiInstance } from '@/api/apiInstance';
 import { ICON_NAMES } from '@/helpers/iconNames';
 import { profileSchema, type ProfileFormValues } from '@/features/profile/validation/profileSchema';
+import type { ProfileModalProps } from '@/types/features/userProfile/ProfileModal.types';
 
 
 
@@ -31,6 +32,7 @@ const greetingName = (label: string) => {
 const ProfileModal: React.FC<ProfileModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
   onProfileSave,
   onAvatarSelect,
 }) => {
@@ -163,9 +165,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
-      contentClassName="fixed top-1/2 left-1/2 z-[1001] w-full max-w-[min(100vw-2rem,760px)] max-h-[min(90vh,800px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-6 focus:outline-none lg:p-10"
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
+      contentClassName="relative z-[1] flex max-h-[min(90vh,800px)] w-full max-w-[min(100vw-2rem,760px)] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 lg:pt-10 lg:pb-10 lg:pl-10 lg:pr-0"
     >
-      <div className="flex flex-1 flex-col overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[var(--opacity-neutral-darkest-15)]">
+      <ModalScrollArea contentGutter>
+        <div className="flex flex-col">
         
         <div className="text-center">
           <h2 id="profile-dialog-title" className="text-[40px] font-semibold text-[var(--color-neutral-darker)] sm:text-[50px]">
@@ -282,15 +287,14 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
           </FormField>
 
           {user.role === 'teacher' ? (
-            // <>
-              <FormField name="profile-bio" label="Bio" error={errors.bio?.message}>
-                <textarea
-                  id="profile-bio"
-                  rows={3}
-                  className={`${inputSurfaceClass} min-h-[88px] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--opacity-neutral-darkest-15)] transition-shadow`}
-                  {...register('bio')}
-                />
-              </FormField>
+            <FormField name="profile-bio" label="Bio" error={errors.bio?.message}>
+              <textarea
+                id="profile-bio"
+                rows={3}
+                className={`${inputSurfaceClass} min-h-[88px] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--opacity-neutral-darkest-15)] transition-shadow`}
+                {...register('bio')}
+              />
+            </FormField>
           ) : null}
 
           {(formError || userError) ? (
@@ -306,7 +310,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
             </Button>
           </div>
         </form>
-      </div>
+        </div>
+      </ModalScrollArea>
     </BaseDialog>
   );
 };

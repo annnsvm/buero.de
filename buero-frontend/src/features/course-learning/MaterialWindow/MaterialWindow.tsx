@@ -17,6 +17,8 @@ const buildAutoplayEmbedSrc = (embedUrl: string): string => {
   return `${embedUrl}${hasQuery ? '&' : '?'}autoplay=1`;
 };
 
+const videoFrameRadiusClass = 'rounded-[20px] sm:rounded-[22px]';
+
 type LazyYouTubeEmbedProps = {
   videoUrl: string;
   title: string;
@@ -71,7 +73,7 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
       try {
         playerRef.current?.destroy();
       } catch {
-        /* noop */
+        void 0;
       }
       playerRef.current = undefined;
       wrapper.innerHTML = '';
@@ -113,7 +115,7 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
             try {
               player.destroy();
             } catch {
-              /* noop */
+              void 0;
             }
             wrapper.innerHTML = '';
             return;
@@ -144,7 +146,7 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
   if (isPlaying && usePlainIframe) {
     return (
       <iframe
-        className="h-full w-full"
+        className={`block h-full w-full border-0 ${videoFrameRadiusClass}`}
         src={buildAutoplayEmbedSrc(videoUrl)}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -158,7 +160,7 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
     return (
       <div
         ref={wrapperRef}
-        className="h-full min-h-[200px] w-full"
+        className={`h-full min-h-[200px] w-full overflow-hidden ${videoFrameRadiusClass}`}
         title={title}
         aria-label={title}
       />
@@ -169,7 +171,7 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
     <button
       type="button"
       onClick={handlePlayClick}
-      className="group relative flex h-full w-full items-center justify-center bg-[#2a2a2a] outline-none focus-visible:ring-2 focus-visible:ring-[#e87753] focus-visible:ring-offset-2"
+      className={`group relative flex h-full w-full items-center justify-center overflow-hidden bg-[#2a2a2a] outline-none focus-visible:ring-2 focus-visible:ring-[#e87753] focus-visible:ring-offset-2 ${videoFrameRadiusClass}`}
       aria-label={`Play video: ${title}`}
     >
       {posterSrc ? (
@@ -266,9 +268,11 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
           </div>
         </section>
 
-        <section className="mt-5 bg-[var(--color-neutral-white)] sm:mt-6 md:mt-8">
-          <div className="overflow-hidden rounded-[20px] bg-[#8f8f8f] sm:rounded-[22px]">
-            <div className="aspect-video w-full">
+        <section className="mt-5 sm:mt-6 md:mt-8">
+          <div
+            className={`overflow-hidden bg-black shadow-sm ${videoFrameRadiusClass}`}
+          >
+            <div className={`aspect-video w-full overflow-hidden ${videoFrameRadiusClass}`}>
               <LazyYouTubeEmbed
                 key={lesson.materialId ?? lesson.videoUrl}
                 videoUrl={lesson.videoUrl}

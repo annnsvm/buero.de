@@ -10,6 +10,6 @@ export type CoursesCatalogFiltersProps = {
   activeFilterId: string;
   onFilterChange: (id: string) => void;
   totalCount: number;
-  /** Контент праворуч поруч із «N courses found» (наприклад, поле пошуку). */
+  isResultsCountPending?: boolean;
   besideCountSlot?: ReactNode;
 };

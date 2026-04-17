@@ -64,6 +64,7 @@ export type CourseEditorCourseFormTabProps = {
   canUpdate: boolean;
   isCreatingCourse: boolean;
   isUpdatingCourse: boolean;
+  lastCourseCommitKind: 'create' | 'update' | null;
   createCourseError: string | null;
   coverPreviewUrl: string | null;
   setCoverFile: (f: File | null) => void;

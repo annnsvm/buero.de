@@ -3,8 +3,6 @@ import { getErrorMessage } from '@/helpers/getErrorMessage';
 import { CheckoutSessionResponse, CreateCheckoutSessionPayload, GetMyCourseAccessResponse, GetMyPaymentsResponse, PortalSessionResponse, SubscriptionSummary } from '@/types/api/subscriptionApi.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-// TODO: fetchSubscriptionStatus, createCheckoutSession, createPortalSession when API is ready
-
 const buildSubscriptionSummary = (accessList: GetMyCourseAccessResponse): SubscriptionSummary => {
   if (!accessList || accessList.length === 0)
     return {

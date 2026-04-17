@@ -11,6 +11,7 @@ import CourseStructureAsideEmptyState from './CourseStructureAsideEmptyState';
 import { Button, Logo } from '@/components/ui';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/helpers/routes';
+import { WorkspaceScrollArea } from '@/components/modal';
 
 const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   modules,
@@ -160,14 +161,14 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
             <Logo isLight={false} width={70} height={28} />
           </Link>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col p-4">
-          <h2 className="shrink-0 text-base font-bold text-[var(--color-text-primary)]">
+        <div className="flex min-h-0 flex-1 flex-col pl-4 pt-4 pb-4 pr-0">
+          <h2 className="shrink-0 pr-4 text-base font-bold text-[var(--color-text-primary)]">
             Course structure
           </h2>
-          <div className="mt-2 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-            {renderScrollableBody(false)}
-          </div>
-          {renderFooter(false)}
+          <WorkspaceScrollArea className="mt-2 flex min-h-0 flex-1 flex-col">
+            <div className="pr-2">{renderScrollableBody(false)}</div>
+          </WorkspaceScrollArea>
+          <div className="pr-4">{renderFooter(false)}</div>
         </div>
       </aside>
 
@@ -204,9 +205,9 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
             <h2 className="shrink-0 px-4 pt-2 text-base font-bold text-[var(--color-text-primary)]">
               Course structure
             </h2>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-2">
-              {renderScrollableBody(true)}
-            </div>
+            <WorkspaceScrollArea className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <div className="pl-4 pr-2 pb-2">{renderScrollableBody(true)}</div>
+            </WorkspaceScrollArea>
             <div className="shrink-0 px-4 pb-4">{renderFooter(true)}</div>
           </div>
         </div>

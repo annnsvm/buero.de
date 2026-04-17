@@ -1,4 +1,3 @@
-// reviews.ts
 import type { Review } from '@/types/features/home/Review.types';
 
 export const reviews: Review[] = [

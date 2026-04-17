@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 
-/* ========== Шрифти (public/fonts) ========== */
 @font-face {
   font-family: 'Inter';
   src: url('/fonts/Inter_18pt-Regular.ttf') format('truetype');
@@ -34,149 +33,125 @@
 }
 
 @theme {
-  /* ========== Primitive Colors ========== */
-
-  /* Neutrals — базові сірі, текст, межі */
-  --color-neutral-white: #ffffff; /* Hero, HeaderNavBar (light), Button outline */
-  --color-neutral-lightest: #f2f2f2; /* skeleton-shine */
-  --color-neutral-lighter: #d8d8d8; /* border-default */
+  --color-neutral-white: #ffffff;
+  --color-neutral-lightest: #f2f2f2;
+  --color-neutral-lighter: #d8d8d8;
   --color-neutral-light: #b2b2b2;
-  --color-neutral-base: #808080; /* text-secondary */
-  --color-neutral-dark: #4d4d4d; /* text-primary */
-  --color-neutral-darker: #1a1a1a; /* border-strong */
-  --color-neutral-darkest: #010101; /* opacity tokens */
+  --color-neutral-base: #808080;
+  --color-neutral-dark: #4d4d4d;
+  --color-neutral-darker: #1a1a1a;
+  --color-neutral-darkest: #010101;
 
-  /* Burnt Siena — основний акцент, CTA, лінки */
   --color-burnt-siena-lightest: #fcf0ed;
-  --color-burnt-siena-lighter: #fae2dc; /* Scheme 4: фон секцій */
+  --color-burnt-siena-lighter: #fae2dc;
   --color-burnt-siena-light: #ee9984;
-  --color-burnt-siena-base: #e76e50; /* CTA, primary buttons, accent */
-  --color-burnt-siena-dark: #b85840; /* hover, secondary accent */
+  --color-burnt-siena-base: #e76e50;
+  --color-burnt-siena-dark: #b85840;
   --color-burnt-siena-darker: #5c2c20;
   --color-burnt-siena-darkest: #452118;
 
-  /* Dawn Pink — альтернативні фони, секції */
   --color-dawn-pink-lightest: #fefdfc;
   --color-dawn-pink-lighter: #fdfbfa;
   --color-dawn-pink-light: #f8f2ee;
-  --color-dawn-pink-base: #f5ede8; /* surface-section, Header (scrolled) */
+  --color-dawn-pink-base: #f5ede8;
   --color-dawn-pink-dark: #c4bdb9;
   --color-dawn-pink-darker: #625e5c;
   --color-dawn-pink-darkest: #494745;
 
-  /* Cod Gray — темні фони, текст */
   --color-cod-gray-lightest: #e6e6e6;
   --color-cod-gray-lighter: #cecece;
   --color-cod-gray-light: #535353;
-  --color-cod-gray-base: #0a0a0a; /* color-black */
+  --color-cod-gray-base: #0a0a0a;
   --color-cod-gray-dark: #080808;
   --color-cod-gray-darker: #040404;
   --color-cod-gray-darkest: #030303;
 
-  /* Soapstone — основні фони, картки */
-  --color-soapstone-lightest: #fffefe; /* surface-overlay */
+  --color-soapstone-lightest: #fffefe;
   --color-soapstone-lighter: #fffefe;
   --color-soapstone-light: #fffcfb;
-  --color-soapstone-base: #fffcfa; /* surface-background, surface-card, body */
+  --color-soapstone-base: #fffcfa;
   --color-soapstone-dark: #ccc9c8;
   --color-soapstone-darker: #666464;
   --color-soapstone-darkest: #4c4b4b;
 
-  /* ========== Semantic Tokens (role-based) ========== */
-  /* Scheme 1 default: Text Neutral Dark, Background Soapstone, Accent Burnt Siena, Foreground White */
-
-  /* Background */
   --color-btn-primary: var(--color-burnt-siena-light);
 
-  /* Text */
   --color-text-primary: var(--color-neutral-dark);
-  /* Header (scrolled), Input labels, mobile menu hamburger (dark), body */
+
   --color-text-secondary: var(--color-neutral-base);
-  /* Placeholders, підписи, мітки */
+
   --color-text-inverse: var(--color-neutral-white);
-  /* Hero outline — текст на темному фоні */
+
   --color-text-on-accent: var(--color-neutral-white);
-  /* LinkBtn primary, Button solid, AppErrorBoundary — текст на CTA */
 
-  /* Surface */
   --color-surface-background: var(--color-soapstone-base);
-  /* body, AppErrorBoundary, сторінки */
+
   --color-surface-section: var(--color-dawn-pink-base);
-  /* Header (scrolled), секції, skeleton, background-alt */
+
   --color-surface-card: var(--color-soapstone-base);
-  /* Картки, HeaderMobileMenu hamburger (light) */
+
   --color-surface-overlay: var(--color-soapstone-lightest);
-  /* Модалки, dropdown, overlay */
 
-  /* Border */
   --color-border-subtle: var(--opacity-neutral-darkest-15);
-  /* Найменш помітні межі */
-  --color-border-default: var(--color-neutral-lighter);
-  /* Button outlineDark, Input, картки */
-  --color-border-strong: var(--color-neutral-darker);
-  /* Роздільники, підкреслені межі  */
 
-  /* Accent */
+  --color-border-default: var(--color-neutral-lighter);
+
+  --color-border-strong: var(--color-neutral-darker);
+
   --color-accent-primary: var(--color-burnt-siena-base);
-  /* CTA, Button, Spinner, focus ring */
+
   --color-accent-primary-hover: var(--color-burnt-siena-dark);
   --color-accent-secondary: var(--color-burnt-siena-dark);
-  /* Secondary buttons */
+
   --color-accent-secondary-hover: var(--color-burnt-siena-darker);
   --color-accent-danger: var(--color-burnt-siena-dark);
 
   --color-success: #f1f9f1;
-  /* Помилки, небезпечні дії */
 
-  /* Aliases (backward compatibility + shorthand) */
   --color-primary: var(--color-accent-primary);
   --color-primary-foreground: var(--color-text-on-accent);
   --color-primary-darkest: var(--color-accent-primary-hover);
   --color-secondary: var(--color-accent-secondary);
   --color-secondary-foreground: var(--color-text-on-accent);
   --color-text: var(--color-text-primary);
-  /* Input */
+
   --color-text-muted: var(--color-text-secondary);
-  /* AppErrorBoundary */
+
   --color-muted: var(--color-text-secondary);
   --color-border: var(--color-border-default);
   --color-background: var(--color-surface-background);
   --color-background-alt: var(--color-surface-section);
-  /* AppErrorBoundary pre */
+
   --color-foreground: var(--color-text-primary);
-  /* body, AppErrorBoundary */
+
   --color-primary-hover: var(--color-accent-primary-hover);
   --color-secondary-hover: var(--color-accent-secondary-hover);
   --color-error: var(--color-accent-primary);
   --color-error-border: var(--color-accent-primary-hover);
   --color-skeleton: var(--color-surface-section);
   --color-skeleton-shine: var(--color-neutral-lightest);
-  /* Skeleton animation */
+
   --color-white: var(--color-neutral-white);
-  /* (light), Button outline */
+
   --color-black: var(--color-cod-gray-base);
 
-  /* Opacity (Neutral Darkest #010101 = rgba(1,1,1)) */
   --opacity-neutral-darkest-60: rgba(1, 1, 1, 0.6);
-  /* overlay backdrop */
+
   --opacity-neutral-darkest-15: rgba(1, 1, 1, 0.15);
-  /* outline hover, Button solid hover */
+
   --opacity-white-60: rgba(255, 255, 255, 0.6);
-  /*  outline border, Button outline */
+
   --opacity-white-20: rgba(255, 255, 255, 0.2);
 
-  --opacity-neutral-darkest-5:  rgba(1, 1, 1, 0.05);
+  --opacity-neutral-darkest-5: rgba(1, 1, 1, 0.05);
 
-  /* Shadows для Input  */
   --shadow-input-default: 0 0 0 2px rgba(0, 0, 0, 0.08);
   --shadow-input-error: 0 0 0 2px rgba(239, 68, 68, 0.45);
   --shadow-input-success: 0 0 0 2px rgba(34, 197, 94, 0.45);
 
-  /* Шрифти: Inter — основний текст, Sora — заголовки */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-heading: 'Sora', 'Inter', system-ui, sans-serif;
 
-  /* Custom animation: bounce-x */
   --keyframes-bounce-x: bounce-x;
   --animate-bounce-x: bounce-x 2s ease-in-out infinite;
 }
@@ -204,7 +179,6 @@
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
-/* ========== Base reset (modern-normalize style) ========== */
 @layer base {
   *,
   *::before,
@@ -330,6 +304,71 @@
   }
 }
 
+@keyframes buero-dialog-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes buero-dialog-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes buero-dialog-content-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes buero-dialog-content-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.94) translateY(0.75rem);
+  }
+}
+
+.buero-dialog-overlay-animate[data-state='open'] {
+  animation: buero-dialog-overlay-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.buero-dialog-overlay-animate[data-state='closed'] {
+  animation: buero-dialog-overlay-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.buero-dialog-content-animate[data-state='open'] {
+  animation: buero-dialog-content-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.buero-dialog-content-animate[data-state='closed'] {
+  animation: buero-dialog-content-out 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buero-dialog-overlay-animate[data-state='open'],
+  .buero-dialog-overlay-animate[data-state='closed'],
+  .buero-dialog-content-animate[data-state='open'],
+  .buero-dialog-content-animate[data-state='closed'] {
+    animation: none;
+  }
+}
+
 @layer utilities {
   .no-scroll {
     overflow: hidden;
@@ -339,4 +378,82 @@
     grid-auto-rows: min-content;
   }
 
+  .buero-skeleton-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-neutral-lighter) 0%,
+      var(--color-neutral-lightest) 42%,
+      var(--color-neutral-lighter) 78%
+    );
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    animation: buero-skeleton-shimmer-move 1.35s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .buero-skeleton-shimmer {
+      animation: none;
+      background-position: 0 0;
+    }
+  }
+}
+
+@keyframes buero-skeleton-shimmer-move {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.simplebar-buero-modal--content-gutter .simplebar-content {
+  box-sizing: border-box;
+  padding-right: calc(1.5rem + 10px);
+}
+
+@media (min-width: 640px) {
+  .simplebar-buero-modal--content-gutter .simplebar-content {
+    padding-right: calc(2rem + 10px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .simplebar-buero-modal--content-gutter .simplebar-content {
+    padding-right: calc(2.5rem + 10px);
+  }
+}
+
+.simplebar-buero-modal .simplebar-scrollbar::before,
+.simplebar-buero-panel .simplebar-scrollbar::before {
+  background-color: color-mix(in srgb, var(--color-primary) 42%, var(--color-neutral-white));
+  border-radius: 9999px;
+}
+
+.simplebar-buero-modal .simplebar-scrollbar.simplebar-visible::before,
+.simplebar-buero-panel .simplebar-scrollbar.simplebar-visible::before {
+  opacity: 0.72;
+}
+
+.simplebar-buero-modal .simplebar-track.simplebar-vertical {
+  top: 3.5rem;
+  bottom: 0.625rem;
+  right: 2px;
+  width: 6px;
+  margin-right: 0;
+}
+
+.simplebar-buero-panel .simplebar-track.simplebar-vertical {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 6px;
+  margin-right: 0;
+}
+
+.simplebar-buero-panel .simplebar-content {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
 }

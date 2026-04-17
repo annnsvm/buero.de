@@ -8,7 +8,6 @@ const GlobalLoader: React.FC = () => {
       aria-live="polite"
       aria-label="Loading"
     >
-      {/* Пульсуючі кільця */}
       <div className="relative flex h-32 w-32 items-center justify-center">
         {[0, 1, 2, 3].map((i) => (
           <span
@@ -22,7 +21,6 @@ const GlobalLoader: React.FC = () => {
             }}
           />
         ))}
-        {/* Обертається градієнтне кільце */}
         <span
           className="absolute h-24 w-24 rounded-full"
           style={{
@@ -32,14 +30,12 @@ const GlobalLoader: React.FC = () => {
           }}
         />
         <span className="absolute h-20 w-20 rounded-full bg-[#0a0a0b]" />
-        {/* Яскрава точка на "голові" конуса */}
         <span
           className="absolute h-3 w-3 rounded-full bg-[var(--color-primary)] shadow-[0_0_20px_var(--color-primary)]"
           style={{ animation: 'spin 1.2s linear infinite' }}
         />
       </div>
 
-      {/* Текст з градієнтним блиманням */}
       <div className="flex flex-col items-center gap-2">
         <p
           className="text-lg font-semibold tracking-widest text-white/90"

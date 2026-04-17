@@ -10,6 +10,5 @@ export type CourseMaterialCreateTabProps = {
   isSubmitting: boolean;
   onCreate: (values: CreateCourseMaterialModalValues) => Promise<{ id: string }>;
   onUpdate: (materialId: string, values: CreateCourseMaterialModalValues) => Promise<void>;
-  /** Показати кнопку видалення збереженого матеріалу */
   onRequestDeleteMaterial?: () => void;
 };

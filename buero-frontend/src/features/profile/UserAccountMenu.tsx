@@ -28,6 +28,7 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
   from = '',
   className = ''
 }) => {
+  const isMobileContext = from === 'mobile';
   const { pushUiModal } = useModal();
 
   const handleContactSupport = () => {
@@ -82,12 +83,12 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
   const buttonClasses = [
     'inline-flex items-center gap-2 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] hover:opacity-80',
     isLight ? 'text-[var(--color-white)]' : 'text-[var(--color-text-primary)]',
-    from ? 'w-full justify-between' : '',
+    isMobileContext ? 'w-full justify-between' : '',
   ].filter(Boolean).join(' ');
 
   const panelClasses = [
     'absolute z-[120] mt-2 w-[312px] rounded-xl border border-[var(--opacity-neutral-darkest-10)] bg-white p-4 shadow-xl',
-    from ? 'left-0 right-0' : 'right-0',
+    isMobileContext ? 'left-0 right-0' : 'right-0',
   ].join(' ');
 
   const itemClasses =

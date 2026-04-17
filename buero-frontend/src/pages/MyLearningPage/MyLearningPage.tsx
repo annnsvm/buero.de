@@ -3,7 +3,7 @@ import {
   fetchMyLearningCoursesFromCatalog,
   filterMyLearningCourses,
 } from '@/api/myLearningCourses';
-import { CoursesCatalogFilters } from '@/features/courses-catalog';
+import { CoursesCatalogFilters, CoursesCatalogGridSkeleton } from '@/features/courses-catalog';
 import { MyCoursesList } from '@/features/my-courses-catalog';
 import { useSelector } from 'react-redux';
 import { setFilters } from '@/redux/slices/coursesCatalog';
@@ -29,7 +29,7 @@ const MyLearningPage: React.FC = () => {
   const filtersRef = useRef(filters);
 
   const [myCourses, setMyCourses] = useState<CourseInfoData[]>([]);
-  const [loadStatus, setLoadStatus] = useState<MyLearningLoadStatus>('idle');
+  const [loadStatus, setLoadStatus] = useState<MyLearningLoadStatus>('loading');
 
   const activeFilterId =
     filters.category === 'language'
@@ -100,6 +100,7 @@ const MyLearningPage: React.FC = () => {
         activeFilterId={activeFilterId}
         onFilterChange={handleFilterChange}
         totalCount={totalCount}
+        isResultsCountPending={loadStatus === 'loading'}
         besideCountSlot={
           <div className="flex w-full flex-col gap-1">
             <Input
@@ -114,7 +115,10 @@ const MyLearningPage: React.FC = () => {
         }
       />
       {loadStatus === 'loading' ? (
-        <p className="py-12 text-center text-[var(--color-text-secondary)]">Loading your courses…</p>
+        <CoursesCatalogGridSkeleton
+          sectionClassName="bg-white"
+          loadingLabel="Loading your courses"
+        />
       ) : loadStatus === 'error' ? (
         <p className="py-12 text-center text-[var(--color-error)]">Could not load your courses.</p>
       ) : (

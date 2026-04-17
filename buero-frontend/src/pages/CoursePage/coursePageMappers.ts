@@ -16,7 +16,6 @@ export type ApiCourseModule = {
   materials?: ApiCourseMaterial[];
 };
 
-/** Поля з GET /courses/:id для студента з доступом (snake_case з API). */
 export type ApiCourseMyAccess = {
   access_type?: string;
   first_module_id?: string;
@@ -30,9 +29,6 @@ export type ApiCourseWithTree = {
   my_access?: ApiCourseMyAccess;
 };
 
-/**
- * Trial у відповіді API все ще може містити всі модулі — для UI залишаємо лише перший модуль.
- */
 export const applyTrialModuleScope = (course: ApiCourseWithTree): ApiCourseWithTree => {
   const access = course.my_access;
   if (!access || access.access_type !== 'trial') return course;

@@ -42,7 +42,6 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
       <div
         className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}
       >
-        {/* Front */}
         <div className="absolute inset-0 flex flex-col rounded-2xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] p-5 shadow-sm [backface-visibility:hidden]">
           <div className="flex justify-end gap-2">
             <button
@@ -84,7 +83,6 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
           <p className="text-center text-xs text-[var(--color-text-secondary)]">Click to flip</p>
         </div>
 
-        {/* Back */}
         <div className="absolute inset-0 flex flex-col rounded-2xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] p-5 shadow-sm [backface-visibility:hidden] [transform:rotateY(180deg)]">
           <div className="flex justify-end gap-2">
             <button

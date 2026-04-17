@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Section } from '@/components/layout';
-import CourseCoverSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseCoverSection';import CourseDetailsSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseDetailsSection';
+import CourseCoverSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseCoverSection';
+import CourseDetailsSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseDetailsSection';
 import CourseTagsSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseTagsSection';
 import CoursePriceSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CoursePriceSection';
 import CourseDurationSection from '@/features/course-managment/components/CourseManagementWorkspace/parts/CourseDurationSection';
@@ -20,6 +21,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
   canUpdate,
   isCreatingCourse,
   isUpdatingCourse,
+  lastCourseCommitKind,
   createCourseError,
   coverPreviewUrl,
   setCoverFile,
@@ -35,13 +37,16 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
   computedDurationMinutes,
   watchedVideoLessonsCount,
   coverFile,
-}) => (
+}) => {
+  const fieldsLocked = isFormDisabled || isUpdatingCourse;
+
+  return (
   <Section className="py-8">
     <Container className="max-w-[1100px] px-4 sm:px-6">
       <form className="space-y-6" onSubmit={handleSubmit(handleFormSubmit)}>
         <CourseCoverSection
           coverPreviewUrl={coverPreviewUrl}
-          disabled={isFormDisabled}
+          disabled={fieldsLocked}
           onPick={(file, previewUrl) => {
             setCoverFile(file);
             setCoverPreviewUrl(previewUrl);
@@ -59,7 +64,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
           nameError={errors.title?.message}
           descriptionError={errors.description?.message}
           levelError={errors.level?.message}
-          disabled={isFormDisabled}
+          disabled={fieldsLocked}
           onChangeName={(value) =>
             setValue('title', value, { shouldDirty: true, shouldValidate: true })
           }
@@ -73,7 +78,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
 
         <CourseTagsSection
           tags={watchedTags}
-          disabled={isFormDisabled}
+          disabled={fieldsLocked}
           onChangeTags={(next) =>
             setValue('tags', next, { shouldDirty: true, shouldValidate: true })
           }
@@ -84,7 +89,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
           amount={watchedPrice}
           currencySymbol={priceCurrencySymbol}
           error={errors.price?.message}
-          disabled={isFormDisabled}
+          disabled={fieldsLocked}
           onChangeAmount={(value) =>
             setValue('price', value, { shouldDirty: true, shouldValidate: true })
           }
@@ -103,6 +108,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
           canCreate={canCreate}
           canUpdate={canUpdate}
           isUpdating={isUpdatingCourse}
+          lastCommitKind={lastCourseCommitKind}
           onCreateCourse={handleSubmit(handleCreateCourseSubmit)}
           onUpdateCourse={runCourseUpdate}
         />
@@ -111,6 +117,7 @@ const CourseEditorCourseFormTab: React.FC<CourseEditorCourseFormTabProps> = ({
       </form>
     </Container>
   </Section>
-);
+  );
+};
 
 export default CourseEditorCourseFormTab;

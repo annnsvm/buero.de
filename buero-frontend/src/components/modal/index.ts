@@ -1,4 +1,8 @@
 export { default as BaseDialog } from './BaseDialog';
+export { default as ModalScrollArea } from './ModalScrollArea';
+export type { ModalScrollAreaProps } from './ModalScrollArea';
+export { default as WorkspaceScrollArea } from './WorkspaceScrollArea';
+export type { WorkspaceScrollAreaProps } from './WorkspaceScrollArea';
 export { default as ModalContext } from './context/ModalContext';
 export { default as ModalProvider } from './context/ModalProvider';
 export { default as ModalRoot } from './ModalRoot';

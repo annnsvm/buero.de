@@ -7,5 +7,6 @@ export { default as Card } from './Card';
 export { default as Spinner } from './Spinner';
 export { default as Skeleton } from './Skeleton';
 export { default as GlobalLoader } from './GlobalLoader';
+export { default as PageContentLoader } from './PageContentLoader';
 export { default as Select } from './Select';
 export { default as Line } from './Line';

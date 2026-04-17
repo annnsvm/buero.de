@@ -1,10 +1,7 @@
-/** Вкладка основного контенту на сторінці керування курсом */
 export type CourseManagementRightTab = 'course' | 'material';
 
-/** Режим модалки додавання / редагування модуля */
 export type CourseModuleModalMode = 'create' | 'edit';
 
-/** Ціль підтвердження видалення на сторінці керування курсом */
 export type CourseEntityDeleteTarget =
   | { kind: 'course'; moduleCount: number }
   | {

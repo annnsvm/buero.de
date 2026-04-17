@@ -8,6 +8,7 @@ import type { CourseModule } from '@/features/courses-catalog/CourseStructure';
 import { Logo } from '@/components/ui';
 import { ROUTES } from '@/helpers/routes';
 import TrialSidebarBlurTail from './TrialSidebarBlurTail';
+import WorkspaceScrollArea from '@/components/modal/WorkspaceScrollArea';
 
 export type CourseLearningSidebarProps = {
   modules: CourseModule[];
@@ -121,9 +122,9 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
           </Link>
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4">
-            {renderStructure(false)}
-          </div>
+          <WorkspaceScrollArea className="flex min-h-0 flex-1 flex-col">
+            <div className="pl-4 pr-2 pb-4">{renderStructure(false)}</div>
+          </WorkspaceScrollArea>
         </div>
       </aside>
 
@@ -154,9 +155,9 @@ const CourseLearningSidebar: React.FC<CourseLearningSidebarProps> = ({
                 <Logo isLight={false} width={70} height={28} />
               </Link>
             </div>
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4">
-              {renderStructure(true)}
-            </div>
+            <WorkspaceScrollArea className="flex min-h-0 flex-1 flex-col">
+              <div className="pl-4 pr-2 pb-4">{renderStructure(true)}</div>
+            </WorkspaceScrollArea>
           </div>
         </div>
       ) : null}

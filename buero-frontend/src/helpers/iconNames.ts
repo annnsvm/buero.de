@@ -1,7 +1,3 @@
-/**
- * Константи id іконок з спрайту /icons/sprite.svg.
- * Використовувати з компонентом Icon: <Icon name={ICON_NAMES.ARROW_RIGHT} />
- */
 const ICON_NAMES = {
   APPLE: 'icon-apple',
   ARROW_RIGHT: 'icon-arrow_right',

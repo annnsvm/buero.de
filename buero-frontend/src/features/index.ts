@@ -1,12 +1,3 @@
-/**
- * Feature modules. Each feature may contain:
- * - components/
- * - api/
- * - validation/
- * Redux stays in src/redux/slices/ (not in features).
- * See docs/features-folder-guide.md
- */
-
 export * as auth from './auth';
 export * as landing from './landing';
 export * as placementTest from './placement-test';

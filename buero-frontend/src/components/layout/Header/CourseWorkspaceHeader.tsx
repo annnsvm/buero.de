@@ -27,7 +27,7 @@ const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="sticky top-0 z-20 w-full border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)]">
+    <div className="sticky top-0 z-20 w-full shrink-0 border-b border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-lighter)]">
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
           <button
             type="button"

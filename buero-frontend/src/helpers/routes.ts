@@ -8,7 +8,6 @@ export const ROUTES = Object.freeze({
   PURCHES_CANCEL: '/purchase/cancel',
   COURSE_MANAGEMENT: '/course-management',
   TEACHER_COURSES_CREATE: '/teacher/courses/create',
-  /** Параметр `:courseId` — той самий редактор, що й create, з даними з API */
   TEACHER_COURSES_EDIT: '/teacher/courses/:courseId/edit',
   TEACHER_COURSE: '/teacher/courses/',
   TEACHERS: '/teachers',

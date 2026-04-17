@@ -31,9 +31,9 @@ export const useCourseEditorHandlers = ({
     setIsCoursePublished,
     reset,
     setCreateCourseError,
-    setIsEditingCourse,
     setIsCreatingCourse,
     setIsUpdatingCourse,
+    setLastCourseCommitKind,
     isEditingCourse,
     setIsPublishingCourse,
     setIsUnpublishingCourse,
@@ -97,6 +97,7 @@ export const useCourseEditorHandlers = ({
 
       setCoverFile(null);
       reset(values);
+      setLastCourseCommitKind('update');
     } catch (err: unknown) {
       setCreateCourseError(parseApiErrorMessage(err, 'Failed to update course'));
     } finally {
@@ -113,6 +114,7 @@ export const useCourseEditorHandlers = ({
       const up = await courseApi.uploadCourseCover(courseId, coverFile);
       setCoverFile(null);
       setCoverPreviewUrl(coverUrlFromApi(up.data));
+      setLastCourseCommitKind('update');
     } catch (err: unknown) {
       setCreateCourseError(parseApiErrorMessage(err, 'Failed to upload cover'));
     } finally {
@@ -125,6 +127,7 @@ export const useCourseEditorHandlers = ({
     setCoverPreviewUrl,
     setCreateCourseError,
     setIsUpdatingCourse,
+    setLastCourseCommitKind,
   ]);
 
   const handleFormSubmit = async (values: CreateCourseFormValues) => {

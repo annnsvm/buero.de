@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 import CourseWorkspaceHeader from '@/components/layout/Header/CourseWorkspaceHeader';
+import { WorkspaceScrollArea } from '@/components/modal';
 import { ROUTES } from '@/helpers/routes';
 import type { CourseEditorShellProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
@@ -12,7 +13,8 @@ const CourseEditorShell: React.FC<CourseEditorShellProps> = ({
 }) => (
   <div className="flex h-[100vh] overflow-hidden bg-[var(--color-surface-section)]">
     {aside}
-    <div className="min-w-0 flex-1 overflow-y-auto">
+    <WorkspaceScrollArea className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-col">
       <CourseWorkspaceHeader
         desktopStart={
           <NavLink
@@ -42,7 +44,8 @@ const CourseEditorShell: React.FC<CourseEditorShellProps> = ({
         onOpenCourseStructure={onRequestOpenCourseStructureMobile}
       />
       {children}
-    </div>
+      </div>
+    </WorkspaceScrollArea>
   </div>
 );
 

@@ -1,4 +1,3 @@
-/** Як бек віддає GET /subscriptions/me (snake_case) */
 export type RawCourseAccess = {
   id: string;
   course_id: string;
@@ -16,5 +15,4 @@ export type NormalizedAccess = {
   trialEndsAt: Date | null;
 };
 
-/** GET /courses — мінімум для мапера картки */
 export type CatalogCourse = { id: string } & Record<string, unknown>;

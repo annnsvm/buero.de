@@ -4,11 +4,10 @@ import loginSchema from '../validation/loginSchema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAppDispatch } from '@/redux/hooks';
-import { LoginModalProps } from '@/types/features/auth/LoginModal.types';
 import { Button, FormField, Input, Spinner } from '@/components/ui';
 import { loginThunk } from '@/redux/slices/auth/authThunks';
 import { LoginFormValues } from '@/types/features/auth/validation.types';
-import { BaseDialog, ModalBody, ModalFooter, ModalHeader } from '@/components/modal';
+import { ModalBody, ModalFooter, ModalHeader } from '@/components/modal';
 import { Text } from '@/components/layout';
 import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { ROUTES } from '@/helpers/routes';
@@ -17,8 +16,7 @@ import { selectAuthStatus } from '@/redux/slices/auth';
 import { LOADING_STATUS } from '@/helpers/lodaingStatus';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
 import { consumePendingCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
-
-const PENDING_CHECKOUT_KEY = 'pending_checkout';
+import { PENDING_CHECKOUT_KEY } from '@/helpers/sessionPendingAuth';
 
 type PendingCheckoutPayload = {
   courseId: string;
@@ -26,7 +24,12 @@ type PendingCheckoutPayload = {
   cancelUrl?: string;
 };
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redirectTo }) => {
+export type LoginModalPanelProps = {
+  redirectTo?: string;
+  onDismiss: () => void;
+};
+
+const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const loadingStatus = useSelector(selectAuthStatus);
@@ -44,10 +47,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
     },
   });
 
-  const handleClose = () => {
-    handleOpenChange(false);
-  };
-
   const handleSubmitLogin = handleSubmit(async (values) => {
     try {
       await dispatch(
@@ -57,8 +56,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
           redirectTo,
         }),
       ).unwrap();
-
-      handleClose();
 
       const pendingCheckoutRaw = sessionStorage.getItem(PENDING_CHECKOUT_KEY);
       if (pendingCheckoutRaw) {
@@ -77,6 +74,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
               const checkoutUrl = checkoutAction.payload.url;
               if (checkoutUrl) {
                 sessionStorage.setItem('stripe_return', 'pending');
+                onDismiss();
                 window.location.href = checkoutUrl;
                 return;
               }
@@ -92,19 +90,24 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
                 normalizedCheckoutError.includes('already have access') ||
                 normalizedCheckoutError.includes('already have trial access');
               if (alreadyHasAccess) {
+                onDismiss();
                 navigate(ROUTES.COURSES);
                 return;
               }
             }
           }
         } catch {
-          // ignore malformed session payload, fallback to regular redirect
+          void 0;
         }
       }
 
       const didTrial = await consumePendingCourseTrial(navigate, dispatch);
-      if (didTrial) return;
+      if (didTrial) {
+        onDismiss();
+        return;
+      }
 
+      onDismiss();
       navigate(redirectTo ?? ROUTES.COURSES);
     } catch (error) {
       const message =
@@ -119,76 +122,63 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, handleOpenChange, redir
   });
 
   return (
-    <BaseDialog
-      isOpen={isOpen}
-      handleOpenChange={(open) => {
-        if (!open) {
-          handleClose();
-          return;
-        }
-        handleOpenChange(open);
-      }}
-      titleId="login-dialog-title"
-      descriptionId="login-dialog-description"
-    >
-      <ModalBody>
-        <ModalHeader
-          title="Log In"
-          description="Sign in to continue your German learning journey."
-          className="mb-8"
-        />
+    <ModalBody>
+      <ModalHeader
+        title="Log In"
+        description="Sign in to continue your German learning journey."
+        className="mb-8"
+      />
 
-        <form onSubmit={handleSubmitLogin} className="flex flex-col gap-4">
-          <FormField name="login-email" error={errors.email?.message}>
-            <Input
-              id="login-email"
-              type="email"
-              placeholder="Email"
-              autoComplete="email"
-              className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
-              {...register('email')}
-            />
-          </FormField>
+      <form onSubmit={handleSubmitLogin} className="flex flex-col gap-4">
+        <FormField name="login-email" error={errors.email?.message}>
+          <Input
+            id="login-email"
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
+            {...register('email')}
+          />
+        </FormField>
 
-          <FormField name="login-password" error={errors.password?.message}>
-            <Input
-              id="login-password"
-              type="password"
-              placeholder="Password"
-              autoComplete="current-password"
-              className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
-              {...register('password')}
-            />
-          </FormField>
+        <FormField name="login-password" error={errors.password?.message}>
+          <Input
+            id="login-password"
+            type="password"
+            placeholder="Password"
+            autoComplete="current-password"
+            className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
+            {...register('password')}
+          />
+        </FormField>
 
-          {errors.root && <p className="text-[var(--color-error)]">{errors.root.message}</p>}
+        {errors.root && <p className="text-[var(--color-error)]">{errors.root.message}</p>}
 
-          <Button type="submit" disabled={isSubmitting} className="mt-2 w-full" variant="solid">
-            {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : 'Log In'}
-          </Button>
-        </form>
+        <Button type="submit" disabled={isSubmitting} className="mt-2 w-full" variant="solid">
+          {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : 'Log In'}
+        </Button>
+      </form>
 
-        <ModalFooter>
-          <button
-            type="button"
-            className="hover:text-[var(--color-primary)]"
-            onClick={() => {
-              dispatch(
-                openGlobalModal({
-                  type: 'signup',
-                  redirectTo,
-                }),
-              );
-            }}
-          >
-            <Text label={'Switch to Sign Up'} className="text-[1.125rem]">
-              Don&apos;t have an account? Sign Up
-            </Text>
-          </button>
-        </ModalFooter>
-      </ModalBody>
-    </BaseDialog>
+      <ModalFooter>
+        <button
+          type="button"
+          className="hover:text-[var(--color-primary)]"
+          onClick={() => {
+            dispatch(
+              openGlobalModal({
+                type: 'signup',
+                redirectTo,
+              }),
+            );
+          }}
+        >
+          <Text label={'Switch to Sign Up'} className="text-[1.125rem]">
+            Don&apos;t have an account? Sign Up
+          </Text>
+        </button>
+      </ModalFooter>
+    </ModalBody>
   );
 };
 
-export default LoginModal;
+export default LoginModalPanel;

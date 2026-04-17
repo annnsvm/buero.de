@@ -48,7 +48,8 @@ const ConfirmPublishCourseModal: React.FC<ConfirmPublishCourseModalProps> = ({
     <BaseDialog
       isOpen={isOpen}
       handleOpenChange={handleDialogOpenChange}
-      contentClassName="fixed top-1/2 left-1/2 z-[1001] w-full max-w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 focus:outline-none lg:p-12"
+      openCloseAnimation
+      contentClassName="relative z-[1] w-full max-w-[560px] rounded-2xl bg-white p-6 focus:outline-none lg:p-12"
     >
       <ModalBody>
         <div className="flex flex-col items-center justify-center gap-2">

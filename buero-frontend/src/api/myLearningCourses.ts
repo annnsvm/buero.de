@@ -63,7 +63,6 @@ export const mapApiCourseToCourseInfo = (course: CatalogCourse): CourseInfoData 
   };
 };
 
-/** GET /courses або GET /courses/manage — картка каталогу (включно з isPublished для вчителя). */
 export const mapApiCourseToCourseCard = (course: CatalogCourse): CourseCardProps => {
   const categoryRaw = String(course.category ?? course.language ?? 'language');
   const level = course.level != null ? String(course.level) : 'A1';

@@ -37,11 +37,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     variant = '',
     modulesCount: modulesCountProp,
     onCourseDeleted,
-    onPublicationChange,
   } = rawProps;
-  
-
-  const displayCategory = category || 'LANGUAGE';
 
   const cleanPrice =
     parseFloat(
@@ -65,7 +61,6 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
   const [resolvedModuleCount, setResolvedModuleCount] = useState<number | null>(null);
   const [isLoadingDeleteInfo, setIsLoadingDeleteInfo] = useState(false);
   const [isDeletingCourse, setIsDeletingCourse] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
 
   const openCourseInfo = () => {
     pushUiModal({
@@ -169,21 +164,6 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDeleteModalOpen(true);
-  };
-
-  const handlePublishToggleClick = async (e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (typeof isPublished !== 'boolean' || isPublishing) return;
-    setIsPublishing(true);
-    try {
-      await apiInstance.patch(API_ENDPOINTS.courses.update(id), {
-        is_published: !isPublished,
-      });
-      onPublicationChange?.();
-    } finally {
-      setIsPublishing(false);
-    }
   };
 
   let buttonsComponent = null;
@@ -340,10 +320,6 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
           </div>
         </div>
         <div className="flex flex-1 flex-col p-4 sm:p-6">
-          {/* <p className="text-sm font-semibold text-[var(--color-primary)] uppercase sm:text-base">
-            {displayCategory}
-          </p> */}
-
           <h3 className="mt-4 text-22 text-[26px] leading-tight font-semibold leading-[1.4] tracking-[-0.01em] sm:text-[26px] text-[var(--color-neutral-darkest)]">
             {title}
           </h3>

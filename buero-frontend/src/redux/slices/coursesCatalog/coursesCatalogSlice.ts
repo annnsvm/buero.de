@@ -8,15 +8,12 @@ export type CoursesCatalogFilters = {
   search?: string;
   tags?: string;
   language?: string;
-  /** Лише для GET /courses/manage (вчитель). */
   publicationStatus?: PublicationFilter;
-  /** Використовується на сторінці «Моє навчання» (локальний фільтр). */
   category?: string;
 };
 
 export type CoursesCatalogState = {
   items: CourseCardProps[];
-  /** Якщо задано — у користувача вже є активний trial на цьому курсі; Trial на інших картках ховається. */
   activeTrialCourseId: string | null;
   filters: CoursesCatalogFilters;
   totalCount: number;

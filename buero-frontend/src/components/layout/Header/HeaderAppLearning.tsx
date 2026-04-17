@@ -30,7 +30,6 @@ const HeaderAppLearning: React.FC = () => {
           className="flex h-full items-center justify-between w-full max-w-[1080px] px-6"
           style={{
             height: '100%',
-            // Persist browser-preview border behavior: only bottom border visible.
             borderStyle: 'solid',
             borderWidth: '1px',
             borderColor: 'rgba(0, 0, 0, 1)',
@@ -44,7 +43,6 @@ const HeaderAppLearning: React.FC = () => {
             borderLeftStyle: 'none',
             borderLeftColor: 'rgba(0, 0, 0, 0)',
             borderBottomColor: 'var(--opacity-neutral-darkest-15)',
-            // Match preview: element text color.
             color: 'var(--opacity-neutral-darkest-15)',
           }}
         >

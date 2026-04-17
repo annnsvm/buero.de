@@ -8,11 +8,19 @@ const CourseCreateActions: React.FC<CourseCreateActionsProps> = ({
   isCreating,
   canUpdate,
   isUpdating,
+  lastCommitKind,
   error,
   onCreateCourse,
   onUpdateCourse,
 }) => {
   const isEditMode = mode === 'edit';
+
+  const editSyncedLabel =
+    lastCommitKind === 'update'
+      ? 'Updated'
+      : lastCommitKind === 'create'
+        ? 'Created'
+        : 'Saved';
 
   const buttonLabel = isUpdating ? (
     <span className="inline-flex items-center gap-2">
@@ -23,7 +31,7 @@ const CourseCreateActions: React.FC<CourseCreateActionsProps> = ({
     canUpdate ? (
       'Update'
     ) : (
-      'Created'
+      editSyncedLabel
     )
   ) : isCreating ? (
     <span className="inline-flex items-center gap-2">

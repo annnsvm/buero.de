@@ -4,9 +4,8 @@ import { selectSubscriptionStatus } from '@/redux/slices/subscriptions';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
 import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { CheckoutButtonProps } from '@/types/components/ui/CheckoutButton.types';
+import { PENDING_CHECKOUT_KEY, clearPendingTrialSession } from '@/helpers/sessionPendingAuth';
 import React from 'react';
-
-const PENDING_CHECKOUT_KEY = 'pending_checkout';
 
 const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   courseId,
@@ -24,6 +23,7 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
     if (isLoading) return;
 
     if (!isAuthenticated) {
+      clearPendingTrialSession();
       sessionStorage.setItem(
         PENDING_CHECKOUT_KEY,
         JSON.stringify({ courseId, successUrl, cancelUrl }),

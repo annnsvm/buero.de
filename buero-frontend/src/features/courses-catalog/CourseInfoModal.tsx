@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type SimpleBarCore from 'simplebar-core';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hooks';
-import { BaseDialog, useModal } from '@/components/modal';
+import { BaseDialog, ModalScrollArea, useModal } from '@/components/modal';
 import Icon from '@/components/ui/Icon';
 import { Button } from '@/components/ui';
 import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
@@ -35,6 +36,7 @@ import {
 type CourseInfoModalProps = {
   isOpen: boolean;
   handleOpenChange: (open: boolean) => void;
+  onExitAnimationComplete?: () => void;
   courseId: string;
   course: CourseInfoData;
 };
@@ -42,6 +44,7 @@ type CourseInfoModalProps = {
 const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
   courseId,
   course,
 }) => {
@@ -62,7 +65,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   const [localPublished, setLocalPublished] = useState<boolean | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<SimpleBarCore | null>(null);
 
   const isTeacher = role === 'teacher';
   const isStudent = role === 'student';
@@ -160,12 +163,6 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   };
 
   const safeCategory = course.category || 'Language';
- 
-  // const safeImageUrl = course.imageUrl || '/images/courses/course-1.webp';
-  
-  // const safeLessonsCount = course.lessonsCount || 12;
-  // const safeDurationHours = course.durationHours || 10;
-  
 
   const cleanPrice =
     parseFloat(
@@ -198,13 +195,13 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     hasAnyMaterials && scopedCourseDetails?.modules ? scopedCourseDetails.modules : [];
 
   useEffect(() => {
-    if (isOpen && scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
+    if (!isOpen) return;
+    const el = scrollAreaRef.current?.getScrollElement();
+    if (el) el.scrollTop = 0;
   }, [isOpen, courseId]);
 
   const contentClassName = [
-    'fixed left-1/2 top-1/2 z-[1001] flex h-[90vh] max-h-[90vh] min-h-0 -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden',
+    'relative z-[1] flex h-[90vh] max-h-[90vh] min-h-0 flex-col overflow-hidden',
     'w-[min(960px,calc(100vw-1rem))] sm:w-[min(960px,calc(100vw-2rem))] md:w-[min(960px,calc(100vw-3rem))] lg:w-[min(960px,calc(100vw-4rem))]',
     'rounded-xl sm:rounded-2xl bg-[var(--color-surface-overlay)] focus:outline-none',
   ].join(' ');
@@ -215,15 +212,14 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
       contentClassName={contentClassName}
       closeButtonClassName="text-white hover:text-[var(--color-primary)]"
     >
       <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div
-          ref={scrollRef}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-t-xl sm:rounded-t-2xl [&::-webkit-scrollbar]:absolute [&::-webkit-scrollbar]:right-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/20 hover:[&::-webkit-scrollbar-thumb]:bg-black/30"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(0,0,0,0.2) transparent' }}
-        >
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <ModalScrollArea ref={scrollAreaRef} className="h-full rounded-t-xl sm:rounded-t-2xl">
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl">
             <img src={course.imageUrl} alt={course.title} className="h-full w-full object-cover" />
             <div className="absolute left-4 top-4 flex items-center gap-2 sm:left-6 sm:top-6 md:left-8 md:top-7 lg:left-10 lg:top-8">
@@ -320,10 +316,11 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
               </button>
             </div>
           </div>
+        </ModalScrollArea>
         </div>
 
         <div
-          className="shrink-0 border-t border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-surface-overlay)] px-5 py-4 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] sm:px-7 sm:py-5 md:px-10 lg:px-12 xl:px-14"
+          className="relative z-30 shrink-0 border-t border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-surface-overlay)] px-5 py-4 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] sm:px-7 sm:py-5 md:px-10 lg:px-12 xl:px-14 pointer-events-auto"
           role="region"
           aria-label="Course price and actions"
         >

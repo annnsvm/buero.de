@@ -31,16 +31,18 @@ const HeaderAuthBar: React.FC<HeaderNavAuthTrialProps> = ({
     );
   };
 
+  const isMobileContext = from === 'mobile';
+
   return (
     <div className={['flex gap-2', className].join(' ')}>
       {isAuthenticate ? (
-        <UserAccountMenu isLight={isLight} from={from} className={from ? 'w-full' : ''} />
+        <UserAccountMenu isLight={isLight} from={from} className={isMobileContext ? 'w-full' : ''} />
       ) : (
         <>
           <Button
             variant={isLight ? 'primary' : 'outlineDark'}
             aria-label="Sign in"
-            className={from ? 'w-full' : ''}
+            className={isMobileContext ? 'w-full' : ''}
             onClick={handleOpenLogin}
           >
             Sign in
@@ -48,7 +50,7 @@ const HeaderAuthBar: React.FC<HeaderNavAuthTrialProps> = ({
           <Button
             variant="solid"
             aria-label="Sign up"
-            className={from ? 'w-full' : ''}
+            className={isMobileContext ? 'w-full' : ''}
             onClick={handleOpenSignUp}
           >
             Sign up

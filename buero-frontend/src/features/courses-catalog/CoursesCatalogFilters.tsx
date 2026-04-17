@@ -7,6 +7,7 @@ const CoursesCatalogFilters = ({
   activeFilterId,
   onFilterChange,
   totalCount,
+  isResultsCountPending = false,
   besideCountSlot,
 }: CoursesCatalogFiltersProps) => {
   return (
@@ -42,8 +43,14 @@ const CoursesCatalogFilters = ({
             {besideCountSlot ? (
               <div className="min-w-0 sm:max-w-[min(100%,320px)]">{besideCountSlot}</div>
             ) : null}
-            <p className="shrink-0 text-lg font-medium leading-[1.5] whitespace-nowrap text-[var(--color-text-primary)]">
-              {totalCount} {totalCount === 1 ? 'course found' : 'courses found'}
+            <p
+              className="shrink-0 text-lg font-medium leading-[1.5] whitespace-nowrap text-[var(--color-text-primary)]"
+              aria-live="polite"
+              aria-busy={isResultsCountPending}
+            >
+              {isResultsCountPending
+                ? 'Loading results…'
+                : `${totalCount} ${totalCount === 1 ? 'course found' : 'courses found'}`}
             </p>
           </div>
         </div>

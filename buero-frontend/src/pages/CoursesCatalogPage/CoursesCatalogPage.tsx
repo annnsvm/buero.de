@@ -1,10 +1,11 @@
 import type { FC } from 'react';
-import { useEffect, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useCallback, useRef, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   CoursesCatalogHero,
   CoursesCatalogFilters,
   CoursesCatalogList,
+  CoursesCatalogGridSkeleton,
 } from '@/features/courses-catalog';
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -12,6 +13,7 @@ import {
   selectCoursesCatalogItems,
   selectCoursesCatalogTotalCount,
   selectCoursesCatalogFilters,
+  selectCoursesCatalogStatus,
 } from '@/redux/slices/coursesCatalog/coursesCatalogSelectors';
 import { setFilters } from '@/redux/slices/coursesCatalog/coursesCatalogSlice';
 import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
@@ -44,6 +46,31 @@ const CoursesCatalogPage: FC = () => {
   const filtersRef = useRef(filters);
 
   const totalCount = useSelector(selectCoursesCatalogTotalCount);
+  const catalogStatus = useSelector(selectCoursesCatalogStatus);
+  const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(true);
+
+  const isCatalogPending =
+    catalogStatus === 'loading' ||
+    (catalogStatus === 'idle' && courses.length === 0);
+
+  useEffect(() => {
+    if (catalogStatus === 'loading') {
+      setShowLoadingSkeleton(true);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowLoadingSkeleton(false);
+    }, 180);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [catalogStatus]);
+
+  const showCatalogGridSkeleton =
+    showLoadingSkeleton ||
+    (catalogStatus === 'idle' && courses.length === 0 && role !== 'teacher');
 
   const filterTabs = useMemo(() => {
     if (role === 'teacher') {
@@ -150,9 +177,12 @@ const CoursesCatalogPage: FC = () => {
         activeFilterId={activeFilterId}
         onFilterChange={handleFilterChange}
         totalCount={totalCount}
+        isResultsCountPending={isCatalogPending}
       />
 
-      {courses.length > 0 || role === 'teacher' ? (
+      {showCatalogGridSkeleton ? (
+        <CoursesCatalogGridSkeleton withTeacherCreateSlot={role === 'teacher'} />
+      ) : courses.length > 0 || role === 'teacher' ? (
         <CoursesCatalogList courses={courses} />
       ) : (
         <div className="flex items-center justify-center py-20 text-lg text-[var(--color-text-primary)]">

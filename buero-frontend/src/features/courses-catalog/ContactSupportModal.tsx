@@ -1,14 +1,15 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BaseDialog } from '@/components/modal'; 
-import { FormField, Input, Button, Spinner } from '@/components/ui';
+import { BaseDialog, ModalScrollArea } from '@/components/modal';
+import { FormField, Input, Spinner } from '@/components/ui';
 
 import contactSupportSchema, { type ContactSupportFormValues } from './validation/contactSupportSchema';
 
 type ContactSupportModalProps = {
   isOpen: boolean;
   handleOpenChange: (open: boolean) => void;
+  onExitAnimationComplete?: () => void;
   subject?: string;
   courseId?: string;
   prefillEmail?: string;
@@ -17,6 +18,7 @@ type ContactSupportModalProps = {
 const ContactSupportModal: React.FC<ContactSupportModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
   subject = 'Question about course',
   prefillEmail = '',
 }) => {
@@ -51,20 +53,23 @@ const ContactSupportModal: React.FC<ContactSupportModalProps> = ({
     }
   });
 
-  const customDialogClass = 
-    'fixed top-1/2 left-1/2 z-[1001] w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 sm:p-8 focus:outline-none [&>button:hover]:text-[var(--color-primary)]';
-    
+  const customDialogClass =
+    'relative z-[1] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 sm:pb-8 lg:pr-0 [&>button:hover]:text-[var(--color-primary)]';
+
   return (
-    <BaseDialog 
-      isOpen={isOpen} 
+    <BaseDialog
+      isOpen={isOpen}
       handleOpenChange={(open) => {
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
       titleId="contact-dialog-title"
       descriptionId="contact-dialog-description"
       contentClassName={customDialogClass}
     >
+      <ModalScrollArea contentGutter>
       <div className="flex flex-col">
         <h2 id="contact-dialog-title" className="text-2xl font-semibold text-[var(--color-neutral-darkest)]">
           Contact us
@@ -143,6 +148,7 @@ const ContactSupportModal: React.FC<ContactSupportModalProps> = ({
           </button>
         </form>
       </div>
+      </ModalScrollArea>
     </BaseDialog>
   );
 };

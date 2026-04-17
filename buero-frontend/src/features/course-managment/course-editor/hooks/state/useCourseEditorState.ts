@@ -61,6 +61,9 @@ export const useCourseEditorState = () => {
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
   const [createCourseError, setCreateCourseError] = useState<string | null>(null);
+  const [lastCourseCommitKind, setLastCourseCommitKind] = useState<'create' | 'update' | null>(
+    null,
+  );
 
   const [isCreateModuleOpen, setIsCreateModuleOpen] = useState(false);
   const [moduleModalMode, setModuleModalMode] = useState<CourseModuleModalMode>('create');
@@ -110,6 +113,7 @@ export const useCourseEditorState = () => {
     setActiveModuleIdForMaterial(null);
     setActiveMaterialIdForEdit(null);
     setActiveRightTab('course');
+    setLastCourseCommitKind(null);
     setDeleteTarget(null);
     setIsPublishModalOpen(false);
     setIsCreateModuleOpen(false);
@@ -161,6 +165,8 @@ export const useCourseEditorState = () => {
     setIsCreatingCourse,
     isUpdatingCourse,
     setIsUpdatingCourse,
+    lastCourseCommitKind,
+    setLastCourseCommitKind,
     createCourseError,
     setCreateCourseError,
     isFormDisabled,

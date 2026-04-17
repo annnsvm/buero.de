@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type SimpleBarCore from 'simplebar-core';
 import { useSelector } from 'react-redux';
 import { NavLink, useParams } from 'react-router-dom';
 
@@ -6,12 +7,18 @@ import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import { completeCourseMaterial, fetchCourseProgress } from '@/api/progressApi';
 import type { CourseModule } from '@/features/courses-catalog/CourseStructure';
-import { CourseLearningSidebar, MaterialWindow, QuizLessonModal } from '@/features/course-learning';
+import {
+  CourseLearningSidebar,
+  CoursePageSkeleton,
+  MaterialWindow,
+  QuizLessonModal,
+} from '@/features/course-learning';
 import type { QuizResultSummary } from '@/features/course-learning/QuizLessonModal';
 
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
 import { getErrorMessage } from '@/helpers/getErrorMessage';
 import CourseWorkspaceHeader from '@/components/layout/Header/CourseWorkspaceHeader';
+import { WorkspaceScrollArea } from '@/components/modal';
 import { ROUTES } from '@/helpers/routes';
 import { selectCurrentUser, selectUserRole } from '@/redux/slices/user/userSelectors';
 import useModal from '@/components/modal/context/useModal';
@@ -45,7 +52,7 @@ const CoursePage: React.FC = () => {
   const [courseOutline, setCourseOutline] = useState<CourseModule[]>([]);
   const [lockedModuleIds, setLockedModuleIds] = useState<ReadonlySet<string>>(() => new Set());
   const [courseStructureMobileOpen, setCourseStructureMobileOpen] = useState(false);
-  const mainScrollRef = useRef<HTMLDivElement>(null);
+  const mainScrollRef = useRef<SimpleBarCore | null>(null);
   const currentUser = useSelector(selectCurrentUser);
   const userRole = useSelector(selectUserRole);
 
@@ -255,11 +262,13 @@ const CoursePage: React.FC = () => {
 
   const isFirstScrollRef = useRef(true);
   useEffect(() => {
+    const el = mainScrollRef.current?.getScrollElement();
+    if (!el) return;
     if (isFirstScrollRef.current) {
-      mainScrollRef.current?.scrollTo({ top: 0 });
+      el.scrollTo({ top: 0 });
       isFirstScrollRef.current = false;
     } else {
-      mainScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+      el.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [selectedMaterialId]);
 
@@ -280,11 +289,7 @@ const CoursePage: React.FC = () => {
   }
 
   if (loadStatus === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--color-neutral-white)]">
-        <p className="text-[var(--color-text-secondary)]">Loading course…</p>
-      </div>
-    );
+    return <CoursePageSkeleton />;
   }
 
   if (loadStatus === 'error' || !course) {
@@ -323,7 +328,11 @@ const CoursePage: React.FC = () => {
         hideMobileFloatingStructureButton
       />
 
-      <div ref={mainScrollRef} className="min-w-0 flex-1 overflow-y-auto">
+      <WorkspaceScrollArea
+        ref={mainScrollRef}
+        className="flex h-full min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-soapstone-base)]"
+      >
+        <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col bg-[var(--color-soapstone-base)]">
         <CourseWorkspaceHeader
           desktopStart={
             <>
@@ -379,11 +388,11 @@ const CoursePage: React.FC = () => {
         />
 
         <section
-          className="min-w-0 flex-1 bg-[var(--color-soapstone-base)]"
+          className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-soapstone-base)]"
           aria-label="Lesson content"
         >
           {flatMaterials.length === 0 ? (
-            <div className="flex justify-center p-8 text-[var(--color-text-secondary)]">
+            <div className="flex flex-1 items-center justify-center p-8 text-[var(--color-text-secondary)]">
               No lessons in this course yet.
             </div>
           ) : null}
@@ -408,7 +417,7 @@ const CoursePage: React.FC = () => {
             />
           ) : null}
           {flatMaterials.length > 0 && isQuizSelected ? (
-            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 py-12 text-center">
               <p className="max-w-md text-lg font-medium text-[var(--color-text-primary)]">
                 {selectedMaterial?.title ?? 'Quiz'}
               </p>
@@ -444,7 +453,8 @@ const CoursePage: React.FC = () => {
             </div>
           ) : null}
         </section>
-      </div>
+        </div>
+      </WorkspaceScrollArea>
 
       {selectedMaterial && isQuizSelected ? (
         <QuizLessonModal

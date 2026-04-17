@@ -27,6 +27,7 @@ export const useCourseEditorEffects = ({
     setIsEditingCourse,
     setCoverFile,
     setCoverPreviewUrl,
+    setLastCourseCommitKind,
   } = state;
 
   const { syncCourseDurationHours } = tree;
@@ -55,6 +56,7 @@ export const useCourseEditorEffects = ({
         const data = res.data as ApiCourseTreeResponse;
         const formValues = mapCourseToForm(data);
         reset(formValues);
+        setLastCourseCommitKind(null);
         setCourseId(routeCourseId);
         setModules(data.modules ?? []);
         setIsCoursePublished(publishedFromApi(data));
@@ -88,5 +90,6 @@ export const useCourseEditorEffects = ({
     setModules,
     syncCourseDurationHours,
     setIsBootstrappingCourse,
+    setLastCourseCommitKind,
   ]);
 };

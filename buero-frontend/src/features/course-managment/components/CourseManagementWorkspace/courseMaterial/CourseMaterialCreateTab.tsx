@@ -48,6 +48,10 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
     initialState.createdMaterialId,
   );
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(initialState.savedSnapshot);
+  const [lastCommitKind, setLastCommitKind] = useState<'create' | 'update' | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
+
+  const isBusy = isSubmitting || isMutating;
 
   const buildPayload = (): CreateCourseMaterialModalValues =>
     materialType === 'video'
@@ -71,8 +75,16 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
         };
 
   const currentSnapshot = JSON.stringify(buildPayload());
-  const isCreatedState = Boolean(createdMaterialId) && savedSnapshot === currentSnapshot;
-  const isUpdateState = Boolean(createdMaterialId) && savedSnapshot !== currentSnapshot;
+  const isInSync = Boolean(createdMaterialId) && savedSnapshot === currentSnapshot;
+  const hasUnsavedChanges = Boolean(createdMaterialId) && savedSnapshot !== currentSnapshot;
+
+  const syncedButtonLabel = (() => {
+    if (!isInSync) return null;
+    if (lastCommitKind === 'create') return 'Created';
+    if (lastCommitKind === 'update') return 'Updated';
+    if (activeMaterialId) return 'Saved';
+    return 'Created';
+  })();
 
   const handleCreateOrUpdate = async () => {
     if (!activeModuleId) {
@@ -102,15 +114,27 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
     setError(null);
     const payload = buildPayload();
 
-    if (createdMaterialId) {
-      if (savedSnapshot === currentSnapshot) return;
-      await onUpdate(createdMaterialId, payload);
-      setSavedSnapshot(JSON.stringify(payload));
+    if (createdMaterialId && savedSnapshot === currentSnapshot) {
       return;
     }
-    const created = await onCreate(payload);
-    setCreatedMaterialId(created.id);
-    setSavedSnapshot(JSON.stringify(payload));
+
+    setIsMutating(true);
+    try {
+      if (createdMaterialId) {
+        await onUpdate(createdMaterialId, payload);
+        setSavedSnapshot(JSON.stringify(payload));
+        setLastCommitKind('update');
+        return;
+      }
+      const created = await onCreate(payload);
+      setCreatedMaterialId(created.id);
+      setSavedSnapshot(JSON.stringify(payload));
+      setLastCommitKind('create');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save material');
+    } finally {
+      setIsMutating(false);
+    }
   };
 
   const handleRemoveQuestion = (questionId: string) => {
@@ -151,7 +175,7 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
             value={materialType}
             options={MATERIAL_TYPE_OPTIONS}
             onChange={(nextValue) => setMaterialType(nextValue as CourseMaterialType)}
-            disabled={Boolean(createdMaterialId) || isSubmitting}
+            disabled={Boolean(createdMaterialId) || isBusy}
           />
         </FormField>
 
@@ -161,7 +185,7 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
             placeholder="e.g. Lesson 1: Greetings"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            disabled={isSubmitting}
+            disabled={isBusy}
           />
         </FormField>
 
@@ -169,14 +193,14 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
           <CourseMaterialVideoFields
             youtubeVideoId={youtubeVideoId}
             youtubeVideoDuration={youtubeVideoDuration}
-            isSubmitting={isSubmitting}
+            isSubmitting={isBusy}
             onYoutubeVideoIdChange={setYoutubeVideoId}
             onYoutubeVideoDurationChange={setYoutubeVideoDuration}
           />
         ) : (
           <CourseMaterialQuizEditor
             quizQuestions={quizQuestions}
-            isSubmitting={isSubmitting}
+            isSubmitting={isBusy}
             onQuizQuestionsChange={setQuizQuestions}
             onRemoveQuestion={handleRemoveQuestion}
             onRemoveAnswer={handleRemoveAnswer}
@@ -192,7 +216,7 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
             type="button"
             variant="outlineDark"
             onClick={onRequestDeleteMaterial}
-            disabled={isSubmitting}
+            disabled={isBusy}
             className="!border-[var(--color-error)] !text-[var(--color-error)] hover:!border-[var(--color-error)]"
           >
             Delete material
@@ -205,16 +229,16 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
           type="button"
           variant="solid"
           onClick={handleCreateOrUpdate}
-          disabled={isSubmitting || isCreatedState}
+          disabled={isBusy || isInSync}
         >
-          {isSubmitting ? (
+          {isBusy ? (
             <span className="inline-flex items-center gap-2">
               <Spinner variant="onPrimary" className="size-5" />
-              {isUpdateState ? 'Updating' : 'Creating'}
+              {createdMaterialId && hasUnsavedChanges ? 'Updating' : 'Creating'}
             </span>
-          ) : isCreatedState ? (
-            'Created'
-          ) : isUpdateState ? (
+          ) : isInSync ? (
+            syncedButtonLabel
+          ) : hasUnsavedChanges ? (
             'Update'
           ) : (
             'Create material'

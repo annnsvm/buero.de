@@ -1,4 +1,3 @@
-// learningPage.data.ts
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
 
 export const lessonContent: LearningLesson = {

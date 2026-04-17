@@ -6,6 +6,7 @@ export type CourseCreateActionsProps = {
   isCreating: boolean;
   canUpdate: boolean;
   isUpdating: boolean;
+  lastCommitKind: 'create' | 'update' | null;
   error: string | null;
   onCreateCourse: () => void;
   onUpdateCourse: () => void;

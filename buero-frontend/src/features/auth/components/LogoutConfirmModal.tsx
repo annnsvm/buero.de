@@ -11,6 +11,7 @@ import type { LogoutConfirmModalProps } from '@/types/features/auth/LogoutConfir
 const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
   isOpen,
   handleOpenChange,
+  onExitAnimationComplete,
 }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -44,7 +45,9 @@ const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
         if (!open) handleClose();
         else handleOpenChange(open);
       }}
-      contentClassName="fixed top-1/2 left-1/2 z-[1001] w-full max-w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 focus:outline-none lg:p-10"
+      openCloseAnimation
+      onExitAnimationComplete={onExitAnimationComplete}
+      contentClassName="relative z-[1] w-full max-w-[400px] rounded-2xl bg-white p-6 focus:outline-none lg:p-10"
     >
       <ModalBody>
         <ModalHeader
