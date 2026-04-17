@@ -340,26 +340,30 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
           </div>
         </div>
         <div className="flex flex-1 flex-col p-4 sm:p-6">
-          <p className="text-sm font-semibold text-[var(--color-primary)] uppercase sm:text-base">
+          {/* <p className="text-sm font-semibold text-[var(--color-primary)] uppercase sm:text-base">
             {displayCategory}
-          </p>
+          </p> */}
 
           <h3 className="mt-4 text-22 text-[26px] leading-tight font-semibold leading-[1.4] tracking-[-0.01em] sm:text-[26px] text-[var(--color-neutral-darkest)]">
             {title}
           </h3>
 
-          <p className="mt-2 line-clamp-3 text-[18px] text-[var(--color-neutral-darkest)]">
+          <p className="mt-2 min-h-[81px] line-clamp-3 text-[18px] text-[var(--color-neutral-darkest)]">
             {description}
           </p>
-          <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-4">
-            {tags?.slice(0, 5).map((tag) => (
-              <span
+          <div className="mt-4 min-h-[60px] items-start content-start flex flex-wrap gap-2 sm:mt-6 sm:gap-4">
+            {tags?.slice(0, 5).map((tag) => {
+              if (!tag) return null;
+              const displayTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+              return(
+               <span
                 key={tag}
                 className="rounded-full text-xs border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-2.5 py-1 font-semibold text-[var(--color-text-primary)] sm:text-base"
               >
-                {tag}
-              </span>
-            ))}
+                {displayTag}
+               </span>
+              )
+})}
 
             {tags && tags.length > 5 && (
               <span className="rounded-full text-xs border border-transparent bg-[var(--color-dawn-pink-light)] px-2.5 py-1 font-semibold text-[var(--color-text-secondary)] sm:text-base">
@@ -367,7 +371,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
               </span>
             )}
           </div>
-            <div className="mt-6 flex items-center gap-2 text-xs text-[var(--color-text-primary)]">
+            <div className="mt-auto pt-6 flex items-center gap-2 text-xs text-[var(--color-text-primary)]">
              <span className="flex items-center gap-1.5 sm:gap-2">
                <Icon name="icon-book" size={24} className="text-[var(--color-text-primary)]" />
                  {lessonsCount} lessons
