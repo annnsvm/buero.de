@@ -52,116 +52,74 @@ const CoursesCatalogPage: FC = () => {
     return [...baseFilterTabs];
   }, [role]);
 
+
   const activeFilterId = (() => {
     if (role === 'teacher') {
-      if (filters.publicationStatus === 'published') return 'published';
-      if (filters.publicationStatus === 'unpublished') return 'unpublished';
+      switch (filters.publicationStatus) {
+        case 'published':
+        case 'unpublished':
+          return filters.publicationStatus;
+      }
     }
-    if (filters.tags === 'language') return 'language';
-    if (filters.tags === 'integration') return 'integration';
-    if (filters.tags === 'sociocultural') return 'sociocultural';
-    if (filters.tags === 'beginner') return 'beginner';
-    if (filters.tags === 'middle') return 'middle';
-    if (filters.tags === 'advanced') return 'advanced';
-    return 'all';
+
+    switch (filters.tags) {
+      case 'language':
+      case 'integration':
+      case 'sociocultural':
+      case 'beginner':
+      case 'middle':
+      case 'advanced':
+        return filters.tags;
+      default:
+        return 'all';
+    }
   })();
 
   useEffect(() => {
     dispatch(fetchCoursesCatalogThunk());
   }, [dispatch, filters, role, isAuthenticated]);
 
-  const handleFilterChange = (id: string) => {
-    if (role === 'teacher') {
-      if (id === 'published') {
-        dispatch(
-          setFilters({
-            ...filters,
-            publicationStatus: 'published',
-            tags: undefined,
-          }),
-        );
-        return;
-      }
-      if (id === 'unpublished') {
-        dispatch(
-          setFilters({
-            ...filters,
-            publicationStatus: 'unpublished',
-            tags: undefined,
-          }),
-        );
-        return;
-      }
-    }
 
-    if (id === 'all') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: undefined,
-          publicationStatus: undefined,
-        }),
-      );
-      return;
-    }
-    if (id === 'language') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: 'language',
-          publicationStatus: undefined,
-        }),
-      );
-      return;
-    }
-    if (id === 'integration') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: 'integration',
-          publicationStatus: undefined,
-        }),
-      );
-      return;
-    }
-    if (id === 'sociocultural') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: 'sociocultural',
-          publicationStatus: undefined,
-        }),
-      );
-      return;
-    }
-    if (id === 'beginner') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: 'beginner',
-          publicationStatus: undefined,
-        }),
-      );
-      return;
-    }
-    if (id === 'middle') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: 'middle',
-          publicationStatus: undefined,
-        }),
-      );
-      return;
-    }
-    if (id === 'advanced') {
-      dispatch(
-        setFilters({
-          ...filters,
-          tags: 'advanced',
-          publicationStatus: undefined,
-        }),
-      );
+  const handleFilterChange = (id: string) => {
+    switch (id) {
+      case 'published':
+      case 'unpublished':
+        if (role === 'teacher') {
+          dispatch(
+            setFilters({
+              ...filters,
+              publicationStatus: id,
+              tags: undefined,
+            })
+          );
+        }
+        break;
+  
+      case 'all':
+        dispatch(
+          setFilters({
+            ...filters,
+            tags: undefined,
+            publicationStatus: undefined,
+          })
+        );
+        break;
+  
+      case 'language':
+      case 'integration':
+      case 'sociocultural':
+      case 'beginner':
+      case 'middle':
+      case 'advanced':
+
+        dispatch(
+          setFilters({
+            ...filters,
+            tags: id, 
+            publicationStatus: undefined,
+          })
+        );
+        break;
     }
   };
 
