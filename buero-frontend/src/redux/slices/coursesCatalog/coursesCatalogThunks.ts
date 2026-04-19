@@ -13,6 +13,29 @@ type FetchCoursesResponse = {
   activeTrialCourseId: string | null;
 };
 
+const catalogFilterTabToApiQuery = (
+  tabId: string,
+): { tags?: string; level?: string } => {
+  switch (tabId) {
+    case 'language':
+      return { tags: 'Language' };
+    case 'integration':
+      return { tags: 'Integration' };
+    case 'sociocultural':
+      return { tags: 'Culture & Life' };
+    case 'beginner':
+      return { tags: 'Beginner' };
+    case 'middle':
+    case "B1":
+      return { level: 'B1' };
+    case 'advanced':
+    case "B2":
+      return { level: 'B2' };
+    default:
+      return { tags: tabId };
+  }
+};
+
 const buildQueryString = (
   filters: CoursesCatalogFilters,
   isTeacherManage: boolean,
@@ -20,7 +43,12 @@ const buildQueryString = (
   const params = new URLSearchParams();
 
   if (filters.search?.trim()) params.set('search', filters.search.trim());
-  if (filters.tags?.trim()) params.set('tags', filters.tags.trim());
+  const tab = filters.tags?.trim();
+  if (tab) {
+    const { tags, level } = catalogFilterTabToApiQuery(tab);
+    if (tags) params.set('tags', tags);
+    if (level) params.set('level', level);
+  }
   if (
     isTeacherManage &&
     filters.publicationStatus &&
