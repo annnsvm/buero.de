@@ -54,7 +54,7 @@ const ContactSupportModal: React.FC<ContactSupportModalProps> = ({
   });
 
   const customDialogClass =
-    'relative z-[1] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 sm:pb-8 lg:pr-0 [&>button:hover]:text-[var(--color-primary)]';
+    'relative z-[1] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white px-6 pt-6 pb-6 focus:outline-none sm:px-8 sm:pb-8 [&>button:hover]:text-[var(--color-primary)]';
 
   return (
     <BaseDialog
