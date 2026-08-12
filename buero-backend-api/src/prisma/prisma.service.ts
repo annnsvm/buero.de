@@ -2,6 +2,18 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 
+function createPgAdapter(connectionString: string): PrismaPg {
+  // Render External Database URL requires SSL from outside Render's network.
+  const useSsl =
+    connectionString.includes('.render.com') ||
+    /sslmode=(require|verify-full|verify-ca)/i.test(connectionString);
+
+  return new PrismaPg({
+    connectionString,
+    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+  });
+}
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor() {
@@ -13,7 +25,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       );
     }
 
-    const adapter = new PrismaPg({ connectionString });
+    const adapter = createPgAdapter(connectionString);
     super({ adapter });
   }
 

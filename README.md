@@ -33,7 +33,7 @@
 
 | Розділ | Опис |
 |--------|------|
-| **Backend** | [Архітектура та БД](docs/architecture.md), [Вимоги](docs/requirements.md), [План API](docs/api-plan.md), [Модулі](docs/modules/), [Auth](docs/auth-spec.md), [Auth config](docs/auth-config.md), [Інструменти](docs/tools.md). |
+| **Backend** | [Архітектура та БД](docs/architecture.md), [Вимоги](docs/requirements.md), [План API](docs/api-plan.md), [Модулі](docs/modules/), [Auth](docs/auth-spec.md), [Auth config](docs/auth-config.md), [Інструменти](docs/tools.md), [Деплой Render](docs/deploy-render.md), [Локальна розробка](docs/local-development.md). |
 | **Frontend** | [Архітектура фронтенду](buero-frontend/docs/frontend-architecture.md), [Флоу](buero-frontend/docs/frontend-flows.md), [Фічі (UI)](buero-frontend/docs/frontend-features/). |
 
 ---
@@ -48,36 +48,44 @@
 
 ---
 
-## Як користуватися проєктом
+## Production (Render)
 
-### Стягнути репозиторій
+| Сервіс | URL |
+|--------|-----|
+| **Frontend** | https://www.buro-de.com |
+| **Backend API** | https://buro-de.onrender.com |
+| **Swagger** | https://buro-de.onrender.com/api-docs |
 
-```bash
-git clone https://github.com/annnsvm/buero.de.git
-cd buero.de
-```
-
-Або оновити вже склонований проєкт:
-
-```bash
-git pull origin main
-```
-
-### Передумови
-
-- **Node.js** 18+ (рекомендовано LTS)
-- **npm** (або yarn/pnpm за бажанням)
-- **PostgreSQL** (локально або зовнішній інстанс)
-- **Git**
+Деплой і env для Render: [docs/deploy-render.md](docs/deploy-render.md).
 
 ---
 
-## Локальне встановлення
+## Локальна розробка (швидкий старт)
 
-1. Клонуйте репозиторій (див. вище).
-2. Налаштуйте **backend** (див. секцію Backend).
-3. Налаштуйте **frontend** (див. секцію Frontend).
-4. Запустіть backend і frontend окремими командами в двох терміналах.
+Щоб додавати фічі локально без redeploy на Render:
+
+1. **Backend** `.env` — `DATABASE_URL` = **External Database URL** з Render PostgreSQL.
+2. **Frontend** `.env` — `VITE_API_URL=http://localhost:3000/api`
+3. Два термінали (або `npm run dev` з кореня):
+
+```bash
+# Термінал 1
+cd buero-backend-api && npm run start:dev
+
+# Термінал 2
+cd buero-frontend && npm run dev
+```
+
+→ http://localhost:5173 (UI) + http://localhost:3000/api (API)
+
+Повна інструкція, workflow і troubleshooting: **[docs/local-development.md](docs/local-development.md)**.
+
+### Передумови
+
+- **Node.js** 20+ (LTS)
+- **npm**
+- **Git**
+- Доступ до **Render PostgreSQL External URL** (локальний PostgreSQL не обов’язковий)
 
 ---
 
@@ -85,9 +93,7 @@ git pull origin main
 
 ### Розташування
 
-Код backend у папці **`buero-backend-api/`**. Документація по beckend у **`docs/`**.
-
-Тут потрібно додати інфо по налаштуванню беку
+Код backend у папці **`buero-backend-api/`**. Документація — **`docs/`**, покроковий запуск — [buero-backend-api/README.md](buero-backend-api/README.md).
 
 ### Як працювати з backend
 
@@ -108,9 +114,9 @@ git pull origin main
 | `JWT_REFRESH_EXPIRES_IN` | TTL refresh token | `7d` |
 | `STRIPE_SECRET_KEY` | Секретний ключ Stripe | `sk_test_...` |
 | `STRIPE_WEBHOOK_SECRET` | Секрет для верифікації webhook | `whsec_...` |
-| `CORS_ORIGIN` | Дозволений origin для фронту | `http://localhost:5173` |
+| `CORS_ORIGIN` | Дозволений origin для фронту | `http://localhost:5173` (local); `https://www.buro-de.com` (Render) |
 
-Файл **`.env`** не комітиться в репозиторій. Можна додати **`.env.example`** з переліком змінних без секретів.
+Шаблон: **`buero-backend-api/.env.example`**. Файл **`.env`** не комітиться.
 
 ---
 
@@ -152,9 +158,9 @@ npm run preview
 
 | Змінна | Опис | Приклад |
 |--------|------|---------|
-| `VITE_API_URL` | Base URL backend API | `http://localhost:3001` або `http://localhost:3000` |
+| `VITE_API_URL` | Base URL backend API **з `/api`** | `http://localhost:3000/api` (local); `https://buro-de.onrender.com/api` (Render build) |
 
-Після зміни `.env` перезапустіть `npm run dev`.
+Шаблон: **`buero-frontend/env.example`**. Після зміни `.env` перезапустіть `npm run dev`.
 
 ---
 

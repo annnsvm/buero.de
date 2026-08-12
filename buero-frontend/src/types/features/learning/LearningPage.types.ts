@@ -1,5 +1,6 @@
 export type LearningLesson = {
   materialId?: string;
+  materialType?: string;
   courseTitle: string;
   progressText: string;
   streak: string;

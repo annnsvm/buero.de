@@ -4,11 +4,17 @@ Backend API платформи buero.de на **NestJS**: авторизація,
 
 ---
 
+## Production
+
+- Frontend: https://www.buro-de.com
+- Backend: https://buro-de.onrender.com
+- Деплой: [docs/deploy-render.md](../docs/deploy-render.md)
+
 ## Що потрібно локально
 
 - **Node.js** (LTS, рекомендовано 20+)
 - **npm**
-- **PostgreSQL** (запущений локально або доступний за адресом з `DATABASE_URL`)
+- **PostgreSQL:** локально **або** Render **External Database URL** (рекомендовано — див. [docs/local-development.md](../docs/local-development.md))
 
 ---
 
@@ -28,13 +34,15 @@ npm install
   ```bash
   cp .env.example .env
   ```
-- Відкрий `.env` і вкажи реальні значення (мінімум — `DATABASE_URL` на твою PostgreSQL):
+- Відкрий `.env` і вкажи реальні значення. Для розробки з Render DB:
   ```env
-  DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/buero_platform_db?schema=public"
+  DATABASE_URL="postgresql://USER:PASSWORD@dpg-XXXX.oregon-postgres.render.com/buro_de?schema=public"
   NODE_ENV=development
   PORT=3000
+  CORS_ORIGIN=http://localhost:5173
+  COOKIE_SECURE=false
   ```
-  Решту змінних (JWT, CORS, Cookie) можна заповнити пізніше для модуля Auth.
+  **External URL** — з Render Dashboard → PostgreSQL → Info. JWT і Stripe — ті самі ключі, що на production Web Service.
 
 **Cloudinary (обкладинки курсів):** для `POST /api/courses/:id/cover` потрібен акаунт [Cloudinary](https://cloudinary.com). У [Dashboard](https://cloudinary.com/console) скопіюй **Cloud name**, **API Key**, **API Secret** і додай у `.env`:
 
