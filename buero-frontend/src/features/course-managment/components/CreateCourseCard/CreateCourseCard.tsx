@@ -8,8 +8,7 @@ const CreateCourseCard: React.FC = () => {
   return (
     <li
       key="create-new-course-card"
-      className="group flex min-h-[629px] w-full flex-col items-center justify-center gap-6 overflow-hidden rounded-2xl border border-gray-100 bg-[var(--color-burnt-siena-lighter)] p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
-      style={{ maxWidth: '405px' }}
+      className="w-[min(100%,405px)] shrink-0 group flex min-h-[629px] flex-col items-center justify-center gap-6 overflow-hidden rounded-2xl border border-gray-100 bg-[var(--color-burnt-siena-lighter)] p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
     >
       <AddNewCourse type="icon" />
       <div className="flex flex-col items-center gap-2">

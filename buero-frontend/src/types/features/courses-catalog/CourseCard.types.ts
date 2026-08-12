@@ -1,3 +1,5 @@
+import type { ButtonHTMLAttributes } from 'react';
+
 export type CourseCardProps = {
   variant?: string;
   id: string;
@@ -20,4 +22,8 @@ export type CourseCardProps = {
   modulesCount?: number;
   onCourseDeleted?: () => void;
   onPublicationChange?: () => void;
+  dragHandleProps?: ButtonHTMLAttributes<HTMLButtonElement> & {
+    ref?: (element: HTMLButtonElement | null) => void;
+  };
+  isDragging?: boolean;
 };

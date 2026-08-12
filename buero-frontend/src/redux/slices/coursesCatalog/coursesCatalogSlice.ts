@@ -56,6 +56,9 @@ const coursesCatalogSlice = createSlice({
       state.status = 'idle';
       state.error = null;
     },
+    setCatalogItemOrder: (state, action: PayloadAction<CourseCardProps[]>) => {
+      state.items = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -77,4 +80,5 @@ const coursesCatalogSlice = createSlice({
 });
 
 export const coursesCatalogReducer = coursesCatalogSlice.reducer;
-export const { setFilters, setPage, resetFilters, resetCoursesCatalog } = coursesCatalogSlice.actions;
+export const { setFilters, setPage, resetFilters, resetCoursesCatalog, setCatalogItemOrder } =
+  coursesCatalogSlice.actions;

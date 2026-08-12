@@ -19,6 +19,7 @@ export const API_ENDPOINTS = {
     delete: (id: string) => `/courses/${id}`,
     cover: (id: string) => `/courses/${id}/cover`,
     startTrial: (id: string) => `/courses/${id}/start-trial`,
+    reorder: '/courses/reorder',
   },
   courseMaterials: {
     list: (courseId: string, moduleId: string) => `/courses/${courseId}/modules/${moduleId}/materials`,

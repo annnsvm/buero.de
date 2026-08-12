@@ -160,6 +160,10 @@
     "createNewCourse": "Створити новий курс",
     "createNewCourseHint": "Натисніть, щоб почати новий навчальний шлях.",
     "createNewCourseButton": "Створити курс",
+    "dragToReorder": "Перетягніть курси за ручку, щоб змінити їх порядок у каталозі.",
+    "savingOrder": "Збереження порядку…",
+    "reorderHintFiltered": "Очистіть пошук і оберіть «Усі курси», щоб змінити порядок.",
+    "dragCourse": "Перетягнути курс {{title}}",
     "modal": {
       "loadingStructure": "Завантаження структури курсу…",
       "duration": "Тривалість",
