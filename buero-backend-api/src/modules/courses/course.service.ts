@@ -56,9 +56,11 @@ export class CourseService {
       const courseIds = active.map((a) => a.courseId);
       const videoByCourse =
         await this.countVideoMaterialsByCourseIds(courseIds);
+      const lessonsByCourse = await this.countMaterialsByCourseIds(courseIds);
       return active.map((a) => ({
         ...this.serializeCourse(a.course as Record<string, unknown>),
         videoLessonCount: videoByCourse.get(a.courseId) ?? 0,
+        lessonsCount: lessonsByCourse.get(a.courseId) ?? 0,
         my_access: {
           access_type: a.accessType,
           ...(a.accessType === "trial" &&
@@ -115,9 +117,13 @@ export class CourseService {
       const videoByCourse = await this.countVideoMaterialsByCourseIds(
         courses.map((c) => c.id)
       );
+      const lessonsByCourse = await this.countMaterialsByCourseIds(
+        courses.map((c) => c.id)
+      );
       return courses.map((c) => ({
         ...this.serializeCourse(c as Record<string, unknown>),
         videoLessonCount: videoByCourse.get(c.id) ?? 0,
+        lessonsCount: lessonsByCourse.get(c.id) ?? 0,
       }));
     } catch (error) {
       throw this.mapPrismaError(error);
@@ -404,6 +410,13 @@ export class CourseService {
         throw new BadRequestException("Курс не опублікований");
       }
 
+      const lessonsCount = await this.getCourseMaterialsCount(courseId);
+      if (lessonsCount < 1) {
+        throw new BadRequestException(
+          "Курс ще не містить уроків і недоступний для trial",
+        );
+      }
+
       const user = await this.userService.findUserById(userId);
       if (!user)
         throw new NotFoundException(`Користувач з id ${userId} не знайдено`);
@@ -453,6 +466,14 @@ export class CourseService {
   private async countVideoMaterialsByCourseIds(
     courseIds: string[]
   ): Promise<Map<string, number>> {
+    return this.countMaterialsByCourseIds(courseIds, CourseMaterialType.video);
+  }
+
+  /** Усі матеріали (або лише обраний type) по курсах — для lessonsCount та «coming soon». */
+  private async countMaterialsByCourseIds(
+    courseIds: string[],
+    type?: CourseMaterialType,
+  ): Promise<Map<string, number>> {
     const map = new Map<string, number>();
     if (courseIds.length === 0) return map;
     const modules = await this.prisma.courseModule.findMany({
@@ -467,8 +488,8 @@ export class CourseService {
     const grouped = await this.prisma.courseMaterial.groupBy({
       by: ["moduleId"],
       where: {
-        type: CourseMaterialType.video,
         moduleId: { in: moduleIds },
+        ...(type ? { type } : {}),
       },
       _count: { _all: true },
     });
@@ -478,6 +499,12 @@ export class CourseService {
       map.set(courseId, (map.get(courseId) ?? 0) + row._count._all);
     }
     return map;
+  }
+
+  private async getCourseMaterialsCount(courseId: string): Promise<number> {
+    return this.prisma.courseMaterial.count({
+      where: { module: { courseId } },
+    });
   }
 
   /** Перетворює Decimal price на number для JSON-відповіді */

@@ -147,6 +147,7 @@
     "trial": "Trial",
     "startTrialAria": "Start trial for {{title}}",
     "buyCourse": "Buy Course",
+    "comingSoon": "Coming soon",
     "loadingCourseDetails": "Loading course details…",
     "deleteCourseTitle": "Delete course?",
     "deleteCourseDescription_one": "This course contains {{count}} module.\nDeleting the course will permanently remove all modules, lessons, and quizzes. This action cannot be undone.",

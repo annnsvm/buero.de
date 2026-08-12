@@ -13,6 +13,7 @@ import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import ConfirmDeleteEntityModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmDeleteEntityModal';
 import { deleteCourseCopy } from '@/features/course-managment/domain/deleteCourseCopy';
 import { translateCourseTag } from '@/features/courses-catalog/translateCourseTag';
+import { isCourseComingSoon } from '@/features/courses-catalog/isCourseComingSoon';
 import { requestCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
 import { useAppDispatch } from '@/redux/hooks';
 import { selectIsAuthenticated } from '@/redux/slices/auth';
@@ -122,6 +123,48 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     await requestCourseTrial(id, isAuthenticated, dispatch, navigate);
   };
 
+  const comingSoon = isCourseComingSoon({ isPublished, lessonsCount });
+
+  const comingSoonLabel = (
+    <span className="inline-flex items-center justify-center rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-light)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] sm:px-5 sm:py-2 sm:text-lg">
+      {t('courses.comingSoon')}
+    </span>
+  );
+
+  const purchaseActions = comingSoon ? (
+    <>
+      <span className="text-xl font-semibold text-[var(--color-neutral-darkest)] sm:text-2xl">
+        {displayPrice}
+      </span>
+      {comingSoonLabel}
+    </>
+  ) : (
+    <>
+      <span className="text-xl font-semibold text-[var(--color-neutral-darkest)] sm:text-2xl">
+        {displayPrice}
+      </span>
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+        {canShowTrialButton ? (
+          <button
+            type="button"
+            onClick={handleTrialClick}
+            className={trialButtonClassName}
+            aria-label={t('courses.startTrialAria', { title })}
+          >
+            {t('courses.trial')}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={handleBuyClick}
+          className="flex max-w-[140px] items-center justify-center rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-on-accent)] shadow-md transition-all hover:bg-[var(--color-primary-hover)] active:scale-95 sm:px-5 sm:py-2 sm:text-lg"
+        >
+          Buy Course
+        </button>
+      </div>
+    </>
+  );
+
   const showPublicationBadge =
     variant === 'teacher-catalog' && typeof isPublished === 'boolean';
 
@@ -219,63 +262,13 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
           </LinkBtn>
         );
       } else {
-        buttonsComponent = (
-          <>
-            <span className="text-xl font-semibold text-[var(--color-neutral-darkest)] sm:text-2xl">
-              {displayPrice}
-            </span>
-            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-              {canShowTrialButton ? (
-                <button
-                  type="button"
-                  onClick={handleTrialClick}
-                  className={trialButtonClassName}
-                  aria-label={t('courses.startTrialAria', { title })}
-                >
-                  {t('courses.trial')}
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={handleBuyClick}
-                className="flex max-w-[140px] items-center justify-center rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-on-accent)] shadow-md transition-all hover:bg-[var(--color-primary-hover)] active:scale-95 sm:px-5 sm:py-2 sm:text-lg"
-              >
-                Buy Course
-              </button>
-            </div>
-          </>
-        );
+        buttonsComponent = purchaseActions;
       }
       break;
     }
 
     default:
-      buttonsComponent = (
-        <>
-          <span className="text-xl font-semibold text-[var(--color-neutral-darkest)] sm:text-2xl">
-            {displayPrice}
-          </span>
-          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-            {canShowTrialButton ? (
-              <button
-                type="button"
-                onClick={handleTrialClick}
-                className={trialButtonClassName}
-                aria-label={t('courses.startTrialAria', { title })}
-              >
-                {t('courses.trial')}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleBuyClick}
-              className="flex max-w-[140px] items-center justify-center rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-on-accent)] shadow-md transition-all hover:bg-[var(--color-primary-hover)] active:scale-95 sm:px-5 sm:py-2 sm:text-lg"
-            >
-              Buy Course
-            </button>
-          </div>
-        </>
-      );
+      buttonsComponent = purchaseActions;
   }
 
   const moduleCountForModal =
