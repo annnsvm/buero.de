@@ -27,6 +27,9 @@ const CourseManagmentPage = lazy(() => import('../pages/CourseManagmentPage/Cour
 const UserProfilePage = lazy(() => import('../pages/UserProfilePage/UserProfilePage'));
 const VocabularyPage = lazy(() => import('../pages/VocabularyPage/VocabularyPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'));
+const PrivacyPolicyPage = lazy(() => import('../pages/PrivacyPolicyPage/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('../pages/TermsOfServicePage/TermsOfServicePage'));
+const CookiesPolicyPage = lazy(() => import('../pages/CookiesPolicyPage/CookiesPolicyPage'));
 
 export const router = createBrowserRouter([
   {
@@ -126,6 +129,18 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.COURSES,
             element: <CoursesCatalogPage />,
+          },
+          {
+            path: ROUTES.PRIVACY,
+            element: <PrivacyPolicyPage />,
+          },
+          {
+            path: ROUTES.TERMS,
+            element: <TermsOfServicePage />,
+          },
+          {
+            path: ROUTES.COOKIES,
+            element: <CookiesPolicyPage />,
           },
           {
             path: ROUTES.MY_LEARNING,
