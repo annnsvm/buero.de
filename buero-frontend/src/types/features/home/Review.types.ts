@@ -1,6 +1,6 @@
 export type Review = {
-  quote: string;
+  quoteKey: string;
+  metaKey: string;
   name: string;
-  meta: string;
   avatar: string;
 };

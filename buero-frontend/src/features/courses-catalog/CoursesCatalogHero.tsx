@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Container, Section } from '@/components/layout';
 import CatalogBackground from './CatalogBackground';
 import CourseSearch from './CourseSearch';
@@ -12,6 +13,8 @@ const CoursesCatalogHero: FC<CoursesCatalogHeroProps> = ({
   onSearchChange,
   initialSearch = '',
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Section className="pb-20 sm:pb-28">
       <div className="relative w-full h-[634px] overflow-hidden">
@@ -21,14 +24,13 @@ const CoursesCatalogHero: FC<CoursesCatalogHeroProps> = ({
         >
           <div className="w-full max-w-[617px]  items-center">
             <p className="mb-4 font-semibold uppercase  text-[var(--color-accent-primary)]">
-              Course catalog
+              {t('courses.catalogEyebrow')}
             </p>
             <h1 className="mb-6 text-4xl sm:text-5xl md:text-6xl font-[family-name:var(--font-heading)] leading-[1.2] tracking-[-0.01em] text-[var(--color-white)]">
-              Choose your path
+              {t('courses.catalogTitle')}
             </h1>
             <p className="mb-8 text-lg md:text-xl leading-[1.5] text-[var(--color-white)]">
-              Language courses, integration guides, and cultural deep-dives. Start with a free trial or
-              dive right in.
+              {t('courses.catalogDescription')}
             </p>
             <CourseSearch
               onSearch={onSearchChange ?? (() => {})}

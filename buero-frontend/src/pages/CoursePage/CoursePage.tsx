@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type SimpleBarCore from 'simplebar-core';
 import { useSelector } from 'react-redux';
 import { NavLink, useParams } from 'react-router-dom';
@@ -35,6 +36,7 @@ import {
 } from './coursePageMappers';
 
 const CoursePage: React.FC = () => {
+  const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const { pushUiModal } = useModal();
 
@@ -57,10 +59,10 @@ const CoursePage: React.FC = () => {
   const userRole = useSelector(selectUserRole);
 
   const greetingName = useMemo(() => {
-    if (!currentUser?.email) return 'Student';
+    if (!currentUser?.email) return t('coursePage.student');
     const local = currentUser.email.split('@')[0];
     return local.charAt(0).toUpperCase() + local.slice(1);
-  }, [currentUser]);
+  }, [currentUser, t]);
 
   useEffect(() => {
     if (!courseId) return;
@@ -107,9 +109,7 @@ const CoursePage: React.FC = () => {
             ? (err as { response?: { status?: number } }).response?.status
             : undefined;
         if (status === 403) {
-          setLoadError(
-            'You do not have access to this course. Purchase the course or start a trial from the catalog, then open it from My learning.',
-          );
+          setLoadError(t('coursePage.noAccess'));
           setLoadStatus('error');
           setCourse(null);
           return;
@@ -122,8 +122,8 @@ const CoursePage: React.FC = () => {
               )
             : err instanceof Error
               ? err.message
-              : 'Failed to load course';
-        setLoadError(message || 'Failed to load course');
+              : t('coursePage.loadFailed');
+        setLoadError(message || t('coursePage.loadFailed'));
         setLoadStatus('error');
         setCourse(null);
       }
@@ -133,7 +133,7 @@ const CoursePage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [courseId]);
+  }, [courseId, t]);
 
   useEffect(() => {
     if (!courseId || !course || currentUser?.role !== 'student') {
@@ -206,9 +206,11 @@ const CoursePage: React.FC = () => {
       ...base,
       progress: total > 0 ? Math.round((completedCount / total) * 100) : 0,
       progressText:
-        total > 0 ? `${completedCount} of ${total} lessons completed` : '0 of 0 lessons completed',
+        total > 0
+          ? t('coursePage.progressCompletedText', { current: completedCount, total })
+          : t('coursePage.progressCompletedText', { current: 0, total: 0 }),
     };
-  }, [course, flatMaterials, selectedMaterialId, completedMaterialIds]);
+  }, [course, flatMaterials, selectedMaterialId, completedMaterialIds, t]);
 
   const isStudentVideoProgress =
     currentUser?.role === 'student' &&
@@ -233,11 +235,11 @@ const CoursePage: React.FC = () => {
       await completeCourseMaterial(courseId, selectedModuleId, selectedMaterialId);
       setCompletedMaterialIds((prev) => new Set(prev).add(selectedMaterialId));
     } catch (err: unknown) {
-      setVideoCompletionError(getErrorMessage(err, 'Could not update lesson progress.'));
+      setVideoCompletionError(getErrorMessage(err, t('coursePage.progressUpdateFailed')));
     } finally {
       setVideoCompletionSaving(false);
     }
-  }, [courseId, selectedMaterialId, selectedModuleId, currentUser?.role]);
+  }, [courseId, selectedMaterialId, selectedModuleId, currentUser?.role, t]);
 
   const handleSelectLesson = useCallback(
     (payload: { moduleId: string; materialId: string }) => {
@@ -283,7 +285,7 @@ const CoursePage: React.FC = () => {
   if (!courseId) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--color-neutral-white)]">
-        <p className="text-[var(--color-text-secondary)]">Course id is missing.</p>
+        <p className="text-[var(--color-text-secondary)]">{t('coursePage.missingId')}</p>
       </div>
     );
   }
@@ -295,19 +297,19 @@ const CoursePage: React.FC = () => {
   if (loadStatus === 'error' || !course) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--color-neutral-white)] px-4">
-        <p className="max-w-md text-center text-[var(--color-error)]">{loadError ?? 'Course not found.'}</p>
+        <p className="max-w-md text-center text-[var(--color-error)]">{loadError ?? t('coursePage.notFound')}</p>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <NavLink
             to={ROUTES.COURSES}
             className="rounded-full border border-[var(--opacity-neutral-darkest-15)] px-4 py-2 text-[1.125rem] text-[var(--color-text-primary)] hover:border-[var(--color-primary)]"
           >
-            All courses
+            {t('coursePage.allCourses')}
           </NavLink>
           <NavLink
             to={ROUTES.MY_LEARNING}
             className="rounded-full bg-[var(--color-primary)] px-4 py-2 text-[1.125rem] text-[var(--color-text-on-accent)] hover:bg-[var(--color-primary-hover)]"
           >
-            My learning
+            {t('header.myLearning')}
           </NavLink>
         </div>
       </div>
@@ -341,19 +343,19 @@ const CoursePage: React.FC = () => {
                   to={ROUTES.VOCABULARY.replace(':courseId', courseId)}
                   className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
                 >
-                  Vocabulary
+                  {t('coursePage.vocabulary')}
                 </NavLink>
               ) : null}
               <NavLink
                 to={ROUTES.COURSES}
                 className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
               >
-                All courses
+                {t('coursePage.allCourses')}
               </NavLink>
             </>
           }
           renderMobileNav={({ className: navClass }) => (
-            <nav className={navClass} aria-label="Course quick links">
+            <nav className={navClass} aria-label={t('coursePage.quickLinks')}>
               {userRole === 'student' ? (
                 <NavLink
                   to={ROUTES.VOCABULARY.replace(':courseId', courseId)}
@@ -366,7 +368,7 @@ const CoursePage: React.FC = () => {
                     ].join(' ')
                   }
                 >
-                  Vocabulary
+                  {t('coursePage.vocabulary')}
                 </NavLink>
               ) : null}
               <NavLink
@@ -380,7 +382,7 @@ const CoursePage: React.FC = () => {
                   ].join(' ')
                 }
               >
-                All courses
+                {t('coursePage.allCourses')}
               </NavLink>
             </nav>
           )}
@@ -389,11 +391,11 @@ const CoursePage: React.FC = () => {
 
         <section
           className="flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--color-soapstone-base)]"
-          aria-label="Lesson content"
+          aria-label={t('coursePage.lessonContent')}
         >
           {flatMaterials.length === 0 ? (
             <div className="flex flex-1 items-center justify-center p-8 text-[var(--color-text-secondary)]">
-              No lessons in this course yet.
+              {t('coursePage.noLessons')}
             </div>
           ) : null}
           {flatMaterials.length > 0 && currentLesson && !isQuizSelected ? (
@@ -419,7 +421,7 @@ const CoursePage: React.FC = () => {
           {flatMaterials.length > 0 && isQuizSelected ? (
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 py-12 text-center">
               <p className="max-w-md text-lg font-medium text-[var(--color-text-primary)]">
-                {selectedMaterial?.title ?? 'Quiz'}
+                {selectedMaterial?.title ?? t('coursePage.quiz')}
               </p>
               {quizPlaceholderResult ? (
                 <div
@@ -428,19 +430,21 @@ const CoursePage: React.FC = () => {
                   aria-live="polite"
                 >
                   <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    Your last result
+                    {t('coursePage.quizLastResult')}
                   </p>
                   <p className="mt-2 text-2xl font-bold text-[var(--color-primary)] tabular-nums">
                     {quizPlaceholderResult.percent}%
                   </p>
                   <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                    {quizPlaceholderResult.correct} of {quizPlaceholderResult.total} questions
-                    correct
+                    {t('coursePage.quizScoreSummary', {
+                      correct: quizPlaceholderResult.correct,
+                      total: quizPlaceholderResult.total,
+                    })}
                   </p>
                 </div>
               ) : (
                 <p className="max-w-md text-sm text-[var(--color-text-secondary)]">
-                  Open the quiz to answer the questions for this lesson.
+                  {t('coursePage.openQuizHint')}
                 </p>
               )}
               <button
@@ -448,7 +452,7 @@ const CoursePage: React.FC = () => {
                 onClick={() => setQuizModalOpen(true)}
                 className="rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-medium text-white transition hover:opacity-90"
               >
-                Open quiz
+                {t('coursePage.openQuiz')}
               </button>
             </div>
           ) : null}
@@ -462,7 +466,7 @@ const CoursePage: React.FC = () => {
           onOpenChange={setQuizModalOpen}
           courseMaterialId={selectedMaterial.id}
           greetingName={greetingName}
-          quizMaterialTitle={selectedMaterial.title || 'Quiz'}
+          quizMaterialTitle={selectedMaterial.title || t('coursePage.quiz')}
           questions={parsedQuizQuestions}
           onQuizResult={setQuizPlaceholderResult}
         />

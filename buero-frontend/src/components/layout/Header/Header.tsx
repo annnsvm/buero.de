@@ -1,13 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ROUTES, isHeaderLightByPath } from '../../../helpers/routes';
 import { Logo } from '@/components/ui';
 import Container from '../Container/Container';
 import HeaderNavBar from '@/components/layout/Header/HeaderNavBar';
 import HeaderAuthBar from './HeaderAuthBar';
 import HeaderMobileMenu from './HeaderMobileMenu';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = () => {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const isLight = isHeaderLightByPath(pathname);
@@ -21,7 +24,7 @@ const Header = () => {
           <Link
             to={ROUTES.HOME}
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
-            aria-label="buero.de go to home"
+            aria-label={t('header.goHome')}
           >
             <Logo width={70} height={28} isLight = {isLight}/>
           </Link>
@@ -30,7 +33,10 @@ const Header = () => {
             isLight={isLight}
             className="hidden lg:flex"
           />
-          <HeaderAuthBar isLight={isLight} className="hidden lg:flex" />
+          <div className="hidden items-center gap-2 lg:flex">
+            <LanguageSwitcher isLight={isLight} />
+            <HeaderAuthBar isLight={isLight} />
+          </div>
           <HeaderMobileMenu
             isOpen={isOpen}
             setIsOpen={setIsOpen}

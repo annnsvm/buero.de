@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import loginSchema from '../validation/loginSchema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,6 +31,7 @@ export type LoginModalPanelProps = {
 };
 
 const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss }) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const loadingStatus = useSelector(selectAuthStatus);
@@ -115,7 +117,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
           ? error
           : error instanceof Error
             ? error.message
-            : 'Login failed';
+            : t('auth.loginFailed');
 
       setError('root', { type: 'server', message });
     }
@@ -124,8 +126,8 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
   return (
     <ModalBody>
       <ModalHeader
-        title="Log In"
-        description="Sign in to continue your German learning journey."
+        title={t('auth.loginTitle')}
+        description={t('auth.loginDescription')}
         className="mb-8"
       />
 
@@ -134,7 +136,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
           <Input
             id="login-email"
             type="email"
-            placeholder="Email"
+            placeholder={t('auth.email')}
             autoComplete="email"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
             {...register('email')}
@@ -145,7 +147,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
           <Input
             id="login-password"
             type="password"
-            placeholder="Password"
+            placeholder={t('auth.password')}
             autoComplete="current-password"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
             {...register('password')}
@@ -155,7 +157,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
         {errors.root && <p className="text-[var(--color-error)]">{errors.root.message}</p>}
 
         <Button type="submit" disabled={isSubmitting} className="mt-2 w-full" variant="solid">
-          {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : 'Log In'}
+          {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : t('auth.loginButton')}
         </Button>
       </form>
 
@@ -173,7 +175,7 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
           }}
         >
           <Text label={'Switch to Sign Up'} className="text-[1.125rem]">
-            Don&apos;t have an account? Sign Up
+            {t('auth.switchToSignUp')}
           </Text>
         </button>
       </ModalFooter>

@@ -1,2 +1,4 @@
+import i18n from '@/i18n';
+
 export const deleteCourseCopy = (moduleCount: number): string =>
-  `This course contains ${moduleCount} module${moduleCount === 1 ? '' : 's'}.\nDeleting the course will permanently remove all modules, lessons, and quizzes. This action cannot be undone.`;
+  i18n.t('courses.deleteCourseDescription', { count: moduleCount });

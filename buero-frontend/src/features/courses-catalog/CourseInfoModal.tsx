@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type SimpleBarCore from 'simplebar-core';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -32,6 +33,7 @@ import {
   applyTrialModuleScope,
   type ApiCourseWithTree,
 } from '@/pages/CoursePage/coursePageMappers';
+import { translateCourseTag } from './translateCourseTag';
 
 type CourseInfoModalProps = {
   isOpen: boolean;
@@ -50,6 +52,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
 }) => {
   const { pushUiModal } = useModal();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const dispatch = useAppDispatch();
 
@@ -158,7 +161,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     pushUiModal({
       type: 'contactSupport',
       courseId,
-      subject: 'Question about course',
+      subject: t('courses.modal.supportSubject'),
     });
   };
 
@@ -236,7 +239,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                 {(course.tags ?? []).map((tag: string) => {
                   if (!tag) return null;
 
-                  const displayTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+                  const displayTag = translateCourseTag(t, tag);
 
                   return (
                     <span
@@ -263,7 +266,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
               <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:gap-4">
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-2 px-4 py-4 sm:gap-2.5 sm:px-5 sm:py-5">
                   <p className="text-xs font-semibold tracking-wide text-[var(--color-text-secondary)] uppercase sm:text-sm">
-                    Duration
+                    {t('courses.modal.duration')}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <Icon
@@ -277,7 +280,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-2 px-4 py-4 sm:gap-2.5 sm:px-5 sm:py-5">
                   <p className="text-xs font-semibold tracking-wide text-[var(--color-text-secondary)] uppercase sm:text-sm">
-                    Lessons
+                    {t('courses.modal.lessons')}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <Icon
@@ -294,7 +297,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
               {isLoading && rawModules.length === 0 ? (
                 <div className="mt-6 flex items-center justify-center p-4">
                   <p className="text-lg text-[var(--color-text-secondary)]">
-                    Завантаження структури курсу...
+                    {t('courses.modal.loadingStructure')}
                   </p>
                 </div>
               ) : (
@@ -306,7 +309,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
 
               <div className="mt-5 rounded-lg border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-base)] px-4 py-6 sm:mt-6 sm:px-6 sm:py-8 md:px-8 md:py-10 lg:py-12">
                 <p className="text-lg leading-[1.3] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)] sm:text-xl md:text-2xl lg:text-[28px]">
-                  Have questions about this course?
+                  {t('courses.modal.questionsTitle')}
                 </p>
                 <button
                   type="button"
@@ -314,7 +317,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                   className="mt-5 flex items-center gap-2 rounded-full bg-[var(--color-black)] px-4 py-2 text-xs font-medium text-[var(--color-neutral-white)] hover:opacity-90 sm:mt-6 sm:gap-3 sm:px-6 sm:py-2.5 sm:text-sm md:text-base lg:text-lg"
                 >
                   <Icon name="icon-mail" size={24} className="text-[var(--color-neutral-white)]" />
-                  Contact Support
+                  {t('courses.modal.contactSupport')}
                 </button>
               </div>
             </div>
@@ -324,7 +327,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         <div
           className="pointer-events-auto relative z-30 shrink-0 border-t border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-surface-overlay)] px-5 py-4 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] sm:px-7 sm:py-5 md:px-10 lg:px-12 xl:px-14"
           role="region"
-          aria-label="Course price and actions"
+          aria-label={t('courses.modal.priceActions')}
         >
           <div className="flex flex-row flex-wrap items-center justify-between gap-3">
             <span className="mr-1 text-2xl leading-[1.3] font-semibold tracking-[-0.01em] text-[var(--color-primary)] sm:mr-0 sm:text-3xl md:text-[32px] lg:text-[34px]">
@@ -338,14 +341,22 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                   className="rounded-full px-3 py-1 text-xs font-medium sm:px-6 sm:py-2.5 sm:text-lg"
                   disabled={isPublishing}
                   onClick={handleTogglePublication}
-                  aria-label={publishedEffective ? 'Unpublish course' : 'Publish course'}
+                  aria-label={
+                    publishedEffective
+                      ? t('courses.modal.unpublishCourse')
+                      : t('courses.modal.publishCourse')
+                  }
                 >
-                  {isPublishing ? 'Saving…' : publishedEffective ? 'Unpublish' : 'Publish'}
+                  {isPublishing
+                    ? t('courses.modal.saving')
+                    : publishedEffective
+                      ? t('courses.modal.unpublish')
+                      : t('courses.modal.publish')}
                 </Button>
               </div>
             ) : isStudent && isAuthenticated && !accessResolved ? (
               <p className="text-sm text-[var(--color-text-secondary)]" aria-live="polite">
-                Checking access…
+                {t('courses.modal.checkingAccess')}
               </p>
             ) : isStudent && isAuthenticated && hasCourseAccess ? (
               <Button
@@ -354,7 +365,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                 className="rounded-full border-0 px-3 py-1 text-xs font-medium text-[var(--color-text-on-accent)] sm:px-6 sm:py-2.5 sm:text-lg"
                 onClick={handleContinueLearning}
               >
-                Continue Learning
+                {t('courses.continueLearning')}
               </Button>
             ) : (
               <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
@@ -363,9 +374,9 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                     type="button"
                     onClick={handleTryForFree}
                     className="rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-3 py-1 text-xs font-medium text-[var(--color-text-primary)] shadow-sm hover:border-[var(--color-border-strong)] hover:bg-[var(--opacity-neutral-darkest-5)] sm:px-6 sm:py-2.5 sm:text-lg"
-                    aria-label="Try this course for free"
+                    aria-label={t('courses.modal.tryForFreeAria')}
                   >
-                    Try for free
+                    {t('courses.modal.tryForFree')}
                   </button>
                 ) : null}
                 <CheckoutButton

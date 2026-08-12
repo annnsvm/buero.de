@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HeaderMobileMenuProps } from '@/types/components/layout/Header.types';
 import { Button } from '@/components/ui';
 import HeaderNavBar from './HeaderNavBar';
 import HeaderAuthBar from './HeaderAuthBar';
+import LanguageSwitcher from './LanguageSwitcher';
 import { useAppSelector } from '@/redux/hooks';
 import { selectCurrentUser } from '@/redux/slices/user/userSelectors';
 
@@ -15,6 +17,7 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
   renderNav,
   courseWorkspaceOverlay = false,
 }) => {
+  const { t } = useTranslation();
   const [isAnimated, setIsAnimated] = useState(false);
   const hambuergerLine = `w-full h-0.5 transition-all duration-300 ease-in-out ${isLight ? 'bg-[var(--color-surface-card)]' : 'bg-[var(--color-text-primary)]'}`;
   const user = useAppSelector(selectCurrentUser);
@@ -118,7 +121,7 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
     <>
       <div className={`${className}`}>
         <Button
-          aria-label="Toggle menu"
+          aria-label={t('header.toggleMenu')}
           aria-expanded={isOpen}
           onClick={toggleMenu}
           styleType="mobile"
@@ -140,7 +143,8 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
       <div className={overlayClasses} onClick={closeMenu}>
         <div className={panelClasses} onClick={(event) => event.stopPropagation()}>
           {user && (
-            <div className="mt-4 flex w-full justify-start lg:hidden">
+            <div className="mt-4 flex w-full flex-col items-start gap-4 lg:hidden">
+              <LanguageSwitcher isLight className="ml-1" />
               <HeaderAuthBar isLight={true} from="mobile" className="mr-auto" />
             </div>
           )}
@@ -158,6 +162,7 @@ const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
 
           {!user && (
             <div className="mt-6 flex flex-col gap-4 lg:hidden">
+              <LanguageSwitcher isLight={authBarLight} className="mx-auto" />
               <HeaderAuthBar
                 isLight={authBarLight}
                 className="mx-auto flex w-full max-w-[280px] flex-col gap-4"

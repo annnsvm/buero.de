@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Icon from '@/components/ui/Icon';
 import { ICON_NAMES } from '@/helpers/iconNames';
 
@@ -31,6 +32,7 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
   selectedMaterialId,
   completedMaterialIds,
 }) => {
+  const { t } = useTranslation();
   const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
     const sorted = [...modules].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
     const first = sorted[0]?.id;
@@ -80,13 +82,16 @@ const CourseStructure: React.FC<CourseStructureProps> = ({
             >
               <div className="flex flex-col">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-neutral-dark)]">
-                  MODULE&nbsp;&nbsp;{modIdx + 1}
+                  {t('courses.structure.module')}&nbsp;&nbsp;{modIdx + 1}
                 </span>
                 <span className="mt-0.5 text-base font-semibold leading-tight text-[var(--color-neutral-darkest)]">
                   {mod.title}
                 </span>
                 <span className="mt-0.5 text-sm text-[var(--color-neutral-dark)]">
-                  {completedCount}/{totalCount} completed
+                  {t('courses.structure.completed', {
+                    completed: completedCount,
+                    total: totalCount,
+                  })}
                 </span>
               </div>
               <Icon

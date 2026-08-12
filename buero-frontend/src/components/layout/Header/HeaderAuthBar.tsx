@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Button from '../../ui/Button';
 import { HeaderNavAuthTrialProps } from '@/types/components/layout/Header.types';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -11,6 +12,7 @@ const HeaderAuthBar: React.FC<HeaderNavAuthTrialProps> = ({
   from = '',
   className = '',
 }) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const isAuthenticate = useAppSelector(selectIsAuthenticated);
 
@@ -41,19 +43,19 @@ const HeaderAuthBar: React.FC<HeaderNavAuthTrialProps> = ({
         <>
           <Button
             variant={isLight ? 'primary' : 'outlineDark'}
-            aria-label="Sign in"
+            aria-label={t('header.signIn')}
             className={isMobileContext ? 'w-full' : ''}
             onClick={handleOpenLogin}
           >
-            Sign in
+            {t('header.signIn')}
           </Button>
           <Button
             variant="solid"
-            aria-label="Sign up"
+            aria-label={t('header.signUp')}
             className={isMobileContext ? 'w-full' : ''}
             onClick={handleOpenSignUp}
           >
-            Sign up
+            {t('header.signUp')}
           </Button>
         </>
       )}

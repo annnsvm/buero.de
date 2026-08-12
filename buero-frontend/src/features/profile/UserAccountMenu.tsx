@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useModal } from '@/components/modal';
 import { selectCurrentUser } from '@/redux/slices/user/userSelectors';
@@ -28,6 +29,7 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
   from = '',
   className = ''
 }) => {
+  const { t } = useTranslation();
   const isMobileContext = from === 'mobile';
   const { pushUiModal } = useModal();
 
@@ -43,7 +45,7 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const label = user ? displayLabelFromUser(user.email, user.displayName ?? user.name) : 'Account';
+  const label = user ? displayLabelFromUser(user.email, user.displayName ?? user.name) : t('account.account');
   const avatarLetter = firstLetterFromLabel(label);
 
   const closeMenu = useCallback(() => setOpen(false), []);
@@ -153,7 +155,7 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
             <button
               type="button"
               onClick={closeMenu}
-              aria-label="Close menu"
+              aria-label={t('account.closeMenu')}
               className={
                 accentPanelChrome
                   ? 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-md ring-1 ring-black/10 transition hover:bg-[var(--color-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]'
@@ -192,7 +194,7 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
             onClick={() => { closeMenu(); dispatch(openGlobalModal({ type: 'profile' })); }}
           >
             <Icon name={ICON_NAMES.COG} size={22} className="text-[var(--color-neutral-darkest)]" />
-            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">Profile</span>
+            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">{t('account.profile')}</span>
           </button>
           <button
             type="button"
@@ -200,16 +202,16 @@ const UserAccountMenu: React.FC<UserAccountMenuProps> = ({
             onClick={handleContactSupport}
           >
             <Icon name={ICON_NAMES.HELP} size={22} className="text-[var(--color-neutral-darkest)]" />
-            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">Support</span>
+            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">{t('account.support')}</span>
           </button>
           <button
             type="button"
             className={itemClasses}
             onClick={() => { closeMenu(); dispatch(openGlobalModal({ type: 'logoutConfirm' })); }}
-            aria-label="Logout"
+            aria-label={t('account.logout')}
           >
             <Icon name={ICON_NAMES.ARROW_RIGHT} size={22} className="text-[var(--color-neutral-darkest)]" />
-            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">Logout</span>
+            <span className="text-[0.95rem] font-normal text-[var(--color-neutral-darkest)]">{t('account.logout')}</span>
           </button>
         </div>
         </>

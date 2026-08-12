@@ -1,18 +1,21 @@
 import type { FC } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Section,Container ,Title, Text, SectionTitle} from "@/components/layout";
 
 import { reviews } from './reviews';
 
 const Review: FC = () => {
+  const { t } = useTranslation();
+
   return (
     <Section className="bg-[var(--color-soapstone-base)] px-4 py-14 sm:px-6 sm:py-16 md:px-8 md:py-20 lg:px-12 xl:px-16 2xl:px-20">
       <Container className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-4xl text-center">
-          <SectionTitle label="What learners say" className="mb-4 ">
-            WHAT LEARNERS SAY
+          <SectionTitle label={t('landing.reviewsSection')} className="mb-4 ">
+            {t('landing.reviewsSection')}
           </SectionTitle>
           <Title className="mb-6 sm:max-w-[700px] lg:max-w-[869px]">
-            Real stories from real expats
+            {t('landing.reviewsTitle')}
           </Title>
         </div>
 
@@ -24,7 +27,7 @@ const Review: FC = () => {
             >
               <Text label="Review text" className="mb-10">
                 <span aria-hidden="true">&quot;</span>
-                {review.quote}
+                {t(review.quoteKey)}
                 <span aria-hidden="true">&quot;</span>
               </Text>
 
@@ -38,8 +41,8 @@ const Review: FC = () => {
                   <p className="truncate text-base font-semibold leading-tight text-black sm:text-[18px]">
                     {review.name}
                   </p>
-                  <p className="mt-1 text-sm leading-snug text-[color:var(--color-border-strong] sm:mt-2 sm:text-[18px] sm:leading-tight">
-                    {review.meta}
+                  <p className="truncate text-sm text-[var(--color-text-secondary)] sm:text-[15px]">
+                    {t(review.metaKey)}
                   </p>
                 </div>
               </div>
