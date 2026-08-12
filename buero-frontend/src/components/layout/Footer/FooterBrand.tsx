@@ -53,7 +53,7 @@ const FooterBrand: React.FC = () => {
         </div>
         <p className="text-[0.75rem] leading-[1.4] text-[var(--color-neutral-base)]">
           {t('footer.privacyConsent')}{' '}
-          <Link to="/privacy" className="underline hover:text-[var(--color-neutral-light)]">
+          <Link to={ROUTES.PRIVACY} className="underline hover:text-[var(--color-neutral-light)]">
             {t('footer.privacyPolicy')}
           </Link>
           .

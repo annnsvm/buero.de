@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ROUTES } from '@/helpers/routes';
 import Container from '../Container/Container';
 
 const linkClass =
@@ -17,13 +18,13 @@ const FooterBottomBar: React.FC = () => {
           {t('footer.copyright', { year: currentYear })}
         </p>
         <nav aria-label={t('footer.legalNav')} className="order-1 flex flex-wrap items-center justify-center gap-4 sm:order-2">
-          <Link to="/privacy" className={linkClass}>
+          <Link to={ROUTES.PRIVACY} className={linkClass}>
             {t('footer.privacyPolicy')}
           </Link>
-          <Link to="/terms" className={linkClass}>
+          <Link to={ROUTES.TERMS} className={linkClass}>
             {t('footer.terms')}
           </Link>
-          <Link to="/cookies" className={linkClass}>
+          <Link to={ROUTES.COOKIES} className={linkClass}>
             {t('footer.cookies')}
           </Link>
         </nav>
