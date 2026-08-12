@@ -3,16 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
-    "lint": "eslint \"frontend/**/*.{js,jsx}\" \"backend/**/*.{js,cjs,mjs}\"",
-    "lint:fix": "eslint \"frontend/**/*.{js,jsx}\" \"backend/**/*.{js,cjs,mjs}\" --fix",
-    "format": "prettier --write \"frontend/**/*.{js,jsx,json,css,md}\" \"backend/**/*.{js,json,md}\""
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm --prefix buero-backend-api run start:dev\" \"npm --prefix buero-frontend run dev\"",
+    "dev:backend": "npm --prefix buero-backend-api run start:dev",
+    "dev:frontend": "npm --prefix buero-frontend run dev",
+    "install:all": "npm --prefix buero-backend-api install && npm --prefix buero-frontend install",
+    "lint": "npm --prefix buero-frontend run lint",
+    "format": "npm --prefix buero-frontend run format"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "eslint": "^9.0.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
-    "prettier": "^3.8.1"
+    "concurrently": "^8.2.2"
   }
 }

@@ -1,16 +1,26 @@
-# React + Vite
+# buero-frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite SPA для [buero.de](https://www.buro-de.com).
 
-Currently, two official plugins are available:
+## Local dev
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cp env.example .env   # VITE_API_URL=http://localhost:3000/api
+npm install
+npm run dev
+```
 
-## React Compiler
+Open http://localhost:5173 — requires **local backend** (`buero-backend-api`, port 3000).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Full workflow: [docs/local-development.md](../docs/local-development.md)
 
-## Expanding the ESLint configuration
+## Production
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Static Site on Render → https://www.buro-de.com  
+Build env: `VITE_API_URL=https://buro-de.onrender.com/api`
+
+## Docs
+
+- [Frontend architecture](docs/frontend-architecture.md)
+- [Flows](docs/frontend-flows.md)
+- [Features](docs/frontend-features/)
