@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import type { HeaderMobileMenuProps } from '@/types/components/layout/Header.types';
 
 import HeaderAuthBar from './HeaderAuthBar';
 import HeaderMobileMenu from './HeaderMobileMenu';
+import LanguageSwitcher from './LanguageSwitcher';
 import Container from '../Container';
 
 export type CourseWorkspaceHeaderProps = {
@@ -23,6 +25,7 @@ const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
   renderMobileNav,
   onOpenCourseStructure,
 }) => {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -33,9 +36,9 @@ const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
             type="button"
             onClick={onOpenCourseStructure}
             className={courseStructureBtnClassName}
-            aria-label="Open course structure"
+            aria-label={t('header.openCourseStructure')}
           >
-            <span className="max-w-[9.5rem] truncate sm:max-w-none">Course Structure</span>
+            <span className="max-w-[9.5rem] truncate sm:max-w-none">{t('header.courseStructure')}</span>
           </button>
           <HeaderMobileMenu
             isOpen={menuOpen}
@@ -56,12 +59,15 @@ const CourseWorkspaceHeader: React.FC<CourseWorkspaceHeaderProps> = ({
               type="button"
               onClick={onOpenCourseStructure}
               className={courseStructureBtnClassName}
-              aria-label="Open course structure"
+              aria-label={t('header.openCourseStructure')}
             >
-              Course Structure
+              {t('header.courseStructure')}
             </button>
           </div>
-          <HeaderAuthBar isLight={isLight} from="courseWorkspace" className="shrink-0" />
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageSwitcher isLight={isLight} />
+            <HeaderAuthBar isLight={isLight} from="courseWorkspace" className="shrink-0" />
+          </div>
         </div>
     </div>
   );

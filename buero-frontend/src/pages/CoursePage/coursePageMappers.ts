@@ -1,5 +1,6 @@
 import type { CourseModule } from '@/features/courses-catalog/CourseStructure';
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
+import i18n from '@/i18n';
 
 export type ApiCourseMaterial = {
   id: string;
@@ -156,7 +157,7 @@ export const buildLearningLessonFromMaterial = (
   const embed = youtubeEmbedUrl(material);
   const typeLabel =
     material.type === 'video'
-      ? 'Video'
+      ? i18n.t('coursePage.video')
       : material.type.charAt(0).toUpperCase() + material.type.slice(1);
 
   return {
@@ -164,15 +165,17 @@ export const buildLearningLessonFromMaterial = (
     courseTitle,
     progressText:
       totalMaterials > 0
-        ? `${Math.min(flatIndex + 1, totalMaterials)} of ${totalMaterials} lessons`
-        : '0 of 0 lessons',
+        ? i18n.t('coursePage.progressText', {
+            current: Math.min(flatIndex + 1, totalMaterials),
+            total: totalMaterials,
+          })
+        : i18n.t('coursePage.progressText', { current: 0, total: 0 }),
     streak: '—',
     progress: totalMaterials > 0 ? Math.round(((flatIndex + 1) / totalMaterials) * 100) : 0,
     type: typeLabel,
-    status: 'In progress',
+    status: i18n.t('coursePage.inProgress'),
     title: material.title,
-    description:
-      'Watch this lesson carefully and take notes. Mark as complete when you are ready to continue.',
+    description: i18n.t('coursePage.defaultDescription'),
     videoUrl: embed || 'https://www.youtube.com/embed/dQw4w9WgXcQ',
   };
 };

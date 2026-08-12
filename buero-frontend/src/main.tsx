@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import 'simplebar-react/dist/simplebar.min.css';
+import './i18n';
 import './styles/index.css';
 import App from './App';
 import { store, persistor } from './redux/store';

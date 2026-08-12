@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useEffect, useCallback, useRef, useMemo, useState } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   CoursesCatalogHero,
@@ -7,6 +7,8 @@ import {
   CoursesCatalogList,
   CoursesCatalogGridSkeleton,
 } from '@/features/courses-catalog';
+import { useCatalogFilterTabs } from '@/features/courses-catalog/useCatalogFilterTabs';
+import { useTranslation } from 'react-i18next';
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
@@ -20,22 +22,8 @@ import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesC
 import { selectIsAuthenticated } from '@/redux/slices/auth';
 import { selectUserRole } from '@/redux/slices/user/userSelectors';
 
-const baseFilterTabs = [
-  { id: 'all', label: 'All Courses' },
-  { id: 'language', label: 'Language' },
-  { id: 'integration', label: 'Integration' },
-  { id: 'sociocultural', label: 'Culture & Life' },
-  { id: 'beginner', label: 'Beginner' },
-  { id: 'middle', label: 'Middle' },
-  { id: 'advanced', label: 'Advanced' },
-] as const;
-
-const teacherExtraTabs = [
-  { id: 'published', label: 'Published' },
-  { id: 'unpublished', label: 'Unpublished' },
-] as const;
-
 const CoursesCatalogPage: FC = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const courses = useSelector(selectCoursesCatalogItems);
@@ -72,14 +60,7 @@ const CoursesCatalogPage: FC = () => {
     showLoadingSkeleton ||
     (catalogStatus === 'idle' && courses.length === 0 && role !== 'teacher');
 
-  const filterTabs = useMemo(() => {
-    if (role === 'teacher') {
-      return [...baseFilterTabs, ...teacherExtraTabs];
-    }
-    return [...baseFilterTabs];
-  }, [role]);
-
-
+  const filterTabs = useCatalogFilterTabs(role);
   const activeFilterId = (() => {
     if (role === 'teacher') {
       switch (filters.publicationStatus) {
@@ -167,7 +148,7 @@ const CoursesCatalogPage: FC = () => {
   }, [filters]);
 
   return (
-    <div aria-label="Courses-Catalog Page">
+    <div aria-label={t('courses.pageLabel')}>
       <CoursesCatalogHero
         onSearchChange={handleSearchChange}
         initialSearch={filters.search ?? ''}
@@ -186,7 +167,7 @@ const CoursesCatalogPage: FC = () => {
         <CoursesCatalogList courses={courses} />
       ) : (
         <div className="flex items-center justify-center py-20 text-lg text-[var(--color-text-primary)]">
-          <p>No courses found. Try adjusting your filters.</p>
+          <p>{t('courses.emptyState')}</p>
         </div>
       )}
     </div>

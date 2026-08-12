@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import AddNewCourse from '../AddNewCourse';
 
 const CreateCourseCard: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <li
       key="create-new-course-card"
@@ -11,10 +14,10 @@ const CreateCourseCard: React.FC = () => {
       <AddNewCourse type="icon" />
       <div className="flex flex-col items-center gap-2">
         <h3 className="text-center text-[1.2rem] leading-[1.5] font-[700] text-[var(--color-neutral-darkest)] sm:text-[1.3rem] lg:text-[1.625]">
-          Create New Course
+          {t('courses.createNewCourse')}
         </h3>
         <p className="text-center text-[1.2rem] text-[var(--color-text-primary)] sm:text-[1.3rem] lg:text-[1.425rem]">
-          Click to start building a new learning path.
+          {t('courses.createNewCourseHint')}
         </p>
       </div>
       <AddNewCourse type="button" />

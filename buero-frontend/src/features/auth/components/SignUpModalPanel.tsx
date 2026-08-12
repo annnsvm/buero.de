@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ModalBody from '@/components/modal/ui/ModalBody';
@@ -32,6 +33,7 @@ export type SignUpModalPanelProps = {
 };
 
 const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismiss }) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const loadingStatus = useSelector(selectAuthStatus);
@@ -119,7 +121,7 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
           ? error
           : error instanceof Error
             ? error.message
-            : 'Sign up failed';
+            : t('auth.signUpFailed');
 
       setError('root', { type: 'server', message });
     }
@@ -127,14 +129,14 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
 
   return (
     <ModalBody>
-      <ModalHeader title="Sign Up" description="Create a new account" className="mb-8" />
+      <ModalHeader title={t('auth.signUpTitle')} description={t('auth.signUpDescription')} className="mb-8" />
 
       <form onSubmit={onSubmit} className="relative flex flex-col gap-4">
         <FormField name="name" error={errors.name?.message}>
           <Input
             id="signup-name"
             type="text"
-            placeholder="Name"
+            placeholder={t('auth.name')}
             autoComplete="name"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
             {...register('name')}
@@ -145,7 +147,7 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
           <Input
             id="signup-email"
             type="email"
-            placeholder="Email"
+            placeholder={t('auth.email')}
             autoComplete="email"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
             {...register('email')}
@@ -156,7 +158,7 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
           <Input
             id="signup-password"
             type="password"
-            placeholder="Password"
+            placeholder={t('auth.password')}
             autoComplete="new-password"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
             {...register('password')}
@@ -168,7 +170,7 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
         )}
 
         <Button type="submit" disabled={isSubmitting} className="mt-2 w-full" variant="solid">
-          {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : 'Sign Up'}
+          {loadingStatus === LOADING_STATUS.LOADING ? <Spinner /> : t('auth.signUpButton')}
         </Button>
       </form>
       <ModalFooter>
@@ -185,7 +187,7 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
           }}
         >
           <Text label={'Switch to Log In'} className="text-[1.125rem]">
-            Already have an account? Log In
+            {t('auth.switchToLogin')}
           </Text>
         </button>
       </ModalFooter>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FC, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Icon from '@/components/ui/Icon';
 import { useModal } from '@/components/modal';
 import { ROUTES, getTeacherCourseEditPath } from '@/helpers/routes';
@@ -10,6 +11,7 @@ import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import ConfirmDeleteEntityModal from '@/features/course-managment/components/CourseManagementWorkspace/ConfirmDeleteEntityModal';
 import { deleteCourseCopy } from '@/features/course-managment/domain/deleteCourseCopy';
+import { translateCourseTag } from '@/features/courses-catalog/translateCourseTag';
 import { requestCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
 import { useAppDispatch } from '@/redux/hooks';
 import { selectIsAuthenticated } from '@/redux/slices/auth';
@@ -55,6 +57,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
   const { pushUiModal } = useModal();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -199,7 +202,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     case 'my-learning': {
       buttonsComponent = (
         <LinkBtn to={`${ROUTES.COURSES}/${id}`} variant="dark">
-          Continue Learning
+          {t('courses.continueLearning')}
         </LinkBtn>
       );
       break;
@@ -209,7 +212,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
       if (isAdded) {
         buttonsComponent = (
           <LinkBtn to={`${ROUTES.COURSES}/${id}`} variant="dark">
-            Continue Learning
+            {t('courses.continueLearning')}
           </LinkBtn>
         );
       } else {
@@ -224,9 +227,9 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
                   type="button"
                   onClick={handleTrialClick}
                   className={trialButtonClassName}
-                  aria-label={`Start trial for ${title}`}
+                  aria-label={t('courses.startTrialAria', { title })}
                 >
-                  Trial
+                  {t('courses.trial')}
                 </button>
               ) : null}
               <button
@@ -255,9 +258,9 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
                 type="button"
                 onClick={handleTrialClick}
                 className={trialButtonClassName}
-                aria-label={`Start trial for ${title}`}
+                aria-label={t('courses.startTrialAria', { title })}
               >
-                Trial
+                {t('courses.trial')}
               </button>
             ) : null}
             <button
@@ -277,7 +280,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
 
   const deleteDescription =
     moduleCountForModal === null && isLoadingDeleteInfo
-      ? 'Loading course details…'
+      ? t('courses.loadingCourseDetails')
       : deleteCourseCopy(moduleCountForModal ?? 0);
 
   const isDeleteSubmitBlocked =
@@ -314,7 +317,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
                     : 'inline-flex items-center justify-center rounded-full bg-[#f06a4d] px-3.5 py-1.5 text-xs font-semibold leading-none text-white shadow-sm sm:text-sm'
                 }
               >
-                {isPublished ? 'Published' : 'Unpublished'}
+                {isPublished ? t('courses.published') : t('courses.unpublished')}
               </span>
             ) : null}
           </div>
@@ -330,7 +333,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
           <div className="mt-4 min-h-[60px] items-start content-start flex flex-wrap gap-2 sm:mt-6 sm:gap-4">
             {tags?.slice(0, 5).map((tag) => {
               if (!tag) return null;
-              const displayTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+              const displayTag = translateCourseTag(t, tag);
               return(
                <span
                 key={tag}
@@ -350,7 +353,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
             <div className="mt-auto pt-6 flex items-center gap-2 text-xs text-[var(--color-text-primary)]">
              <span className="flex items-center gap-1.5 sm:gap-2">
                <Icon name="icon-book" size={24} className="text-[var(--color-text-primary)]" />
-                 {lessonsCount} lessons
+                 {t('courses.lessonsCount', { count: lessonsCount })}
              </span>
   
             <span className="flex items-center gap-1.5 sm:gap-2">
@@ -372,9 +375,9 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
         <ConfirmDeleteEntityModal
           isOpen={isDeleteModalOpen}
           handleOpenChange={handleDeleteModalOpenChange}
-          title="Delete course?"
+          title={t('courses.deleteCourseTitle')}
           description={deleteDescription}
-          confirmButtonLabel="Delete"
+          confirmButtonLabel={t('common.delete')}
           isSubmitting={isDeleteSubmitBlocked}
           onConfirm={async () => {
             setIsDeletingCourse(true);

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Container, Section } from '@/components/layout';
 import { CreateCourseCard } from '@/features/course-managment';
 
@@ -12,13 +13,15 @@ export type CoursesCatalogGridSkeletonProps = {
 const CoursesCatalogGridSkeleton = ({
   withTeacherCreateSlot = false,
   sectionClassName = '',
-  loadingLabel = 'Loading courses',
+  loadingLabel,
 }: CoursesCatalogGridSkeletonProps) => {
+  const { t } = useTranslation();
+  const label = loadingLabel ?? t('courses.loadingCourses');
   const sectionClasses = ['pb-28', sectionClassName].filter(Boolean).join(' ');
 
   return (
-    <Section className={sectionClasses} aria-busy="true" aria-label={loadingLabel}>
-      <span className="sr-only">{loadingLabel}</span>
+    <Section className={sectionClasses} aria-busy="true" aria-label={label}>
+      <span className="sr-only">{label}</span>
       <Container className="md:px-20">
         <ul className="flex flex-wrap justify-start gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16">
           {withTeacherCreateSlot ? (

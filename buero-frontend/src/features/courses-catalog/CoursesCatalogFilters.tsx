@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Section, Container } from '@/components/layout';
 import Button from '@/components/ui/Button';
 import type { CoursesCatalogFiltersProps } from '@/types/features/courses-catalog/CoursesCatalogFilters.types';
@@ -10,6 +11,8 @@ const CoursesCatalogFilters = ({
   isResultsCountPending = false,
   besideCountSlot,
 }: CoursesCatalogFiltersProps) => {
+  const { t } = useTranslation();
+
   return (
     <Section className="pb-20">
       <Container className="md:px-20">
@@ -49,8 +52,8 @@ const CoursesCatalogFilters = ({
               aria-busy={isResultsCountPending}
             >
               {isResultsCountPending
-                ? 'Loading results…'
-                : `${totalCount} ${totalCount === 1 ? 'course found' : 'courses found'}`}
+                ? t('courses.loadingResults')
+                : t('courses.courseFound', { count: totalCount })}
             </p>
           </div>
         </div>

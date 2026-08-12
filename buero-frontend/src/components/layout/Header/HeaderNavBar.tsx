@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next';
 import { ROUTES } from '@/helpers/routes';
 import { HeaderNavBarProps } from '@/types/components/layout/Header.types';
 import { NavLink } from 'react-router-dom';
@@ -13,6 +14,7 @@ const activeClassDark = 'font-semibold text-[var(--color-primary)]';
 const inactiveClassDark = 'text-[var(--color-text-primary)]';
 
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, className }) => {
+  const { t } = useTranslation();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const role = useAppSelector(selectUserRole);
   const isHomeActive = pathname === '/' || pathname === ROUTES.HOME;
@@ -29,21 +31,21 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
   const getClass = (active: boolean) =>
     `transition-colors ${isLight ? 'hover:text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)]'} ${active ? activeClass : inactiveClass}`;
   return (
-    <nav aria-label="Main navigation" className={`flex flex-wrap items-center gap-8 ${className}`}>
+    <nav aria-label={t('header.mainNav')} className={`flex flex-wrap items-center gap-8 ${className}`}>
       <NavLink
         to={ROUTES.HOME}
         end
         className={getClass(isHomeActive)}
         onClick={(event) => handleNavClick(event, isHomeActive)}
       >
-        Home
+        {t('header.home')}
       </NavLink>
       <NavLink
         to={ROUTES.COURSES}
         className={getClass(isCoursesActive)}
         onClick={(event) => handleNavClick(event, isCoursesActive)}
       >
-        Courses
+        {t('header.courses')}
       </NavLink>
       {isAuthenticated && role === 'student' && (
         <NavLink
@@ -51,7 +53,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
           className={getClass(isMyLearningActive)}
           onClick={(event) => handleNavClick(event, isMyLearningActive)}
         >
-          My learning
+          {t('header.myLearning')}
         </NavLink>
       )}
     </nav>
