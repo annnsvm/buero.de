@@ -34,6 +34,7 @@ import {
   type ApiCourseWithTree,
 } from '@/pages/CoursePage/coursePageMappers';
 import { translateCourseTag } from './translateCourseTag';
+import { isCourseComingSoon } from './isCourseComingSoon';
 
 type CourseInfoModalProps = {
   isOpen: boolean;
@@ -184,6 +185,11 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
     (activeTrialCourseIdFromApi == null ||
       activeTrialCourseIdFromApi === '' ||
       activeTrialCourseIdFromApi === courseId);
+
+  const comingSoon = isCourseComingSoon({
+    isPublished: publishedEffective,
+    lessonsCount: course.lessonsCount,
+  });
 
   const scopedCourseDetails = useMemo(() => {
     if (!fullCourseData) return null;
@@ -367,6 +373,10 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
               >
                 {t('courses.continueLearning')}
               </Button>
+            ) : comingSoon ? (
+              <span className="inline-flex items-center justify-center rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-dawn-pink-light)] px-4 py-2 text-sm font-semibold text-[var(--color-text-secondary)] sm:px-6 sm:py-2.5 sm:text-lg">
+                {t('courses.comingSoon')}
+              </span>
             ) : (
               <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
                 {canShowTryForFree ? (

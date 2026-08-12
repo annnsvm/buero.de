@@ -75,7 +75,6 @@ export const useCourseEditor = () => {
     setIsUnpublishModalOpen,
     isUnpublishingCourse,
     isBootstrappingCourse,
-    totalMaterialsCount,
     activeModuleTitle,
     deleteTarget,
     setDeleteTarget,
@@ -159,8 +158,7 @@ export const useCourseEditor = () => {
         : undefined,
       onRequestDeleteModule: courseId ? handleRequestDeleteModule : undefined,
       onRequestDeleteMaterial: courseId ? handleRequestDeleteMaterial : undefined,
-      showPublishCourseButton:
-        Boolean(courseId) && totalMaterialsCount > 0 && !isCoursePublished,
+      showPublishCourseButton: Boolean(courseId) && !isCoursePublished,
       onRequestPublishCourse: () => setIsPublishModalOpen(true),
       showUnpublishCourseButton: Boolean(courseId) && isCoursePublished,
       onRequestUnpublishCourse: () => setIsUnpublishModalOpen(true),

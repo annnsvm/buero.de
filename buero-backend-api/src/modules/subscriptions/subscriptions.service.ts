@@ -48,6 +48,18 @@ export class SubscriptionsService {
       where: { id: dto.course_id },
     });
     if (!course) throw new NotFoundException("Course not found");
+    if (course.isPublished !== true) {
+      throw new BadRequestException("Course is not published");
+    }
+
+    const materialsCount = await this.prisma.courseMaterial.count({
+      where: { module: { courseId: dto.course_id } },
+    });
+    if (materialsCount < 1) {
+      throw new BadRequestException(
+        "Course is not available for purchase yet",
+      );
+    }
 
     const existingAccess = await this.prisma.userCourseAccess.findUnique({
       where: {

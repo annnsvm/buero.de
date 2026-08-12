@@ -151,6 +151,7 @@
     "trial": "Trial",
     "startTrialAria": "Почати trial для {{title}}",
     "buyCourse": "Купити курс",
+    "comingSoon": "Coming soon",
     "loadingCourseDetails": "Завантаження деталей курсу…",
     "deleteCourseTitle": "Видалити курс?",
     "deleteCourseDescription_one": "Цей курс містить {{count}} модуль.\nВидалення назавжди прибере всі модулі, уроки та квізи. Цю дію не можна скасувати.",
