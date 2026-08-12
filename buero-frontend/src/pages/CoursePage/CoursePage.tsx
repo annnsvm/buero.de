@@ -340,6 +340,14 @@ const CoursePage: React.FC = () => {
             <>
               {userRole === 'student' ? (
                 <NavLink
+                  to={ROUTES.MY_LEARNING}
+                  className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
+                >
+                  {t('header.myLearning')}
+                </NavLink>
+              ) : null}
+              {userRole === 'student' ? (
+                <NavLink
                   to={ROUTES.VOCABULARY.replace(':courseId', courseId)}
                   className="text-[1.125rem] text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
                 >
@@ -356,6 +364,21 @@ const CoursePage: React.FC = () => {
           }
           renderMobileNav={({ className: navClass }) => (
             <nav className={navClass} aria-label={t('coursePage.quickLinks')}>
+              {userRole === 'student' ? (
+                <NavLink
+                  to={ROUTES.MY_LEARNING}
+                  className={({ isActive }) =>
+                    [
+                      'text-lg font-medium transition-colors',
+                      isActive
+                        ? 'text-[var(--color-primary)]'
+                        : 'text-white/95 hover:text-[var(--color-primary)]',
+                    ].join(' ')
+                  }
+                >
+                  {t('header.myLearning')}
+                </NavLink>
+              ) : null}
               {userRole === 'student' ? (
                 <NavLink
                   to={ROUTES.VOCABULARY.replace(':courseId', courseId)}

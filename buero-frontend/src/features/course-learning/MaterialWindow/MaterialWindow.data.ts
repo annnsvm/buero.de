@@ -6,6 +6,7 @@ export const lessonContent: LearningLesson = {
   streak: '7 day streak',
   progress: 12,
   type: 'Video',
+  materialType: 'video',
   status: 'Awaiting video',
   title: 'Your First German Words',
   description:

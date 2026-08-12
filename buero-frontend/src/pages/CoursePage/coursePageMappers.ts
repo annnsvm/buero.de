@@ -162,6 +162,7 @@ export const buildLearningLessonFromMaterial = (
 
   return {
     materialId: material.id,
+    materialType: material.type,
     courseTitle,
     progressText:
       totalMaterials > 0

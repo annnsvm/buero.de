@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, CircleHelp, FileText, Play, SkipForward, Trophy } from 'lucide-react';
 
 import { Container, Text, Title } from '@/components/layout';
@@ -13,8 +14,12 @@ const extractYouTubeEmbedVideoId = (embedUrl: string): string | null => {
 };
 
 const buildAutoplayEmbedSrc = (embedUrl: string): string => {
-  const hasQuery = embedUrl.includes('?');
-  return `${embedUrl}${hasQuery ? '&' : '?'}autoplay=1`;
+  const url = new URL(embedUrl, window.location.origin);
+  url.searchParams.set('autoplay', '1');
+  url.searchParams.set('enablejsapi', '1');
+  url.searchParams.set('origin', window.location.origin);
+  url.searchParams.set('rel', '0');
+  return url.toString();
 };
 
 const videoFrameRadiusClass = 'rounded-[20px] sm:rounded-[22px]';
@@ -137,6 +142,26 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
 
   useEffect(() => {
     if (!isPlaying || !usePlainIframe) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== 'https://www.youtube.com') return;
+      try {
+        const payload =
+          typeof event.data === 'string' ? (JSON.parse(event.data) as { event?: string; info?: number }) : event.data;
+        if (payload?.event === 'onStateChange' && payload.info === 0) {
+          signalEnded();
+        }
+      } catch {
+        void 0;
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isPlaying, usePlainIframe, signalEnded]);
+
+  useEffect(() => {
+    if (!isPlaying || !usePlainIframe) return;
     const sec = fallbackMarkReadyAfterSeconds;
     if (sec == null || sec < 1) return;
     const t = window.setTimeout(() => signalEnded(), sec * 1000);
@@ -205,10 +230,15 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
   fallbackMarkReadyAfterSeconds = null,
   onAddWord,
 }) => {
+  const { t } = useTranslation();
   const { pushUiModal } = useModal();
   const [videoEnded, setVideoEnded] = useState(false);
 
-  const isVideoLesson = String(lesson.type).toLowerCase() === 'video';
+  const isVideoLesson = String(lesson.materialType ?? lesson.type).toLowerCase() === 'video';
+
+  useEffect(() => {
+    setVideoEnded(false);
+  }, [lesson.materialId, lesson.videoUrl]);
 
   const handleVideoEnded = useCallback(() => {
     setVideoEnded(true);
@@ -226,8 +256,8 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
 
   const lessonStatusLabel = isVideoLesson
     ? isVideoLessonCompleted
-      ? 'Completed'
-      : 'In progress'
+      ? t('coursePage.completed')
+      : t('coursePage.inProgress')
     : lesson.status;
 
   const markButtonDisabled = isVideoCompletionSaving || !videoEnded;
@@ -297,7 +327,7 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
 
           <Title className="mt-4 sm:mt-5">{lesson.title}</Title>
 
-          <Text label="Lesson description" className="mt-3 max-w-4xl sm:mt-4">
+          <Text label={t('coursePage.lessonDescription')} className="mt-3 max-w-4xl sm:mt-4">
             {lesson.description}
           </Text>
 
@@ -307,42 +337,49 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
             </p>
           ) : null}
 
-          <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap">
-            {isVideoLesson && onMarkVideoComplete && !isVideoLessonCompleted ? (
+          <div className="mt-5 flex flex-col gap-2 sm:mt-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              {isVideoLesson && onMarkVideoComplete && !isVideoLessonCompleted ? (
+                <button
+                  type="button"
+                  onClick={handleMarkCompleteClick}
+                  disabled={markButtonDisabled}
+                  aria-label={t('coursePage.markAsComplete')}
+                  className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
+                >
+                  {isVideoCompletionSaving ? t('common.saving') : t('coursePage.markAsComplete')}
+                </button>
+              ) : null}
               <button
                 type="button"
-                onClick={handleMarkCompleteClick}
-                disabled={markButtonDisabled}
-                aria-label="Mark as complete"
-                className="inline-flex w-full items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
+                onClick={handleNextVideoLessonClick}
+                disabled={!hasNextVideoLesson}
+                aria-label={
+                  hasNextVideoLesson
+                    ? t('coursePage.nextLesson')
+                    : t('coursePage.noMoreVideoLessons')
+                }
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
               >
-                {isVideoCompletionSaving ? 'Saving…' : 'Mark as complete'}
+                {t('coursePage.nextLesson')}
+                <SkipForward className="h-4 w-4" aria-hidden />
               </button>
+            </div>
+            {isVideoLesson && onMarkVideoComplete && !isVideoLessonCompleted && markButtonDisabled && !isVideoCompletionSaving ? (
+              <p className="text-xs text-[#6f6865]">
+                {t('coursePage.markAsCompleteHint')}
+              </p>
             ) : null}
-            <button
-              type="button"
-              onClick={handleNextVideoLessonClick}
-              disabled={!hasNextVideoLesson}
-              aria-label={
-                hasNextVideoLesson
-                  ? 'Go to next video lesson'
-                  : 'No more video lessons in this course'
-              }
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
-            >
-              Next lesson
-              <SkipForward className="h-4 w-4" aria-hidden />
-            </button>
           </div>
         </section>
 
         <section className="mt-6 rounded-[20px] bg-[var(--color-neutral-white)] p-6 shadow-sm sm:mt-8 sm:rounded-[22px] md:mt-10">
           <h2 className="text-xl font-semibold text-[#56504c] sm:text-2xl md:text-[2rem]">
-            Lesson Notes
+            {t('coursePage.lessonNotes')}
           </h2>
 
           <textarea
-            placeholder="Take your notes here..."
+            placeholder={t('coursePage.notesPlaceholder')}
             className="mt-4 min-h-[120px] w-full rounded-lg border border-[#cfc4be] bg-[var(--color-neutral-white)] px-4 py-3 text-sm text-[#1f1c1a] outline-none placeholder:text-[#75706c] focus:border-[#b8aaa1] sm:min-h-[132px]"
           />
         </section>
@@ -354,27 +391,31 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7cbc5] bg-transparent px-5 py-3 text-sm font-medium text-[#5f5854] transition hover:bg-white/40 sm:w-auto"
           >
             <BookOpen className="h-4 w-4" />
-            Add Unknown Word
+            {t('coursePage.addUnknownWord')}
           </button>
         </div>
 
         <section className="mt-6 rounded-[20px] border border-dashed border-[#e87753] p-5 sm:mt-8 sm:rounded-[22px] sm:p-7 md:mt-10 md:p-10">
           <Title className="text-[1.75rem] sm:text-[2rem] lg:text-[2.5rem]">
-            Need clarification?
+            {t('coursePage.needClarification')}
           </Title>
 
-          <Text label="Clarification description" className="mt-3 max-w-3xl text-[#5f5854] sm:mt-4">
-            Book a 1-on-1 session with our instructors if something feels unclear. Get personalized
-            guidance and answers to your specific questions.
+          <Text label={t('coursePage.needClarification')} className="mt-3 max-w-3xl text-[#5f5854] sm:mt-4">
+            {t('coursePage.clarificationDescription')}
           </Text>
 
           <button
             type="button"
-            onClick={() => pushUiModal({ type: 'contactSupport', subject: 'Book 1-on-1 Session' })}
+            onClick={() =>
+              pushUiModal({
+                type: 'contactSupport',
+                subject: t('courses.contact.bookSessionSubject'),
+              })
+            }
             className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#e87753] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 sm:mt-6 sm:w-auto"
           >
             <CircleHelp className="h-4 w-4" />
-            Book 1-on-1 Session
+            {t('coursePage.bookSession')}
           </button>
         </section>
       </Container>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Copy, Trash2 } from 'lucide-react';
 import type { VocabularyWord } from '@/types/features/vocabulary/Vocabulary.types';
+import { translateVocabularyCategory } from '@/features/vocabulary/translateVocabularyCategory';
 
 type VocabularyCardProps = {
   entry: VocabularyWord;
@@ -8,6 +10,7 @@ type VocabularyCardProps = {
 };
 
 const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
+  const { t } = useTranslation();
   const [flipped, setFlipped] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -37,7 +40,11 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
           setFlipped((p) => !p);
         }
       }}
-      aria-label={flipped ? `Translation: ${entry.translation}` : `Word: ${entry.word}`}
+      aria-label={
+        flipped
+          ? `${t('vocabulary.translation')}: ${entry.translation}`
+          : `${t('vocabulary.word')}: ${entry.word}`
+      }
     >
       <div
         className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}
@@ -48,7 +55,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
               type="button"
               onClick={handleCopy}
               className="rounded-lg p-1.5 text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-section)] hover:text-[var(--color-text-primary)]"
-              aria-label="Copy word"
+              aria-label={t('vocabulary.copyWord')}
             >
               {copied ? (
                 <svg className="h-4 w-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -62,7 +69,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
               type="button"
               onClick={handleDelete}
               className="rounded-lg p-1.5 text-[var(--color-text-secondary)] transition hover:bg-red-50 hover:text-red-500"
-              aria-label="Delete word"
+              aria-label={t('vocabulary.deleteWord')}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -70,17 +77,19 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
 
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
-              German Word
+              {t('vocabulary.germanWord')}
             </span>
             <span className="text-center text-2xl font-bold text-[var(--color-neutral-darkest)]">
               {entry.word}
             </span>
             <span className="rounded-full bg-[var(--color-surface-section)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
-              {entry.category}
+              {translateVocabularyCategory(t, entry.category)}
             </span>
           </div>
 
-          <p className="text-center text-xs text-[var(--color-text-secondary)]">Click to flip</p>
+          <p className="text-center text-xs text-[var(--color-text-secondary)]">
+            {t('vocabulary.clickToFlip')}
+          </p>
         </div>
 
         <div className="absolute inset-0 flex flex-col rounded-2xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] p-5 shadow-sm [backface-visibility:hidden] [transform:rotateY(180deg)]">
@@ -89,7 +98,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
               type="button"
               onClick={handleCopy}
               className="rounded-lg p-1.5 text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-section)] hover:text-[var(--color-text-primary)]"
-              aria-label="Copy translation"
+              aria-label={t('vocabulary.copyTranslation')}
             >
               {copied ? (
                 <svg className="h-4 w-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -103,7 +112,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
               type="button"
               onClick={handleDelete}
               className="rounded-lg p-1.5 text-[var(--color-text-secondary)] transition hover:bg-red-50 hover:text-red-500"
-              aria-label="Delete word"
+              aria-label={t('vocabulary.deleteWord')}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -111,13 +120,13 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
 
           <div className="flex flex-1 flex-col items-center justify-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-secondary)]">
-              Translation
+              {t('vocabulary.translation')}
             </span>
             <span className="text-center text-2xl font-bold text-[var(--color-neutral-darkest)]">
               {entry.translation}
             </span>
             <span className="rounded-full bg-[var(--color-surface-section)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
-              {entry.category}
+              {translateVocabularyCategory(t, entry.category)}
             </span>
             {entry.notes ? (
               <p className="mt-1 w-full text-center text-xs italic text-[var(--color-text-secondary)]">
@@ -126,7 +135,9 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({ entry, onDelete }) => {
             ) : null}
           </div>
 
-          <p className="text-center text-xs text-[var(--color-text-secondary)]">Click to flip</p>
+          <p className="text-center text-xs text-[var(--color-text-secondary)]">
+            {t('vocabulary.clickToFlip')}
+          </p>
         </div>
       </div>
     </div>

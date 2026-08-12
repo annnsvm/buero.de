@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Search } from 'lucide-react';
 import { Container } from '@/components/layout';
 import { Icon } from '@/components/ui';
@@ -7,6 +8,7 @@ import { ICON_NAMES } from '@/helpers/iconNames';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { deleteWord } from '@/redux/slices/vocabulary/vocabularySlice';
 import VocabularyCard from '@/features/vocabulary/VocabularyCard/VocabularyCard';
+import { translateVocabularyCategory } from '@/features/vocabulary/translateVocabularyCategory';
 import type { VocabularyCategory } from '@/types/features/vocabulary/Vocabulary.types';
 
 const ALL_CATEGORIES: Array<VocabularyCategory | 'All'> = [
@@ -19,6 +21,7 @@ const ALL_CATEGORIES: Array<VocabularyCategory | 'All'> = [
 ];
 
 const VocabularyPage: React.FC = () => {
+  const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const dispatch = useAppDispatch();
   const words = useAppSelector((s) => s.vocabulary.words);
@@ -53,14 +56,14 @@ const VocabularyPage: React.FC = () => {
           className="inline-flex items-center gap-2 text-sm font-medium text-[var(--color-text-secondary)] transition hover:text-[var(--color-primary)]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to lesson
+          {t('vocabulary.backToLesson')}
         </Link>
 
         <h1 className="mt-6 text-3xl font-bold text-[var(--color-neutral-darkest)] sm:text-4xl">
-          Vocabulary
+          {t('vocabulary.title')}
         </h1>
         <p className="mt-2 text-base text-[var(--color-text-secondary)]">
-          Practice your saved German words. Click cards to flip and see translations.
+          {t('vocabulary.description')}
         </p>
 
         {words.length === 0 ? (
@@ -75,11 +78,10 @@ const VocabularyPage: React.FC = () => {
             </div>
 
             <h2 className="mt-6 text-xl font-semibold text-[var(--color-neutral-darkest)]">
-              No Words Yet
+              {t('vocabulary.emptyTitle')}
             </h2>
             <p className="mt-2 max-w-md text-sm text-[var(--color-text-secondary)]">
-              Start adding German words from your lessons to build your vocabulary. Click
-              &ldquo;Add Unknown Word&rdquo; while learning.
+              {t('vocabulary.emptyDescription', { button: t('coursePage.addUnknownWord') })}
             </p>
           </div>
         ) : (
@@ -90,14 +92,14 @@ const VocabularyPage: React.FC = () => {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search words..."
+                placeholder={t('vocabulary.searchPlaceholder')}
                 className="w-full rounded-xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] py-3 pl-12 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)] focus:border-[var(--color-neutral-darkest)]/40 focus:outline-none transition-colors"
               />
             </div>
 
             <div className="mt-6">
               <h3 className="text-sm font-semibold text-[var(--color-neutral-darkest)]">
-                Categories
+                {t('vocabulary.categoriesLabel')}
               </h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {ALL_CATEGORIES.map((cat) => (
@@ -111,7 +113,7 @@ const VocabularyPage: React.FC = () => {
                         : 'border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-section)]'
                     }`}
                   >
-                    {cat}
+                    {translateVocabularyCategory(t, cat)}
                   </button>
                 ))}
               </div>
@@ -125,7 +127,7 @@ const VocabularyPage: React.FC = () => {
 
             {filtered.length === 0 && (
               <p className="mt-10 text-center text-sm text-[var(--color-text-secondary)]">
-                No words match your search or filter.
+                {t('vocabulary.noResults')}
               </p>
             )}
           </>
