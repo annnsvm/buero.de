@@ -38,6 +38,7 @@ import {
   PublicationStatus,
 } from "./dto/list-courses-query.dto";
 import { UpdateCourseDto } from "./dto/update-course.dto";
+import { ReorderCoursesDto } from "./dto/reorder-courses.dto";
 import { MulterExceptionFilter } from "./filters/multer-exception.filter";
 import { courseCoverMulterOptions } from "./multer-course-cover.config";
 
@@ -231,6 +232,22 @@ export class CoursesController {
   @ApiResponse({ status: 403, description: "Тільки для вчителів" })
   create(@Body() dto: CreateCourseDto) {
     return this.courseService.create(dto);
+  }
+
+  @Patch("reorder")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.teacher)
+  @ApiBearerAuth("access_token")
+  @ApiOperation({
+    summary: "Змінити порядок курсів у каталозі",
+    description:
+      "Тільки для вчителів. Body: items — масив { id, order_index }. Оновлює order_index для кожного курсу.",
+  })
+  @ApiBody({ type: ReorderCoursesDto })
+  @ApiResponse({ status: 200, description: "Порядок оновлено" })
+  @ApiResponse({ status: 404, description: "Курс не знайдено" })
+  reorder(@Body() dto: ReorderCoursesDto) {
+    return this.courseService.reorderCourses(dto);
   }
 
   @Patch(":id")

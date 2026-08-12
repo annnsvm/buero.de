@@ -164,7 +164,12 @@ const CoursesCatalogPage: FC = () => {
       {showCatalogGridSkeleton ? (
         <CoursesCatalogGridSkeleton withTeacherCreateSlot={role === 'teacher'} />
       ) : courses.length > 0 || role === 'teacher' ? (
-        <CoursesCatalogList courses={courses} />
+        <CoursesCatalogList
+          courses={courses}
+          canReorderCourses={
+            role === 'teacher' && activeFilterId === 'all' && !filters.search?.trim()
+          }
+        />
       ) : (
         <div className="flex items-center justify-center py-20 text-lg text-[var(--color-text-primary)]">
           <p>{t('courses.emptyState')}</p>

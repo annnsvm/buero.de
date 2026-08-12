@@ -154,6 +154,10 @@
     "createNewCourse": "Create New Course",
     "createNewCourseHint": "Click to start building a new learning path.",
     "createNewCourseButton": "Create New Course",
+    "dragToReorder": "Drag courses by the handle to change their order in the catalog.",
+    "savingOrder": "Saving order…",
+    "reorderHintFiltered": "Clear search and select “All Courses” to reorder courses.",
+    "dragCourse": "Drag course {{title}}",
     "modal": {
       "loadingStructure": "Loading course structure…",
       "duration": "Duration",

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FC, type MouseEvent } from 'reac
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { GripVertical } from 'lucide-react';
 import Icon from '@/components/ui/Icon';
 import { useModal } from '@/components/modal';
 import { ROUTES, getTeacherCourseEditPath } from '@/helpers/routes';
@@ -39,6 +40,8 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     variant = '',
     modulesCount: modulesCountProp,
     onCourseDeleted,
+    dragHandleProps,
+    isDragging = false,
   } = rawProps;
 
   const cleanPrice =
@@ -297,9 +300,23 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
       openCourseInfo();
     }
   }}
-        className="group flex h-full w-full max-w-[405px] min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+        className={`group flex h-full w-full max-w-[405px] min-w-0 cursor-pointer flex-col overflow-hidden rounded-xl border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl ${isDragging ? 'ring-2 ring-[var(--color-primary)] shadow-xl' : ''}`}
       >
         <div className="relative aspect-[16/10] w-full overflow-hidden">
+          {dragHandleProps ? (
+            <button
+              type="button"
+              ref={dragHandleProps.ref}
+              {...(() => {
+                const { ref: _ref, ...rest } = dragHandleProps;
+                return rest;
+              })()}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-3 right-3 z-10 flex h-9 w-9 cursor-grab items-center justify-center rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] text-[var(--color-text-secondary)] shadow-sm transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] active:cursor-grabbing"
+            >
+              <GripVertical className="h-5 w-5" aria-hidden />
+            </button>
+          ) : null}
           <img
             src={imageUrl}
             alt={title}

@@ -22,6 +22,7 @@ import {
   PublicationStatus,
 } from "./dto/list-courses-query.dto";
 import { UpdateCourseDto } from "./dto/update-course.dto";
+import { ReorderCoursesDto } from "./dto/reorder-courses.dto";
 import { UserService } from "../user/user.service";
 
 @Injectable()
@@ -109,7 +110,7 @@ export class CourseService {
 
       const courses = await this.prisma.course.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
       });
       const videoByCourse = await this.countVideoMaterialsByCourseIds(
         courses.map((c) => c.id)
@@ -184,12 +185,18 @@ export class CourseService {
 
   async create(dto: CreateCourseDto) {
     try {
+      const maxOrder = await this.prisma.course.aggregate({
+        _max: { orderIndex: true },
+      });
+      const nextOrderIndex = (maxOrder._max.orderIndex ?? -1) + 1;
+
       const course = await this.prisma.course.create({
         data: {
           title: dto.title,
           description: dto.description ?? null,
           language: dto.language,
           isPublished: dto.is_published ?? false,
+          orderIndex: nextOrderIndex,
           ...(dto.price !== undefined && { price: dto.price }),
           tags: dto.tags ?? [],
           ...(dto.level !== undefined && { level: dto.level }),
@@ -200,6 +207,32 @@ export class CourseService {
       });
       return this.serializeCourse(course as Record<string, unknown>);
     } catch (error) {
+      throw this.mapPrismaError(error);
+    }
+  }
+
+  async reorderCourses(dto: ReorderCoursesDto) {
+    try {
+      const ids = dto.items.map((item) => item.id);
+      const existingCount = await this.prisma.course.count({
+        where: { id: { in: ids } },
+      });
+      if (existingCount !== ids.length) {
+        throw new NotFoundException("Один або кілька курсів не знайдено");
+      }
+
+      await this.prisma.$transaction(
+        dto.items.map((item) =>
+          this.prisma.course.update({
+            where: { id: item.id },
+            data: { orderIndex: item.order_index },
+          }),
+        ),
+      );
+
+      return { updated: dto.items.length };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw this.mapPrismaError(error);
     }
   }
