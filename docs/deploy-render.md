@@ -19,7 +19,7 @@ Production-інфраструктура проєкту та налаштуван
 - Health: https://buro-de.onrender.com/api/health
 - DB: https://buro-de.onrender.com/api/health/db
 - Swagger: https://buro-de.onrender.com/api-docs
-- Stripe webhook: `https://buro-de.onrender.com/api/webhooks/stripe`
+- WayForPay webhook: `https://buro-de.onrender.com/api/webhooks/wayforpay`
 
 ---
 
@@ -75,10 +75,12 @@ Render PostgreSQL
 | `CORS_ORIGIN` | Так | `https://www.buro-de.com` |
 | `COOKIE_SECURE` | Ні | `true` |
 | `COOKIE_DOMAIN` | Ні | порожньо (або `.buro-de.com` за потреби) |
-| `STRIPE_SECRET_KEY` | Так | `sk_test_...` або `sk_live_...` |
-| `STRIPE_WEBHOOK_SECRET` | Так | `whsec_...` з Stripe Dashboard |
-| `STRIPE_PRICE_ID` | Так | `price_...` |
-| `STRIPE_PORTAL_RETURN_URL` | Ні | `https://www.buro-de.com/settings/billing` |
+| `WAYFORPAY_MERCHANT_ACCOUNT` | Так | логін мерчанта з кабінету WayForPay |
+| `WAYFORPAY_MERCHANT_SECRET` | Так | secret key мерчанта |
+| `WAYFORPAY_MERCHANT_DOMAIN` | Так | домен рівно як зареєстрований у WayForPay, без протоколу |
+| `WAYFORPAY_SERVICE_URL` | Так | `https://buro-de.onrender.com/api/webhooks/wayforpay` |
+| `WAYFORPAY_CURRENCY` | Ні | `EUR` |
+| `WAYFORPAY_RETURN_URL` | Ні | типово `${WAYFORPAY_SERVICE_URL}/return` |
 | `CLOUDINARY_*` | Ні | для обкладинок курсів |
 | `THROTTLE_TTL` / `THROTTLE_LIMIT` | Ні | `60` / `100` |
 | `TRIAL_DAYS` | Ні | `7` |
@@ -121,12 +123,20 @@ Render PostgreSQL
 
 ---
 
-## Stripe webhook (production)
+## WayForPay (production)
 
-1. [Stripe Dashboard](https://dashboard.stripe.com/webhooks) → **Add endpoint**
-2. **URL:** `https://buro-de.onrender.com/api/webhooks/stripe`
-3. Події: `checkout.session.completed` (+ інші з коду за потреби)
-4. **Signing secret** → `STRIPE_WEBHOOK_SECRET` на Render → redeploy backend
+`serviceUrl` і `returnUrl` передаються у кожному запиті на створення платежу, тому в кабінеті
+WayForPay їх налаштовувати не обовʼязково — достатньо правильних env на Render.
+
+1. `WAYFORPAY_SERVICE_URL` = `https://buro-de.onrender.com/api/webhooks/wayforpay` — **Web Service**,
+   а не статичний сайт: це server-to-server callback, який обробляє NestJS.
+2. `WAYFORPAY_MERCHANT_DOMAIN` має точно збігатися з доменом у кабінеті WayForPay
+   (`buro-de.com` vs `www.buro-de.com` — це різні значення, підпис не зійдеться).
+3. Після redeploy зроби тестову оплату і перевір у логах backend POST на `/api/webhooks/wayforpay`.
+
+Браузер клієнта WayForPay повертає POST-запитом на `/api/webhooks/wayforpay/return`, звідки backend
+редіректить на `${CORS_ORIGIN}/purchase/success?orderReference=...`. Тому `returnUrl` теж веде на
+backend, а не на статичний сайт.
 
 ---
 

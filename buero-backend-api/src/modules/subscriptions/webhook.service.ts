@@ -1,9 +1,12 @@
-import { Injectable, Logger } from "@nestjs/common";
-import Stripe from "stripe";
-import { SubscriptionStatus } from "src/generated/prisma/enums";
-import { UserCourseAccessType } from "src/generated/prisma/enums";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { StripeService } from "../stripe/stripe.service";
+import { WayForPayService } from "../wayforpay/wayforpay.service";
+import {
+  WAYFORPAY_STATUS,
+  type WayForPayAcceptResponse,
+  type WayForPayServiceUrlPayload,
+} from "../wayforpay/wayforpay.types";
+import { PaymentFulfillmentService } from "./payment-fulfillment.service";
 
 @Injectable()
 export class WebhookService {
@@ -11,353 +14,88 @@ export class WebhookService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly stripeService: StripeService,
+    private readonly wayForPay: WayForPayService,
+    private readonly fulfillment: PaymentFulfillmentService,
   ) {}
 
-  async handleStripeWebhook(
-    rawBody: Buffer | string,
-    signature: string,
-  ): Promise<void> {
-    const event = this.stripeService.constructWebhookEvent(rawBody, signature);
+  /**
+   * WayForPay надсилає callback то як JSON, то як form-urlencoded, то як text/plain,
+   * тому тіло доводиться нормалізувати перед перевіркою підпису.
+   */
+  normalizePayload(body: unknown): WayForPayServiceUrlPayload {
+    if (typeof body === "string") {
+      return this.parseJson(body);
+    }
 
-    try {
-      const existing = await this.prisma.stripeWebhookEvent.findUnique({
-        where: { stripeEventId: event.id },
-      });
-      if (existing) {
-        this.logger.debug(`Event ${event.id} already processed, skipping`);
-        return;
+    if (body && typeof body === "object") {
+      const record = body as Record<string, unknown>;
+      const keys = Object.keys(record);
+      // form-urlencoded з JSON-рядком у ключі: { '{"orderReference":...}': '' }
+      if (keys.length === 1 && keys[0].trim().startsWith("{")) {
+        return this.parseJson(keys[0]);
       }
+      return record as WayForPayServiceUrlPayload;
+    }
+
+    throw new BadRequestException("Empty WayForPay callback body");
+  }
+
+  private parseJson(raw: string): WayForPayServiceUrlPayload {
+    try {
+      return JSON.parse(raw) as WayForPayServiceUrlPayload;
     } catch {
-      // ignore
+      throw new BadRequestException("Malformed WayForPay callback body");
+    }
+  }
+
+  /**
+   * Обробляє serviceUrl-callback і повертає підписану відповідь.
+   * Без такої відповіді WayForPay повторює запит протягом кількох діб.
+   */
+  async handleWayForPayCallback(body: unknown): Promise<WayForPayAcceptResponse> {
+    const payload = this.normalizePayload(body);
+    const orderReference = payload.orderReference;
+
+    if (!orderReference) {
+      throw new BadRequestException("WayForPay callback without orderReference");
     }
 
+    if (!this.wayForPay.verifyServiceUrlSignature(payload)) {
+      this.logger.warn(
+        `Invalid WayForPay signature for order ${orderReference}, ignoring`,
+      );
+      throw new BadRequestException("Invalid WayForPay signature");
+    }
+
+    const status = payload.transactionStatus;
+    const eventKey = `${orderReference}:${status ?? "unknown"}:${payload.reasonCode ?? ""}`;
+
     try {
-      await this.prisma.stripeWebhookEvent.create({
-        data: { stripeEventId: event.id },
+      await this.prisma.paymentWebhookEvent.create({
+        data: { provider: "wayforpay", eventKey },
       });
-    } catch (e: any) {
-      if (e?.code === "P2002") {
-        this.logger.debug(`Event ${event.id} already processed (unique), skipping`);
-        return;
-      }
-      throw e;
-    }
-
-    try {
-      switch (event.type) {
-        case "checkout.session.completed":
-          await this.handleCheckoutSessionCompleted(
-            event.data.object as Stripe.Checkout.Session,
-          );
-          break;
-        case "invoice.paid":
-          await this.handleInvoicePaid(event.data.object as Stripe.Invoice);
-          break;
-        case "customer.subscription.updated":
-          await this.handleSubscriptionUpdated(
-            event.data.object as Stripe.Subscription,
-          );
-          break;
-        case "customer.subscription.deleted":
-          await this.handleSubscriptionDeleted(
-            event.data.object as Stripe.Subscription,
-          );
-          break;
-        default:
-          this.logger.log(`Unhandled event type: ${event.type}`);
-      }
     } catch (err) {
-      this.logger.error(`Webhook handler failed for ${event.id}: ${err}`);
+      if ((err as { code?: string })?.code === "P2002") {
+        this.logger.debug(`WayForPay event ${eventKey} already processed`);
+        return this.wayForPay.buildAcceptResponse(orderReference);
+      }
       throw err;
     }
-  }
 
-  private mapStripeStatus(
-    status: Stripe.Subscription.Status,
-  ): (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus] {
-    const map: Record<string, (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]> = {
-      active: SubscriptionStatus.active,
-      past_due: SubscriptionStatus.past_due,
-      canceled: SubscriptionStatus.canceled,
-      incomplete: SubscriptionStatus.incomplete,
-      trialing: SubscriptionStatus.trialing,
-      unpaid: SubscriptionStatus.past_due,
-      paused: SubscriptionStatus.canceled,
-    };
-    return map[status] ?? SubscriptionStatus.incomplete;
-  }
-
-  private async handleCheckoutSessionCompleted(
-    session: Stripe.Checkout.Session,
-  ): Promise<void> {
-    const userId = session.metadata?.user_id;
-    const courseId = session.metadata?.course_id;
-    const customerId =
-      typeof session.customer === "string"
-        ? session.customer
-        : session.customer?.id;
-
-    if (!userId || !courseId || !customerId) {
-      this.logger.warn(
-        "checkout.session.completed missing metadata or customer",
-      );
-      return;
-    }
-
-    await this.prisma.user.updateMany({
-      where: { id: userId },
-      data: { stripeCustomerId: customerId },
-    });
-
-    const sess = session as unknown as {
-      mode?: string;
-      payment_status?: string;
-      amount_total?: number | null;
-      currency?: string | null;
-      subscription?: string | { id: string } | null;
-    };
-
-    if (sess.mode === "payment" && sess.payment_status === "paid") {
-      await this.handleCheckoutPaymentCompleted(
-        userId,
-        courseId,
-        session.id,
-        sess.amount_total ?? 0,
-        sess.currency ?? "eur",
-      );
-      return;
-    }
-
-    const stripeSubscriptionId =
-      typeof session.subscription === "string"
-        ? session.subscription
-        : session.subscription?.id;
-    if (!stripeSubscriptionId) {
-      this.logger.warn(
-        "checkout.session.completed subscription mode but no subscription id",
-      );
-      return;
-    }
-
-    const stripeSubscription = await this.stripeService
-      .getClient()
-      .subscriptions.retrieve(stripeSubscriptionId);
-    const stripeSub = stripeSubscription as unknown as {
-      status: Stripe.Subscription.Status;
-      current_period_start?: number;
-      current_period_end?: number;
-    };
-    const status = this.mapStripeStatus(stripeSub.status);
-    const currentPeriodStart = stripeSub.current_period_start
-      ? new Date(stripeSub.current_period_start * 1000)
-      : null;
-    const currentPeriodEnd = stripeSub.current_period_end
-      ? new Date(stripeSub.current_period_end * 1000)
-      : null;
-
-    await this.prisma.subscription.upsert({
-      where: { stripeSubscriptionId },
-      create: {
-        userId,
-        courseId,
-        stripeCustomerId: customerId,
-        stripeSubscriptionId,
-        status,
-        currentPeriodStart,
-        currentPeriodEnd,
-      },
-      update: {
-        status,
-        currentPeriodStart,
-        currentPeriodEnd,
-      },
-    });
-
-    const dbSubscription = await this.prisma.subscription.findUnique({
-      where: { stripeSubscriptionId },
-    });
-    if (!dbSubscription) return;
-
-    await this.prisma.userCourseAccess.upsert({
-      where: {
-        userId_courseId: { userId, courseId },
-      },
-      create: {
-        userId,
-        courseId,
-        accessType: UserCourseAccessType.subscription,
-        subscriptionId: dbSubscription.id,
-      },
-      update: {
-        accessType: UserCourseAccessType.subscription,
-        subscriptionId: dbSubscription.id,
-      },
-    });
-  }
-
-  private async handleCheckoutPaymentCompleted(
-    userId: string,
-    courseId: string,
-    sessionId: string,
-    amountTotal: number,
-    currency: string,
-  ): Promise<void> {
-    const amount = amountTotal / 100;
-    try {
-      const payment = await this.prisma.payment.create({
-        data: {
-          userId,
-          courseId,
-          subscriptionId: null,
-          stripeInvoiceId: sessionId,
-          amount,
-          currency,
-          status: "paid",
-        },
+    if (this.wayForPay.isApproved(status)) {
+      await this.fulfillment.markPaid({
+        orderReference,
+        amount: payload.amount != null ? Number(payload.amount) : undefined,
+        currency: payload.currency,
       });
-
-      await this.prisma.userCourseAccess.upsert({
-        where: {
-          userId_courseId: { userId, courseId },
-        },
-        create: {
-          userId,
-          courseId,
-          accessType: UserCourseAccessType.purchase,
-          paymentId: payment.id,
-        },
-        update: {
-          accessType: UserCourseAccessType.purchase,
-          paymentId: payment.id,
-          trialEndsAt: null,
-        },
-      });
-    } catch (e: any) {
-      if (e?.code === "P2002") {
-        this.logger.debug(
-          `Payment for session ${sessionId} already exists, skipping`,
-        );
-        return;
-      }
-      throw e;
-    }
-  }
-
-  private async handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
-    const stripeInvoiceId = invoice.id;
-    const inv = invoice as unknown as {
-      subscription?: string | { id: string };
-      customer?: string | { id: string };
-      amount_paid?: number;
-      currency?: string;
-      status?: string;
-    };
-    const subscriptionId =
-      typeof inv.subscription === "string"
-        ? inv.subscription
-        : inv.subscription?.id;
-    const customerId =
-      typeof inv.customer === "string" ? inv.customer : inv.customer?.id;
-
-    if (!customerId) return;
-
-    const user = await this.prisma.user.findFirst({
-      where: { stripeCustomerId: customerId },
-      select: { id: true },
-    });
-    if (!user) return;
-
-    const amount = inv.amount_paid != null ? inv.amount_paid / 100 : 0;
-    const currency = inv.currency ?? "eur";
-    const status = inv.status ?? "paid";
-
-    let subscriptionRecord: { id: string; courseId: string } | null = null;
-    if (subscriptionId) {
-      subscriptionRecord = await this.prisma.subscription.findUnique({
-        where: { stripeSubscriptionId: subscriptionId },
-        select: { id: true, courseId: true },
-      });
+    } else if (this.wayForPay.isPendingStatus(status)) {
+      this.logger.log(`Order ${orderReference} still in progress: ${status}`);
+    } else if (status === WAYFORPAY_STATUS.refunded) {
+      this.logger.log(`Order ${orderReference} refunded, access left untouched`);
+    } else {
+      await this.fulfillment.markFailed(orderReference, payload.reason);
     }
 
-    try {
-      await this.prisma.payment.create({
-        data: {
-          userId: user.id,
-          courseId: subscriptionRecord?.courseId ?? null,
-          subscriptionId: subscriptionRecord?.id ?? null,
-          stripeInvoiceId,
-          amount,
-          currency,
-          status,
-        },
-      });
-    } catch (e: any) {
-      if (e?.code === "P2002") {
-        this.logger.debug(`Payment for invoice ${stripeInvoiceId} already exists`);
-        return;
-      }
-      throw e;
-    }
-
-    if (subscriptionRecord) {
-      await this.prisma.subscription.updateMany({
-        where: { stripeSubscriptionId: subscriptionId! },
-        data: { status: SubscriptionStatus.active },
-      });
-    }
-  }
-
-  private async handleSubscriptionUpdated(
-    subscription: Stripe.Subscription,
-  ): Promise<void> {
-    const stripeSub = subscription as unknown as {
-      id: string;
-      status: Stripe.Subscription.Status;
-      current_period_start?: number;
-      current_period_end?: number;
-    };
-    const stripeSubscriptionId = stripeSub.id;
-    const status = this.mapStripeStatus(stripeSub.status);
-    const currentPeriodStart = stripeSub.current_period_start
-      ? new Date(stripeSub.current_period_start * 1000)
-      : null;
-    const currentPeriodEnd = stripeSub.current_period_end
-      ? new Date(stripeSub.current_period_end * 1000)
-      : null;
-
-    await this.prisma.subscription.updateMany({
-      where: { stripeSubscriptionId },
-      data: {
-        status,
-        currentPeriodStart,
-        currentPeriodEnd,
-      },
-    });
-  }
-
-  private async handleSubscriptionDeleted(
-    subscription: Stripe.Subscription,
-  ): Promise<void> {
-    const stripeSubscriptionId = subscription.id;
-    const canceledAt = new Date();
-
-    await this.prisma.subscription.updateMany({
-      where: { stripeSubscriptionId },
-      data: {
-        status: SubscriptionStatus.canceled,
-        canceledAt,
-      },
-    });
-
-    const dbSubscription = await this.prisma.subscription.findUnique({
-      where: { stripeSubscriptionId },
-    });
-    if (dbSubscription) {
-      await this.prisma.userCourseAccess.updateMany({
-        where: { subscriptionId: dbSubscription.id },
-        data: { subscriptionId: null },
-      });
-    }
+    return this.wayForPay.buildAcceptResponse(orderReference);
   }
 }

@@ -1,6 +1,6 @@
 import { subscriptionApi } from '@/api/subscriptionApi';
 import { getErrorMessage } from '@/helpers/getErrorMessage';
-import { CheckoutSessionResponse, CreateCheckoutSessionPayload, GetMyCourseAccessResponse, GetMyPaymentsResponse, PortalSessionResponse, SubscriptionSummary } from '@/types/api/subscriptionApi.types';
+import { CheckoutSessionResponse, CreateCheckoutSessionPayload, GetMyCourseAccessResponse, GetMyPaymentsResponse, SubscriptionSummary } from '@/types/api/subscriptionApi.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 const buildSubscriptionSummary = (accessList: GetMyCourseAccessResponse): SubscriptionSummary => {
@@ -85,20 +85,6 @@ export const createCheckoutSessionThunk = createAsyncThunk<
     return result;
   } catch (error: unknown) {
     const message = getErrorMessage(error, 'Failed to start checkout');
-    return rejectWithValue(message);
-  }
-});
-
-export const createPortalSessionThunk = createAsyncThunk<
-  PortalSessionResponse,
-  void,
-  { rejectValue: string }
->('subscriptions/createPortalSession', async (_, { rejectWithValue }) => {
-  try {
-    const result = await subscriptionApi.createPortalSession();
-    return result;
-  } catch (error: unknown) {
-    const message = getErrorMessage(error, 'Failed to open billing portal');
     return rejectWithValue(message);
   }
 });

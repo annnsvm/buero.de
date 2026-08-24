@@ -247,24 +247,41 @@ model Subscription {
 }
 
 model Payment {
-  id              String   @id @default(uuid())
-  userId          String   @map("user_id")
-  courseId        String?  @map("course_id")
-  subscriptionId  String?  @map("subscription_id")
-  stripeInvoiceId String   @unique @map("stripe_invoice_id")
-  amount          Decimal  @db.Decimal(10, 2)
-  currency        String
-  status          String
-  createdAt       DateTime @default(now()) @map("created_at")
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  courseId       String?  @map("course_id")
+  subscriptionId String?  @map("subscription_id")
+  provider       String   @default("wayforpay")
+  /// orderReference у WayForPay; історичні Stripe-платежі мають null
+  orderReference String?  @unique @map("order_reference")
+  /// Історичні Stripe-платежі; для WayForPay не заповнюється
+  stripeInvoiceId String? @unique @map("stripe_invoice_id")
+  amount         Decimal  @db.Decimal(10, 2)
+  currency       String
+  status         String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   course           Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
   subscription     Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   userCourseAccess UserCourseAccess[]
 
+  @@index([userId])
   @@map("payments")
 }
 
+/// Ідемпотентність callback-ів платіжного провайдера (WayForPay serviceUrl).
+model PaymentWebhookEvent {
+  id          String   @id @default(uuid())
+  provider    String   @default("wayforpay")
+  eventKey    String   @unique @map("event_key")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("payment_webhook_events")
+}
+
+/// Історія оброблених Stripe-подій (до міграції на WayForPay).
 model StripeWebhookEvent {
   id            String   @id @default(uuid())
   stripeEventId String   @unique @map("stripe_event_id")

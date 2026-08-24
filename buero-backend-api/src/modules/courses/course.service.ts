@@ -15,7 +15,6 @@ import {
 } from "../../generated/prisma/enums";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CloudinaryService } from "../../cloudinary/cloudinary.service";
-import { StripeService } from "../stripe/stripe.service";
 import { CreateCourseDto } from "./dto/create-course.dto";
 import {
   ListCoursesQueryDto,
@@ -24,6 +23,7 @@ import {
 import { UpdateCourseDto } from "./dto/update-course.dto";
 import { ReorderCoursesDto } from "./dto/reorder-courses.dto";
 import { UserService } from "../user/user.service";
+import { PaymentFulfillmentService } from "../subscriptions/payment-fulfillment.service";
 
 @Injectable()
 export class CourseService {
@@ -34,7 +34,7 @@ export class CourseService {
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly stripeService: StripeService
+    private readonly paymentFulfillment: PaymentFulfillmentService
   ) {}
 
   /**
@@ -42,6 +42,8 @@ export class CourseService {
    */
   async findMyAccessibleCourses(userId: string) {
     try {
+      await this.paymentFulfillment.reconcilePendingForUser(userId);
+
       const accesses = await this.prisma.userCourseAccess.findMany({
         where: { userId },
         include: { course: true },
@@ -251,8 +253,6 @@ export class CourseService {
           id: true,
           title: true,
           price: true,
-          stripeProductId: true,
-          stripePriceId: true,
           isPublished: true,
         },
       });
@@ -276,60 +276,6 @@ export class CourseService {
           durationHours: dto.duration_hours,
         }),
       };
-
-      const isPublishing =
-        dto.is_published === true && existing.isPublished === false;
-      if (isPublishing) {
-        const effectivePriceRaw =
-          dto.price !== undefined
-            ? Number(dto.price)
-            : this.priceToNumber(existing.price);
-        const effectivePrice =
-          effectivePriceRaw != null && Number.isFinite(effectivePriceRaw)
-            ? effectivePriceRaw
-            : null;
-        if (
-          effectivePrice !== null &&
-          effectivePrice > 0 &&
-          !existing.stripePriceId
-        ) {
-          try {
-            const product = await this.stripeService.createProduct({
-              name: (dto.title ?? existing.title).slice(0, 255),
-            });
-            const unitAmountCents = Math.round(effectivePrice * 100);
-            const currency =
-              this.configService.get<string>("STRIPE_DEFAULT_CURRENCY") ??
-              "eur";
-            const price = await this.stripeService.createPrice({
-              productId: product.id,
-              unitAmountCents,
-              currency,
-            });
-            updateData.stripeProductId = product.id;
-            updateData.stripePriceId = price.id;
-            this.logger.log(
-              `Stripe Product+Price created for course ${id}: product=${product.id}, price=${price.id}`
-            );
-          } catch (stripeErr) {
-            const msg =
-              stripeErr instanceof Error
-                ? stripeErr.message
-                : String(stripeErr);
-            this.logger.error(
-              `Stripe Product/Price creation failed for course ${id}: ${msg}`,
-              stripeErr instanceof Error ? stripeErr.stack : undefined
-            );
-            throw new BadRequestException(
-              `Не вдалося створити ціну в Stripe: ${msg}. Перевірте логи.`
-            );
-          }
-        } else if (effectivePrice === null || effectivePrice <= 0) {
-          this.logger.log(
-            `Course ${id} published without price (free course), skipping Stripe Product/Price`
-          );
-        }
-      }
 
       const course = await this.prisma.course.update({
         where: { id },

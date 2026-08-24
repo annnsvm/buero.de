@@ -63,7 +63,8 @@ cp .env.example .env
 | `CORS_ORIGIN` | `http://localhost:5173` |
 | `COOKIE_SECURE` | `false` |
 | `COOKIE_DOMAIN` | порожньо |
-| JWT, Stripe, Cloudinary | ті самі ключі, що на Render (або test-ключі Stripe) |
+| JWT, WayForPay, Cloudinary | ті самі ключі, що на Render |
+| `WAYFORPAY_SERVICE_URL` | `http://localhost:3000/api/webhooks/wayforpay` (для реальних оплат — ngrok, див. нижче) |
 
 > **Render Dashboard → PostgreSQL → External URL** — для локального комп’ютера.  
 > **Internal URL** — лише для Web Service `buro-de` на Render (не працює з ноутбука).
@@ -157,7 +158,7 @@ Redeploy вручну не потрібен, якщо Auto-Deploy увімкне
 | `NODE_ENV` | `development` | `production` |
 | `CORS_ORIGIN` | `http://localhost:5173` | `https://www.buro-de.com` |
 | `COOKIE_SECURE` | `false` | `true` |
-| `STRIPE_PORTAL_RETURN_URL` | `http://localhost:5173/settings/billing` | `https://www.buro-de.com/settings/billing` |
+| `WAYFORPAY_SERVICE_URL` | `https://<ngrok>.ngrok-free.app/api/webhooks/wayforpay` | `https://buro-de.onrender.com/api/webhooks/wayforpay` |
 
 Якщо потрібен і local, і production CORS на одному Render-сервісі (рідко):  
 `CORS_ORIGIN=https://www.buro-de.com,http://localhost:5173` — код підтримує кілька origin через кому.
@@ -170,6 +171,36 @@ Redeploy вручну не потрібен, якщо Auto-Deploy увімкне
 | Render Static Site (build) | `https://buro-de.onrender.com/api` |
 
 На Render Static Site `VITE_*` застосовуються **під час build**. Після зміни — **Manual Deploy** або push у `main`.
+
+---
+
+## Локальне тестування оплат (WayForPay)
+
+WayForPay підтверджує платіж двома шляхами: server-to-server callback на `serviceUrl` і редірект
+браузера на `returnUrl`. З `localhost` перший шлях недоступний — сервери WayForPay не бачать ноутбук.
+
+**Варіант 1 — без ngrok (швидка перевірка UI).** Лиши `WAYFORPAY_SERVICE_URL=http://localhost:3000/...`.
+Callback не дійде, але після повернення на `/purchase/success` фронт викличе
+`POST /api/subscriptions/sync-checkout`, який сам запитає статус у WayForPay і відкриє доступ.
+
+**Варіант 2 — з ngrok (повний потік, включно з callback).**
+
+```bash
+ngrok http 3000
+# у .env: WAYFORPAY_SERVICE_URL=https://<subdomain>.ngrok-free.app/api/webhooks/wayforpay
+# перезапусти backend
+```
+
+Перевірити обробку callback без реальної оплати можна e2e-тестом — він підписує запит тим самим
+секретом і перевіряє ідемпотентність:
+
+```bash
+cd buero-backend-api
+npm run test:e2e -- test/subscriptions.e2e-spec.ts
+```
+
+`WAYFORPAY_MERCHANT_DOMAIN` завжди має збігатися з доменом у кабінеті WayForPay (`buro-de.com`),
+навіть коли backend працює на `localhost` — інакше підпис не зійдеться.
 
 ---
 

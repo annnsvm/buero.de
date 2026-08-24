@@ -4,7 +4,12 @@ import { selectSubscriptionStatus } from '@/redux/slices/subscriptions';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
 import { openGlobalModal } from '@/redux/slices/ui/uiSlice';
 import { CheckoutButtonProps } from '@/types/components/ui/CheckoutButton.types';
-import { PENDING_CHECKOUT_KEY, clearPendingTrialSession } from '@/helpers/sessionPendingAuth';
+import {
+  PAYMENT_RETURN_KEY,
+  PENDING_CHECKOUT_KEY,
+  clearPendingTrialSession,
+  savePendingOrderReference,
+} from '@/helpers/sessionPendingAuth';
 import React from 'react';
 
 const CheckoutButton: React.FC<CheckoutButtonProps> = ({
@@ -42,9 +47,10 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
     );
 
     if (createCheckoutSessionThunk.fulfilled.match(resultAction)) {
-      const url = resultAction.payload.url;
+      const { url, order_reference: orderReference } = resultAction.payload;
       if (url) {
-        sessionStorage.setItem('stripe_return', 'pending');
+        sessionStorage.setItem(PAYMENT_RETURN_KEY, 'pending');
+        savePendingOrderReference(orderReference);
         window.location.href = url;
       }
       return;

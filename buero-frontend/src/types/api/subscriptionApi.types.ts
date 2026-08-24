@@ -27,10 +27,12 @@ interface PaymentDTO {
   userId: string;
   courseId: string | null;
   subscriptionId: string | null;
-  stripeInvoiceId: string | null;
+  provider: string;
+  orderReference?: string | null;
+  stripeInvoiceId?: string | null;
   amount: number;
   currency: string;
-  status: 'succeeded' | 'pending' | 'failed' | 'canceled' | string;
+  status: 'succeeded' | 'paid' | 'pending' | 'failed' | 'canceled' | string;
   created_at: string;
 }
 
@@ -44,13 +46,15 @@ interface CreateCheckoutSessionPayload {
 
 interface CheckoutSessionResponse {
   url: string;
+  order_reference: string;
 }
 
-interface PortalSessionResponse {
-  url: string;
+interface SyncCheckoutResponse {
+  ok: boolean;
+  status: string;
 }
 
-export type{
+export type {
   CourseAccessDTO,
   GetMyCourseAccessResponse,
   SubscriptionSummary,
@@ -58,5 +62,5 @@ export type{
   GetMyPaymentsResponse,
   CreateCheckoutSessionPayload,
   CheckoutSessionResponse,
-  PortalSessionResponse,
+  SyncCheckoutResponse,
 };

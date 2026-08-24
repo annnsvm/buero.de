@@ -2,12 +2,19 @@ import { Module } from "@nestjs/common";
 import { CloudinaryModule } from "../../cloudinary/cloudinary.module";
 import { PrismaModule } from "../../prisma/prisma.module";
 import { AuthModule } from "../auth/auth.module";
+import { SubscriptionsModule } from "../subscriptions/subscriptions.module";
 import { UserModule } from "../user/user.module";
 import { CourseService } from "./course.service";
 import { CoursesController } from "./courses.controller";
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, CloudinaryModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UserModule,
+    CloudinaryModule,
+    SubscriptionsModule,
+  ],
   controllers: [CoursesController],
   providers: [CourseService],
   exports: [CourseService],

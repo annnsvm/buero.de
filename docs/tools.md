@@ -31,7 +31,7 @@
 ### Prisma
 
 - **Що робить:** ORM для Node: схема в `schema.prisma`, типобезпечні клієнти, міграції, seed.
-- **У проєкті:** доступ до БД у всіх сервісах (UserService, CourseService, CourseMaterialService, Stripe webhook handler тощо); міграції для змін схеми.
+- **У проєкті:** доступ до БД у всіх сервісах (UserService, CourseService, CourseMaterialService, WayForPay webhook handler тощо); міграції для змін схеми.
 - **Чому обрали:** типобезпека з TypeScript, зручний API, міграції з коробки, добра інтеграція з NestJS (PrismaService).
 
 ---
@@ -110,11 +110,11 @@
 - **У проєкті:** матеріали типу video зберігають `youtube_video_id` (04-course-materials); фронт показує embed; при потребі бекенд може валідувати існування відео або підтягувати метадані через API (опційно).
 - **Чому обрали:** відео хостимо на YouTube (MVP); API потрібен для валідації або метаданих, embed — без обов’язкового API виклику.
 
-### Stripe SDK (stripe)
+### WayForPay (власна інтеграція через HTTP + `crypto`)
 
-- **Що робить:** створення Checkout Session, Customer Portal URL, верифікація webhook signature, робота з subscription/payment objects.
-- **У проєкті:** Subscriptions & Billing: checkout **на курс** (course_id), створення user_course_access, portal, webhook; ідемпотентність через stripe_webhook_events. Курси продаються окремо.
-- **Чому обрали:** офіційний клієнт; без нього неможливо безпечно обробляти webhook та створювати сесії (architecture, Stripe в компонентах).
+- **Що робить:** створення платіжної сторінки (`/pay?behavior=offline`), HMAC-MD5 підписи запитів і callback-ів, `CHECK_STATUS` через `https://api.wayforpay.com/api`.
+- **У проєкті:** Subscriptions & Billing: разова купівля курсу (course_id), pending payment з order_reference, serviceUrl-webhook, ідемпотентність через payment_webhook_events. Курси продаються окремо.
+- **Чому обрали:** офіційного Node SDK немає, а API невеликий — вистачає `fetch` і вбудованого `crypto`; це прибирає зайву залежність і робить підписи явними та тестованими (`wayforpay.service.spec.ts`).
 
 ---
 
@@ -123,7 +123,7 @@
 ### Jest
 
 - **Що робить:** тест-ранер та assertion-бібліотека для unit- та інтеграційних тестів (describe, it, expect, mocks).
-- **У проєкті:** unit-тести сервісів (UserService, CourseMaterialService, Stripe webhook handler тощо), інтеграційні тести контролерів з мокованою БД або тестовою БД.
+- **У проєкті:** unit-тести сервісів (UserService, CourseMaterialService, WayForPayService підписи тощо), інтеграційні тести контролерів з мокованою БД або тестовою БД.
 - **Чому обрали:** стандарт для NestJS; вбудована підтримка у CLI (nest g app з Jest); швидкі тести, snapshot при потребі.
 
 ### Supertest
@@ -139,7 +139,7 @@
 ### @nestjs/config
 
 - **Що робить:** завантаження змінних середовища з `.env`; ConfigService для доступу до значень у модулях.
-- **У проєкті:** JWT_SECRET, DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, порт сервера, frontend URL для CORS/cookie.
+- **У проєкті:** JWT_SECRET, DATABASE_URL, WAYFORPAY_MERCHANT_ACCOUNT, WAYFORPAY_MERCHANT_SECRET, порт сервера, frontend URL для CORS/cookie.
 - **Чому обрали:** вбудована підтримка в Nest; уникнення хардкоду секретів; можливість валідації env при старті (наприклад через Joi).
 
 ---
@@ -186,11 +186,11 @@
 - **У проєкті:** перевірка ендпоінтів під час розробки; можна частково замінити Swagger UI для складних сценаріїв (наприклад cookie + refresh).
 - **Чому обрали:** згадано в поточному списку; зручно для швидких перевірок.
 
-### Stripe CLI
+### ngrok
 
-- **Що робить:** CLI для роботи з Stripe; команда `stripe listen --forward-to localhost:3000/webhooks/stripe` прокладає webhook-и на локальний сервер.
-- **У проєкті:** локальне тестування обробки webhook (checkout.session.completed, invoice.paid, subscription.updated тощо) без деплою.
-- **Чому обрали:** офіційний інструмент Stripe; необхідний для безпечної розробки Subscriptions & Billing.
+- **Що робить:** публічний HTTPS-тунель до `localhost:3000`.
+- **У проєкті:** локальне тестування serviceUrl-callback WayForPay — сервери провайдера не бачать localhost. Без тунелю доступ відкривається запасним шляхом через `sync-checkout`.
+- **Чому обрали:** WayForPay не має аналога Stripe CLI; тунель — єдиний спосіб отримати реальний callback під час розробки.
 
 ### ESLint + Prettier
 
@@ -252,12 +252,12 @@
 - **Валідація:** class-validator + class-transformer + ValidationPipe.
 - **Документація API:** Swagger (@nestjs/swagger).
 - **БД:** PostgreSQL + Prisma (міграції, PrismaService у Nest).
-- **Зовнішні сервіси:** Stripe SDK (checkout, webhook, portal); YouTube — embed по video_id, опційно Data API для метаданих.
+- **Зовнішні сервіси:** WayForPay (платіжна сторінка, webhook, CHECK_STATUS); YouTube — embed по video_id, опційно Data API для метаданих.
 - **Тести:** Jest для unit/інтеграції; Supertest для e2e.
 - **Конфіг:** .env + @nestjs/config; не зберігати секрети в репозиторії.
 - **Cookie:** cookie-parser або вбудована підтримка Nest для читання access_token/refresh_token.
 - **Rate limit:** @nestjs/throttler для login/register та API.
 - **Локалізація:** nestjs-i18n або JSON для EN/DE.
-- **Розробка:** Stripe CLI для webhook; ESLint + Prettier для стилю коду.
+- **Розробка:** ngrok для локального прийому webhook; ESLint + Prettier для стилю коду.
 
 Якщо потрібно, можна винести цей чеклист у окремий файл або в README бекенду.

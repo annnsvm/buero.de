@@ -1,6 +1,6 @@
 # buero-backend-api
 
-Backend API платформи buero.de на **NestJS**: авторизація, курси, матеріали, прогрес, підписки (Stripe). БД — PostgreSQL, ORM — Prisma.
+Backend API платформи buero.de на **NestJS**: авторизація, курси, матеріали, прогрес, купівля курсів (WayForPay). БД — PostgreSQL, ORM — Prisma.
 
 ---
 
@@ -42,7 +42,9 @@ npm install
   CORS_ORIGIN=http://localhost:5173
   COOKIE_SECURE=false
   ```
-  **External URL** — з Render Dashboard → PostgreSQL → Info. JWT і Stripe — ті самі ключі, що на production Web Service.
+  **External URL** — з Render Dashboard → PostgreSQL → Info. JWT і WayForPay — ті самі ключі, що на production Web Service.
+
+**WayForPay (купівля курсів):** обовʼязкові `WAYFORPAY_MERCHANT_ACCOUNT`, `WAYFORPAY_MERCHANT_SECRET`, `WAYFORPAY_MERCHANT_DOMAIN`, `WAYFORPAY_SERVICE_URL` — див. `.env.example` і [docs/local-development.md](../docs/local-development.md#локальне-тестування-оплат-wayforpay).
 
 **Cloudinary (обкладинки курсів):** для `POST /api/courses/:id/cover` потрібен акаунт [Cloudinary](https://cloudinary.com). У [Dashboard](https://cloudinary.com/console) скопіюй **Cloud name**, **API Key**, **API Secret** і додай у `.env`:
 
@@ -104,7 +106,7 @@ curl http://localhost:3000/api/health/db
 
 **Документація API (Swagger):** після запуску сервера доступна за адресою [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
 
-**Rate limiting (Throttler):** кількість запитів обмежена глобально (`THROTTLE_TTL`, `THROTTLE_LIMIT` у `.env`). Для `POST /api/auth/register` та `POST /api/auth/login` діє жорсткіший ліміт (5 спроб за 60 с). При перевищенні — відповідь **429 Too Many Requests**. Маршрути `GET /api/health`, `GET /api/health/db` та `POST /webhooks/stripe` виключені з обмеження.
+**Rate limiting (Throttler):** кількість запитів обмежена глобально (`THROTTLE_TTL`, `THROTTLE_LIMIT` у `.env`). Для `POST /api/auth/register` та `POST /api/auth/login` діє жорсткіший ліміт (5 спроб за 60 с). При перевищенні — відповідь **429 Too Many Requests**. Маршрути `GET /api/health`, `GET /api/health/db` та `/api/webhooks/*` виключені з обмеження.
 
 ---
 
@@ -130,7 +132,7 @@ curl http://localhost:3000/api/health/db
 | `npm run test`     | Unit-тести (Jest), наприклад `UserService` (auth: register, tokens). |
 | `npm run test:watch` | Unit у watch-режимі.                                             |
 | `npm run test:cov` | Unit з покриттям (`coverage/`).                                      |
-| `npm run test:e2e` | E2E по HTTP (Supertest): auth, **users**, **courses** (каталог, CRUD вчителя, 404). Потрібні **PostgreSQL**, `.env` з `DATABASE_URL`, схема БД узгоджена з Prisma (`npx prisma migrate deploy`), JWT, Stripe (як для `start:dev`). У `test/setup-e2e-env.ts` вмикається `E2E_TEST=true` — Throttler не обмежує запити під час e2e. |
+| `npm run test:e2e` | E2E по HTTP (Supertest): auth, **users**, **courses** (каталог, CRUD вчителя, 404). Потрібні **PostgreSQL**, `.env` з `DATABASE_URL`, схема БД узгоджена з Prisma (`npx prisma migrate deploy`), JWT, WayForPay (як для `start:dev`). У `test/setup-e2e-env.ts` вмикається `E2E_TEST=true` — Throttler не обмежує запити під час e2e. |
 
 ---
 

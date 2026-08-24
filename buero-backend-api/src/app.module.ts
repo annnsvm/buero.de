@@ -6,7 +6,7 @@ import type { StringValue } from "ms";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthModule } from "./modules/auth/auth.module";
 import { UserModule } from "./modules/user/user.module";
-import { StripeModule } from "./modules/stripe/stripe.module";
+import { WayForPayModule } from "./modules/wayforpay/wayforpay.module";
 import { CoursesModule } from './modules/courses/courses.module';
 import { CourseModulesModule } from './modules/course-modules/course-modules.module';
 import { CourseMaterialsModule } from './modules/course-materials/course-materials.module';
@@ -38,7 +38,7 @@ import { LessonRequestsModule } from './modules/lesson-requests/lesson-requests.
       inject: [ConfigService],
     }),
     PrismaModule,
-    StripeModule,
+    WayForPayModule,
     HealthModule,
     CoursesModule,
     CourseModulesModule,

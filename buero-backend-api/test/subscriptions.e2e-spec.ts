@@ -1,19 +1,25 @@
 import { INestApplication } from "@nestjs/common";
+import { createHmac } from "crypto";
 import request from "supertest";
-import Stripe from "stripe";
 import { PrismaService } from "src/prisma/prisma.service";
 import { createE2eApp } from "./e2e-app.factory";
 
-function getSetCookieHeaders(headers: { "set-cookie"?: string | string[] }): string[] {
+function getSetCookieHeaders(headers: {
+  "set-cookie"?: string | string[];
+}): string[] {
   const raw = headers["set-cookie"];
   if (!raw) return [];
   return Array.isArray(raw) ? raw : [raw];
 }
 
-describe("Subscriptions & Billing (e2e)", () => {
+describe("Subscriptions & Billing (e2e, WayForPay)", () => {
   const password = "E2ePass123";
+  const merchantAccount = process.env.WAYFORPAY_MERCHANT_ACCOUNT ?? "";
+  const merchantSecret = process.env.WAYFORPAY_MERCHANT_SECRET ?? "";
 
-  describe("HTTP (mocked Stripe)", () => {
+  const suite = merchantSecret ? describe : describe.skip;
+
+  suite("checkout → serviceUrl callback → access", () => {
     let app: INestApplication;
     let prisma: PrismaService;
     let userId: string;
@@ -27,14 +33,10 @@ describe("Subscriptions & Billing (e2e)", () => {
         );
       }
       app = await createE2eApp({
-        stripeServiceMock: {
-          createCustomer: jest.fn().mockResolvedValue({ id: "cus_e2e_mock" }),
-          createCheckoutSession: jest
+        wayForPayMock: {
+          createPaymentPageUrl: jest
             .fn()
-            .mockResolvedValue({ url: "https://checkout.test/e2e-session" }),
-          createBillingPortalSession: jest
-            .fn()
-            .mockResolvedValue({ url: "https://billing.test/e2e-portal" }),
+            .mockResolvedValue("https://secure.wayforpay.com/page?vkh=e2e"),
         },
       });
       prisma = app.get(PrismaService);
@@ -42,27 +44,25 @@ describe("Subscriptions & Billing (e2e)", () => {
 
     afterAll(async () => {
       if (userId) {
-        await prisma.payment.deleteMany({ where: { userId } });
         await prisma.userCourseAccess.deleteMany({ where: { userId } });
+        await prisma.payment.deleteMany({ where: { userId } });
         await prisma.user.deleteMany({ where: { id: userId } });
       }
       if (courseId) {
         await prisma.course.deleteMany({ where: { id: courseId } });
       }
+      await prisma.paymentWebhookEvent.deleteMany({
+        where: { eventKey: { startsWith: "bd-" } },
+      });
       await prisma.$disconnect();
       await app.close();
     });
 
-    it("POST checkout → url; GET subscriptions/me; POST portal → url; GET payments/me", async () => {
+    it("creates a pending payment, unlocks the course on callback and stays idempotent", async () => {
       const email = `sub_e2e_${Date.now()}_${Math.random().toString(36).slice(2)}@test.local`;
       const reg = await request(app.getHttpServer())
         .post("/api/auth/register")
-        .send({
-          email,
-          password,
-          role: "student",
-          language: "en",
-        })
+        .send({ email, password, role: "student", language: "en" })
         .expect(201);
 
       userId = reg.body.user.id;
@@ -75,7 +75,21 @@ describe("Subscriptions & Billing (e2e)", () => {
           title: "E2E Subscriptions",
           language: "en",
           isPublished: true,
-          stripePriceId: "price_e2e_mock",
+          price: 12.5,
+          modules: {
+            create: {
+              title: "Module 1",
+              orderIndex: 0,
+              materials: {
+                create: {
+                  type: "text",
+                  title: "Lesson 1",
+                  content: { body: "hello" },
+                  orderIndex: 0,
+                },
+              },
+            },
+          },
         },
       });
       courseId = course.id;
@@ -86,170 +100,111 @@ describe("Subscriptions & Billing (e2e)", () => {
         .send({ course_id: courseId })
         .expect(201);
 
-      expect(checkout.body.url).toBe("https://checkout.test/e2e-session");
+      expect(checkout.body.url).toBe("https://secure.wayforpay.com/page?vkh=e2e");
+      const orderReference: string = checkout.body.order_reference;
+      expect(orderReference).toEqual(expect.stringContaining("bd-"));
 
-      const me = await request(app.getHttpServer())
-        .get("/api/subscriptions/me")
-        .set("Cookie", cookieHeader)
-        .expect(200);
-
-      expect(Array.isArray(me.body)).toBe(true);
-
-      const portal = await request(app.getHttpServer())
-        .post("/api/subscriptions/portal")
-        .set("Cookie", cookieHeader)
-        .expect(201);
-
-      expect(portal.body.url).toBe("https://billing.test/e2e-portal");
-
-      await prisma.payment.create({
-        data: {
-          userId,
-          courseId,
-          subscriptionId: null,
-          stripeInvoiceId: `in_e2e_${Date.now()}`,
-          amount: 12.5,
-          currency: "eur",
-          status: "paid",
-        },
+      const pending = await prisma.payment.findUnique({
+        where: { orderReference },
       });
+      expect(pending?.status).toBe("pending");
 
+      const callback = {
+        merchantAccount,
+        orderReference,
+        amount: 12.5,
+        currency: "EUR",
+        authCode: "12345",
+        cardPan: "44**44",
+        transactionStatus: "Approved",
+        reasonCode: 1100,
+      };
+      const merchantSignature = createHmac("md5", merchantSecret)
+        .update(
+          [
+            callback.merchantAccount,
+            callback.orderReference,
+            String(callback.amount),
+            callback.currency,
+            callback.authCode,
+            callback.cardPan,
+            callback.transactionStatus,
+            String(callback.reasonCode),
+          ].join(";"),
+          "utf8",
+        )
+        .digest("hex");
+
+      const postCallback = () =>
+        request(app.getHttpServer())
+          .post("/api/webhooks/wayforpay")
+          .send({ ...callback, merchantSignature });
+
+      const first = await postCallback().expect(201);
+      expect(first.body).toMatchObject({ orderReference, status: "accept" });
+      expect(first.body.signature).toEqual(expect.any(String));
+
+      const paid = await prisma.payment.findUnique({
+        where: { orderReference },
+      });
+      expect(paid?.status).toBe("paid");
+
+      const access = await prisma.userCourseAccess.findUnique({
+        where: { userId_courseId: { userId, courseId } },
+      });
+      expect(access?.accessType).toBe("purchase");
+
+      await postCallback().expect(201);
+
+      const events = await prisma.paymentWebhookEvent.count({
+        where: { eventKey: { startsWith: orderReference } },
+      });
+      expect(events).toBe(1);
+      const paymentsForOrder = await prisma.payment.count({
+        where: { orderReference },
+      });
+      expect(paymentsForOrder).toBe(1);
+    });
+
+    it("rejects a callback with a broken signature", async () => {
+      await request(app.getHttpServer())
+        .post("/api/webhooks/wayforpay")
+        .send({
+          merchantAccount,
+          orderReference: "bd-does-not-exist",
+          amount: 1,
+          currency: "EUR",
+          transactionStatus: "Approved",
+          reasonCode: 1100,
+          merchantSignature: "deadbeef",
+        })
+        .expect(400);
+    });
+
+    it("returns the payment history with provider metadata", async () => {
       const payments = await request(app.getHttpServer())
         .get("/api/payments/me")
         .set("Cookie", cookieHeader)
         .expect(200);
 
-      expect(Array.isArray(payments.body)).toBe(true);
       expect(payments.body.length).toBeGreaterThanOrEqual(1);
-      const row = payments.body[0];
-      expect(row).toMatchObject({
+      expect(payments.body[0]).toMatchObject({
         user_id: userId,
         course_id: courseId,
+        provider: "wayforpay",
         currency: "eur",
         status: "paid",
       });
-      expect(Number(row.amount)).toBeCloseTo(12.5, 5);
-    });
-  });
-
-  const webhookSuite =
-    process.env.STRIPE_WEBHOOK_SECRET && process.env.STRIPE_SECRET_KEY
-      ? describe
-      : describe.skip;
-
-  webhookSuite("POST /api/webhooks/stripe (signed, real Stripe SDK)", () => {
-    let app: INestApplication;
-    let prisma: PrismaService;
-    let userId: string;
-    let courseId: string;
-
-    beforeAll(async () => {
-      if (!process.env.DATABASE_URL) {
-        throw new Error("E2E: DATABASE_URL не задано.");
-      }
-      app = await createE2eApp();
-      prisma = app.get(PrismaService);
     });
 
-    afterAll(async () => {
-      await prisma.stripeWebhookEvent.deleteMany({
-        where: { stripeEventId: { startsWith: "evt_e2e_wh_" } },
-      });
-      await prisma.payment.deleteMany({
-        where: { stripeInvoiceId: { startsWith: "cs_e2e_wh_" } },
-      });
-      await prisma.userCourseAccess.deleteMany({ where: { userId } });
-      if (courseId) {
-        await prisma.course.deleteMany({ where: { id: courseId } });
-      }
-      if (userId) {
-        await prisma.user.deleteMany({ where: { id: userId } });
-      }
-      await prisma.$disconnect();
-      await app.close();
-    });
+    it("redirects the browser from returnUrl to the frontend", async () => {
+      const redirect = await request(app.getHttpServer())
+        .post("/api/webhooks/wayforpay/return")
+        .send({ orderReference: "bd-return-test", transactionStatus: "Approved" })
+        .expect(303);
 
-    it("200 + ідемпотентність: та сама подія двічі не створює другий payment", async () => {
-      const email = `wh_e2e_${Date.now()}_${Math.random().toString(36).slice(2)}@test.local`;
-      const reg = await request(app.getHttpServer())
-        .post("/api/auth/register")
-        .send({
-          email,
-          password,
-          role: "student",
-          language: "en",
-        })
-        .expect(201);
-
-      userId = reg.body.user.id;
-
-      const course = await prisma.course.create({
-        data: {
-          title: "E2E Webhook Course",
-          language: "en",
-          isPublished: true,
-          stripePriceId: "price_e2e_wh",
-        },
-      });
-      courseId = course.id;
-
-      const sessionId = `cs_e2e_wh_${Date.now()}`;
-      const eventId = `evt_e2e_wh_${Date.now()}`;
-      const event = {
-        id: eventId,
-        object: "event",
-        type: "checkout.session.completed",
-        data: {
-          object: {
-            id: sessionId,
-            object: "checkout.session",
-            customer: "cus_e2e_wh_test",
-            metadata: { user_id: userId, course_id: courseId },
-            mode: "payment",
-            payment_status: "paid",
-            amount_total: 4200,
-            currency: "eur",
-          },
-        },
-      };
-
-      const payload = JSON.stringify(event);
-      const signature = Stripe.webhooks.generateTestHeaderString({
-        payload,
-        secret: process.env.STRIPE_WEBHOOK_SECRET!,
-      });
-
-      const postWebhook = () =>
-        request(app.getHttpServer())
-          .post("/api/webhooks/stripe")
-          .set("Content-Type", "application/json")
-          .set("Stripe-Signature", signature)
-          .send(payload);
-
-      const first = await postWebhook().expect(201);
-      expect(first.body).toEqual({ received: true });
-
-      const payCount1 = await prisma.payment.count({
-        where: { stripeInvoiceId: sessionId },
-      });
-      expect(payCount1).toBe(1);
-
-      const evtCount1 = await prisma.stripeWebhookEvent.count({
-        where: { stripeEventId: eventId },
-      });
-      expect(evtCount1).toBe(1);
-
-      await postWebhook().expect(201);
-
-      const payCount2 = await prisma.payment.count({
-        where: { stripeInvoiceId: sessionId },
-      });
-      expect(payCount2).toBe(1);
-
-      const evtCount2 = await prisma.stripeWebhookEvent.count({
-        where: { stripeEventId: eventId },
-      });
-      expect(evtCount2).toBe(1);
+      expect(redirect.headers.location).toContain("/purchase/success");
+      expect(redirect.headers.location).toContain("bd-return-test");
     });
   });
 });

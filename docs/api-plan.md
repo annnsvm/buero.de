@@ -14,7 +14,7 @@
 | 3 | **Courses** | CRUD курсів (teacher); список всіх курсів для студента (MVP: без фільтра за рівнем). | Auth |
 | 4 | **Course Materials** | CRUD матеріалів курсу (teacher); читання матеріалу (студент). | Auth, Courses |
 | 5 | **Progress & Quizzes** | Прогрес по матеріалах/курсах; покрокове збереження відповідей квізу; рекомендований наступний курс за рівнем. | Auth, Users, Course Materials |
-| 6 | **Subscriptions & Billing** | Купівля/підписка на курс (Checkout з course_id), user_course_access, Customer Portal, webhook Stripe. | Auth, Users, Courses |
+| 6 | **Subscriptions & Billing** | Разова купівля курсу (Checkout з course_id), user_course_access, webhook WayForPay, sync-checkout. | Auth, Users, Courses |
 | 7 | **Lesson Requests** | Студент створює запит; вчитель приймає/відхиляє та виставляє completed/rejected. | Auth, Users |
 
 ---
@@ -41,7 +41,7 @@
 4. **Courses** — база контенту.
 5. **Course Materials** — матеріали курсу.
 6. **Progress & Quizzes** — прогрес і квізи (в т.ч. покрокове збереження відповідей).
-7. **Subscriptions & Billing** — Stripe Checkout, webhook, статус, Portal, історія платежів.
+7. **Subscriptions & Billing** — WayForPay checkout, webhook, sync-checkout, доступи, історія платежів.
 8. **Lesson Requests** — запити на заняття, вчитель приймає/відхиляє та виставляє статус.
 
 ---
