@@ -1,16 +1,28 @@
 # Модуль: Subscriptions & Billing
 
-**Курси продаються окремо.** Купівля або підписка на конкретний курс через Stripe: Checkout Session (з course_id), user_course_access, subscriptions (з course_id), payments; Customer Portal, webhook (ідемпотентність).
+**Курси продаються окремо, разовою оплатою через WayForPay.** Checkout створює платіжну сторінку
+WayForPay (з course_id), а підтвердження оплати відкриває доступ у user_course_access.
+
+> **Міграція зі Stripe.** Stripe більше не використовується. Історичні платежі лишаються в
+> `payments` з `provider = "stripe"` і заповненим `stripe_invoice_id`; раніше видані доступи
+> (`user_course_access`) продовжують працювати без змін. Підписок (`subscriptions`) MVP не створює —
+> таблиця лишається лише для історичних записів.
 
 ---
 
 ## 1. Призначення
 
-- **Checkout:** ендпоінт приймає **course_id** і створює Stripe Checkout Session для купівлі/підписки на цей курс; повертає URL для редіректу. Після успішної оплати (webhook) — створення/оновлення **user_course_access** та subscription/payment (subscriptions.course_id, payments.course_id).
-- **Мої підписки / доступ:** GET список курсів, до яких у користувача є доступ (user_course_access), або список підписок (subscriptions з course_id).
-- **Customer Portal:** URL Stripe Customer Portal для керування підписками та платежами.
-- **Історія платежів:** GET платежі користувача (з course_id для контексту).
-- **Webhook:** POST /webhooks/stripe — верифікація signature, ідемпотентність (stripe_webhook_events), оновлення subscriptions, payments та **user_course_access**.
+- **Checkout:** ендпоінт приймає **course_id**, створює `payments`-запис зі статусом `pending` і
+  унікальним `order_reference`, після чого повертає URL платіжної сторінки WayForPay.
+- **Webhook (serviceUrl):** `POST /api/webhooks/wayforpay` — перевірка HMAC-MD5 підпису,
+  ідемпотентність (`payment_webhook_events`), позначення платежу оплаченим і створення
+  **user_course_access** з `access_type = purchase`.
+- **Return URL:** `POST/GET /api/webhooks/wayforpay/return` — WayForPay повертає браузер клієнта
+  POST-запитом, backend редіректить на `${CORS_ORIGIN}/purchase/success?orderReference=...`.
+- **Sync checkout:** `POST /api/subscriptions/sync-checkout` — запасний шлях, коли студент повернувся
+  раніше за callback: backend робить `CHECK_STATUS` у WayForPay і за потреби відкриває доступ.
+- **Мої курси:** GET список доступів (user_course_access).
+- **Історія платежів:** GET платежі користувача (з `provider` та `order_reference`).
 
 ---
 
@@ -18,44 +30,49 @@
 
 | Таблиця | Операції |
 |---------|----------|
-| user_course_access | читання, створення, оновлення (при checkout success, trial, webhook) |
-| subscriptions | читання, створення, оновлення (з webhook); **course_id** обов'язковий |
-| payments | читання (історія), створення (з webhook); **course_id** для купівлі курсу |
-| users | читання, оновлення (stripe_customer_id) |
-| stripe_webhook_events | створення (ідемпотентність), читання |
+| user_course_access | читання, створення, оновлення (checkout success, trial) |
+| payments | створення (`pending` при checkout), оновлення (`paid` / `failed`), читання (історія) |
+| payment_webhook_events | створення (ідемпотентність callback-ів), читання |
+| subscriptions, stripe_webhook_events | лише історичні дані, не записуються |
+
+Ключові поля `payments`: `provider` (`wayforpay` / `stripe`), `order_reference` (унікальний,
+WayForPay), `stripe_invoice_id` (унікальний, історичний), `status` (`pending` → `paid` / `failed`).
 
 ---
 
 ## 3. Сервіси
 
-**SubscriptionService (або CourseAccessService):**
+**WayForPayService** — інтеграційний шар без доступу до БД:
 
-- Створити Stripe Checkout Session для **курсу** (course_id у тілі запиту або URL); metadata сесії містить course_id для webhook.
-- Отримати список курсів, до яких у користувача є доступ (з user_course_access), або список активних підписок (subscriptions з course_id).
-- Згенерувати URL Stripe Customer Portal.
+- підписи HMAC-MD5 для Purchase, CHECK_STATUS і accept-відповіді;
+- створення платіжної сторінки (`/pay?behavior=offline` → JSON з `url`);
+- перевірка підпису вхідного callback;
+- `CHECK_STATUS` для ручної синхронізації.
 
-**PaymentService:**
+**SubscriptionsService** — перевіряє курс (опублікований, має уроки, має ціну) і доступ
+(`purchase`/`subscription` → 409, `trial` не блокує), створює pending-платіж і платіжну сторінку;
+`syncCheckout` звіряє статус.
 
-- Список платежів користувача (user_id; payments з course_id).
+**PaymentFulfillmentService** — спільна для webhook і sync логіка: позначити платіж оплаченим і
+відкрити доступ. Ідемпотентна.
 
-**WebhookService:**
+**WebhookService** — нормалізує тіло callback (JSON / form-urlencoded / text/plain), перевіряє підпис,
+захищає від повторів через `payment_webhook_events` і повертає підписану accept-відповідь.
 
-- Верифікація signature; ідемпотентність через stripe_webhook_events.
-- checkout.session.completed: створити/оновити subscription (з course_id з metadata), створити/оновити **user_course_access** для (user_id, course_id).
-- invoice.paid: записати payment (course_id), оновити subscription.status.
-- customer.subscription.updated/deleted: синхронізувати subscription; при deleted — оновити user_course_access (прибрати доступ по підписці).
+**PaymentService** — список платежів користувача.
 
 ---
 
-## 4. Ендпоінти (базові)
+## 4. Ендпоінти
 
 | Метод | Шлях | Опис | Роль |
 |-------|------|------|------|
-| POST | /api/subscriptions/checkout | Створити Checkout Session для курсу (body: course_id). Повернути URL для редіректу. | авторизований |
-| GET | /api/subscriptions/me або /api/courses/my | Список курсів, до яких є доступ (user_course_access), або список підписок з course_id. | авторизований |
-| POST | /api/subscriptions/portal | Повернути URL Stripe Customer Portal. | авторизований |
-| GET | /api/payments/me | Історія платежів (з course_id). | авторизований |
-| POST | /webhooks/stripe | Обробка подій Stripe (signature, ідемпотентність, оновлення БД та user_course_access). | Stripe (no auth) |
+| POST | /api/subscriptions/checkout | Створити оплату курсу (body: `course_id`). Повертає `url` і `order_reference`. | авторизований |
+| POST | /api/subscriptions/sync-checkout | Звірити статус оплати (body: `order_reference`). | авторизований |
+| GET | /api/subscriptions/me | Список курсів, до яких є доступ. | авторизований |
+| GET | /api/payments/me | Історія платежів. | авторизований |
+| POST | /api/webhooks/wayforpay | serviceUrl-callback WayForPay. | WayForPay (no auth) |
+| POST, GET | /api/webhooks/wayforpay/return | Повернення браузера клієнта → редірект на фронтенд. | публічний |
 
 ---
 
@@ -65,53 +82,54 @@
 flowchart TB
     subgraph Client
         Ch[Checkout]
-        Me[My subscription]
-        Port[Portal URL]
+        Ret["/purchase/success"]
+        Me[My courses]
         Pay[My payments]
     end
 
     subgraph API
         Ctrl[Subscriptions Controller]
-        Wh[Webhook handler]
+        Wh[Webhook Controller]
     end
 
     subgraph Services
-        SubS[SubscriptionService]
+        SubS[SubscriptionsService]
+        WfpS[WayForPayService]
+        FulS[PaymentFulfillmentService]
         PayS[PaymentService]
-        WhS[WebhookService]
     end
 
     subgraph External
-        Stripe[Stripe API]
+        WFP[WayForPay]
     end
 
     subgraph DB["PostgreSQL"]
-        Sub[(subscriptions)]
         PayT[(payments)]
-        U[(users)]
-        Ev[(stripe_webhook_events)]
+        Acc[(user_course_access)]
+        Ev[(payment_webhook_events)]
     end
 
-    Ch --> Ctrl
+    Ch --> Ctrl --> SubS
+    SubS --> WfpS --> WFP
+    SubS --> PayT
+    WFP -- serviceUrl --> Wh --> FulS
+    FulS --> Ev
+    FulS --> PayT
+    FulS --> Acc
+    WFP -- returnUrl --> Wh --> Ret
+    Ret -- sync-checkout --> Ctrl
     Me --> Ctrl
-    Port --> Ctrl
-    Pay --> Ctrl
-    Ctrl --> SubS
-    Ctrl --> PayS
-    SubS --> Stripe
-    SubS --> Sub
-    SubS --> U
-    PayS --> PayT
-    Stripe --> Wh
-    Wh --> WhS
-    WhS --> Ev
-    WhS --> Sub
-    WhS --> PayT
+    Pay --> Ctrl --> PayS --> PayT
 ```
 
 ---
 
 ## 6. Примітки
 
-- Customer Portal — best practice (Stripe Hosted Billing Portal); не зберігаємо картки на нашому боці.
-- Trial (доступ до одного курсу на обмежений період) створюється в модулі Placement Test при підтвердженні — запис у user_course_access. Продовження доступу після trial або доступ до інших курсів — через Checkout (купівля/підписка на курс).
+- Ціна курсу зберігається в `courses.price`; валюта — `WAYFORPAY_CURRENCY` (за замовчуванням `EUR`).
+- Купити можна лише опублікований курс, у якого є щонайменше один урок і задана ціна.
+- Trial створюється в модулі Placement Test; після оплати доступ оновлюється на `purchase`,
+  а `trial_ends_at` скидається.
+- Без підписаної accept-відповіді WayForPay повторює callback кілька діб, тому webhook завжди
+  повертає `{ orderReference, status: "accept", time, signature }`.
+- Дані карток на нашому боці не зберігаються — оплата відбувається на стороні WayForPay.

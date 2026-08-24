@@ -3,54 +3,105 @@ import {
   ConflictException,
   NotFoundException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PrismaService } from "src/prisma/prisma.service";
-import { StripeService } from "../stripe/stripe.service";
+import { WayForPayService } from "../wayforpay/wayforpay.service";
+import { PaymentFulfillmentService } from "./payment-fulfillment.service";
 import { SubscriptionsService } from "./subscriptions.service";
 
 describe("SubscriptionsService", () => {
   let service: SubscriptionsService;
   let prisma: {
-    user: { findUnique: jest.Mock; update: jest.Mock };
+    user: { findUnique: jest.Mock };
     course: { findUnique: jest.Mock };
+    courseMaterial: { count: jest.Mock };
     userCourseAccess: { findUnique: jest.Mock; findMany: jest.Mock };
+    payment: { create: jest.Mock; delete: jest.Mock; findUnique: jest.Mock };
   };
-  let stripeService: {
-    createCustomer: jest.Mock;
-    createCheckoutSession: jest.Mock;
-    createBillingPortalSession: jest.Mock;
+  let wayForPay: {
+    getDefaultCurrency: jest.Mock;
+    generateOrderReference: jest.Mock;
+    createPaymentPageUrl: jest.Mock;
+    getReturnUrl: jest.Mock;
+    getServiceUrl: jest.Mock;
+    checkStatus: jest.Mock;
+    isApproved: jest.Mock;
+    isPendingStatus: jest.Mock;
   };
-  let configGet: jest.Mock;
+  let fulfillment: {
+    markPaid: jest.Mock;
+    markFailed: jest.Mock;
+    reconcilePendingForUser: jest.Mock;
+  };
 
   const userId = "11111111-1111-1111-1111-111111111111";
   const courseId = "22222222-2222-2222-2222-222222222222";
+  const orderReference = "bd-1700000000000-abcd1234";
+  const dto = { course_id: courseId };
+
+  /** Щасливий шлях: користувач, опублікований курс з ціною, доступу ще немає. */
+  const arrangeCheckoutHappyPath = () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: userId,
+      email: "u@test.com",
+    });
+    prisma.course.findUnique.mockResolvedValue({
+      id: courseId,
+      title: "German A1",
+      isPublished: true,
+      price: 69,
+    });
+    prisma.courseMaterial.count.mockResolvedValue(3);
+    prisma.userCourseAccess.findUnique.mockResolvedValue(null);
+    prisma.payment.create.mockResolvedValue({ id: "pay-1" });
+    wayForPay.createPaymentPageUrl.mockResolvedValue(
+      "https://secure.wayforpay.com/page?vkh=abc",
+    );
+  };
 
   beforeEach(async () => {
-    configGet = jest.fn((key: string) => {
-      if (key === "CORS_ORIGIN") return "http://localhost:5173";
-      if (key === "STRIPE_PORTAL_RETURN_URL") return "http://localhost:5173/billing";
-      return undefined;
-    });
-
     prisma = {
-      user: { findUnique: jest.fn(), update: jest.fn() },
+      user: { findUnique: jest.fn() },
       course: { findUnique: jest.fn() },
+      courseMaterial: { count: jest.fn() },
       userCourseAccess: { findUnique: jest.fn(), findMany: jest.fn() },
+      payment: {
+        create: jest.fn(),
+        delete: jest.fn(),
+        findUnique: jest.fn(),
+      },
     };
 
-    stripeService = {
-      createCustomer: jest.fn(),
-      createCheckoutSession: jest.fn(),
-      createBillingPortalSession: jest.fn(),
+    wayForPay = {
+      getDefaultCurrency: jest.fn().mockReturnValue("EUR"),
+      generateOrderReference: jest.fn().mockReturnValue(orderReference),
+      createPaymentPageUrl: jest.fn(),
+      getReturnUrl: jest
+        .fn()
+        .mockReturnValue("http://localhost:3000/api/webhooks/wayforpay/return"),
+      getServiceUrl: jest
+        .fn()
+        .mockReturnValue("http://localhost:3000/api/webhooks/wayforpay"),
+      checkStatus: jest.fn(),
+      isApproved: jest.fn((status: string) => status === "Approved"),
+      isPendingStatus: jest.fn((status: string) => status === "InProcessing"),
+    };
+
+    fulfillment = {
+      markPaid: jest.fn(),
+      markFailed: jest.fn(),
+      reconcilePendingForUser: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SubscriptionsService,
-        { provide: PrismaService, useValue: prisma as unknown as PrismaService },
-        { provide: ConfigService, useValue: { get: configGet } },
-        { provide: StripeService, useValue: stripeService },
+        {
+          provide: PrismaService,
+          useValue: prisma as unknown as PrismaService,
+        },
+        { provide: WayForPayService, useValue: wayForPay },
+        { provide: PaymentFulfillmentService, useValue: fulfillment },
       ],
     }).compile();
 
@@ -58,82 +109,62 @@ describe("SubscriptionsService", () => {
   });
 
   describe("createCheckoutSession", () => {
-    const dto = { course_id: courseId };
+    it("creates a pending payment and returns the WayForPay page url", async () => {
+      arrangeCheckoutHappyPath();
+
+      const result = await service.createCheckoutSession(userId, dto);
+
+      expect(result).toEqual({
+        url: "https://secure.wayforpay.com/page?vkh=abc",
+        order_reference: orderReference,
+      });
+      expect(prisma.payment.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          userId,
+          courseId,
+          provider: "wayforpay",
+          orderReference,
+          amount: 69,
+          currency: "eur",
+          status: "pending",
+        }),
+      });
+      expect(wayForPay.createPaymentPageUrl).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderReference,
+          amount: 69,
+          currency: "EUR",
+          productName: "German A1",
+          clientEmail: "u@test.com",
+          clientAccountId: userId,
+        }),
+      );
+    });
+
+    it("removes the pending payment when WayForPay rejects the request", async () => {
+      arrangeCheckoutHappyPath();
+      wayForPay.createPaymentPageUrl.mockRejectedValue(
+        new BadRequestException("merchant not found"),
+      );
+
+      await expect(
+        service.createCheckoutSession(userId, dto),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.payment.delete).toHaveBeenCalledWith({
+        where: { id: "pay-1" },
+      });
+    });
 
     it("throws NotFoundException when user missing", async () => {
       prisma.user.findUnique.mockResolvedValue(null);
+
       await expect(
         service.createCheckoutSession(userId, dto),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it("creates Stripe customer when user has no stripeCustomerId", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: null,
-      });
-      stripeService.createCustomer.mockResolvedValue({ id: "cus_new" });
-      prisma.user.update.mockResolvedValue({});
-      prisma.course.findUnique.mockResolvedValue({
-        id: courseId,
-        stripePriceId: "price_1",
-      });
-      prisma.userCourseAccess.findUnique.mockResolvedValue(null);
-      stripeService.createCheckoutSession.mockResolvedValue({
-        url: "https://checkout.test/session",
-      });
-
-      const result = await service.createCheckoutSession(userId, dto);
-
-      expect(stripeService.createCustomer).toHaveBeenCalledWith({
-        email: "u@test.com",
-        metadata: { user_id: userId },
-      });
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: userId },
-        data: { stripeCustomerId: "cus_new" },
-      });
-      expect(result).toEqual({ url: "https://checkout.test/session" });
-      expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(
-        expect.objectContaining({
-          customerId: "cus_new",
-          priceId: "price_1",
-          metadata: { course_id: courseId, user_id: userId },
-        }),
-      );
-    });
-
-    it("reuses existing stripeCustomerId", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: "cus_existing",
-      });
-      prisma.course.findUnique.mockResolvedValue({
-        id: courseId,
-        stripePriceId: "price_1",
-      });
-      prisma.userCourseAccess.findUnique.mockResolvedValue(null);
-      stripeService.createCheckoutSession.mockResolvedValue({
-        url: "https://checkout.test/s",
-      });
-
-      await service.createCheckoutSession(userId, dto);
-
-      expect(stripeService.createCustomer).not.toHaveBeenCalled();
-      expect(prisma.user.update).not.toHaveBeenCalled();
-      expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(
-        expect.objectContaining({ customerId: "cus_existing" }),
-      );
-    });
-
     it("throws NotFoundException when course missing", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: "cus_x",
-      });
+      prisma.user.findUnique.mockResolvedValue({ id: userId, email: "u@t.com" });
       prisma.course.findUnique.mockResolvedValue(null);
 
       await expect(
@@ -141,16 +172,45 @@ describe("SubscriptionsService", () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it("throws ConflictException when purchase access exists", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: "cus_x",
-      });
+    it("rejects an unpublished course", async () => {
+      arrangeCheckoutHappyPath();
       prisma.course.findUnique.mockResolvedValue({
         id: courseId,
-        stripePriceId: "price_1",
+        title: "Draft",
+        isPublished: false,
+        price: 69,
       });
+
+      await expect(
+        service.createCheckoutSession(userId, dto),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it("rejects a course without lessons", async () => {
+      arrangeCheckoutHappyPath();
+      prisma.courseMaterial.count.mockResolvedValue(0);
+
+      await expect(
+        service.createCheckoutSession(userId, dto),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it("rejects a course without a price", async () => {
+      arrangeCheckoutHappyPath();
+      prisma.course.findUnique.mockResolvedValue({
+        id: courseId,
+        title: "Free",
+        isPublished: true,
+        price: null,
+      });
+
+      await expect(
+        service.createCheckoutSession(userId, dto),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it("throws ConflictException when purchase access exists", async () => {
+      arrangeCheckoutHappyPath();
       prisma.userCourseAccess.findUnique.mockResolvedValue({
         accessType: "purchase",
       });
@@ -160,69 +220,105 @@ describe("SubscriptionsService", () => {
       ).rejects.toBeInstanceOf(ConflictException);
     });
 
-    it("allows checkout when user has active trial (upgrade to purchase)", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: "cus_x",
-      });
-      prisma.course.findUnique.mockResolvedValue({
-        id: courseId,
-        stripePriceId: "price_1",
-      });
+    it("allows checkout during an active trial (upgrade to purchase)", async () => {
+      arrangeCheckoutHappyPath();
       prisma.userCourseAccess.findUnique.mockResolvedValue({
         accessType: "trial",
-        trialEndsAt: new Date(Date.now() + 86400000),
-      });
-      stripeService.createCheckoutSession.mockResolvedValue({
-        url: "https://checkout.test/upgrade",
+        trialEndsAt: new Date(Date.now() + 86_400_000),
       });
 
       const result = await service.createCheckoutSession(userId, dto);
 
-      expect(result).toEqual({ url: "https://checkout.test/upgrade" });
-      expect(stripeService.createCheckoutSession).toHaveBeenCalledWith(
-        expect.objectContaining({
-          customerId: "cus_x",
-          priceId: "price_1",
-          metadata: { course_id: courseId, user_id: userId },
-        }),
+      expect(result.url).toBe("https://secure.wayforpay.com/page?vkh=abc");
+    });
+  });
+
+  describe("syncCheckout", () => {
+    const syncDto = { order_reference: orderReference };
+
+    it("throws NotFoundException for another user's payment", async () => {
+      prisma.payment.findUnique.mockResolvedValue({
+        id: "pay-1",
+        userId: "someone-else",
+        status: "pending",
+      });
+
+      await expect(
+        service.syncCheckout(userId, syncDto),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("grants access when WayForPay reports Approved", async () => {
+      prisma.payment.findUnique.mockResolvedValue({
+        id: "pay-1",
+        userId,
+        status: "pending",
+      });
+      wayForPay.checkStatus.mockResolvedValue({
+        transactionStatus: "Approved",
+        amount: 69,
+        currency: "EUR",
+      });
+
+      const result = await service.syncCheckout(userId, syncDto);
+
+      expect(result).toEqual({ ok: true, status: "paid" });
+      expect(fulfillment.markPaid).toHaveBeenCalledWith({
+        orderReference,
+        amount: 69,
+        currency: "EUR",
+      });
+    });
+
+    it("stays pending while the transaction is still processing", async () => {
+      prisma.payment.findUnique.mockResolvedValue({
+        id: "pay-1",
+        userId,
+        status: "pending",
+      });
+      wayForPay.checkStatus.mockResolvedValue({
+        transactionStatus: "InProcessing",
+      });
+
+      const result = await service.syncCheckout(userId, syncDto);
+
+      expect(result).toEqual({ ok: false, status: "pending" });
+      expect(fulfillment.markPaid).not.toHaveBeenCalled();
+      expect(fulfillment.markFailed).not.toHaveBeenCalled();
+    });
+
+    it("marks the payment failed when declined", async () => {
+      prisma.payment.findUnique.mockResolvedValue({
+        id: "pay-1",
+        userId,
+        status: "pending",
+      });
+      wayForPay.checkStatus.mockResolvedValue({
+        transactionStatus: "Declined",
+        reason: "Insufficient funds",
+      });
+
+      const result = await service.syncCheckout(userId, syncDto);
+
+      expect(result).toEqual({ ok: false, status: "failed" });
+      expect(fulfillment.markFailed).toHaveBeenCalledWith(
+        orderReference,
+        "Insufficient funds",
       );
     });
 
-    it("throws BadRequestException when course has no stripePriceId", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: "cus_x",
+    it("skips CHECK_STATUS when the payment is already paid", async () => {
+      prisma.payment.findUnique.mockResolvedValue({
+        id: "pay-1",
+        userId,
+        status: "paid",
       });
-      prisma.course.findUnique.mockResolvedValue({
-        id: courseId,
-        stripePriceId: null,
-      });
-      prisma.userCourseAccess.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.createCheckoutSession(userId, dto),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
+      const result = await service.syncCheckout(userId, syncDto);
 
-    it("throws BadRequestException when Stripe returns session without url", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: userId,
-        email: "u@test.com",
-        stripeCustomerId: "cus_x",
-      });
-      prisma.course.findUnique.mockResolvedValue({
-        id: courseId,
-        stripePriceId: "price_1",
-      });
-      prisma.userCourseAccess.findUnique.mockResolvedValue(null);
-      stripeService.createCheckoutSession.mockResolvedValue({ url: null });
-
-      await expect(
-        service.createCheckoutSession(userId, dto),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(result).toEqual({ ok: true, status: "paid" });
+      expect(wayForPay.checkStatus).not.toHaveBeenCalled();
+      expect(fulfillment.markPaid).toHaveBeenCalledWith({ orderReference });
     });
   });
 
@@ -232,7 +328,7 @@ describe("SubscriptionsService", () => {
       prisma.userCourseAccess.findMany.mockResolvedValue([
         {
           id: "acc-1",
-          courseId: courseId,
+          courseId,
           accessType: "trial",
           trialEndsAt: new Date("2025-02-01"),
           paymentId: null,
@@ -242,6 +338,7 @@ describe("SubscriptionsService", () => {
       ]);
 
       const list = await service.getMyCourseAccess(userId);
+
       expect(list).toEqual([
         {
           id: "acc-1",
@@ -251,50 +348,6 @@ describe("SubscriptionsService", () => {
           created_at: created,
         },
       ]);
-    });
-  });
-
-  describe("createPortalSession", () => {
-    it("throws NotFoundException when user missing", async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
-      await expect(service.createPortalSession(userId)).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
-    });
-
-    it("throws BadRequestException when no stripeCustomerId", async () => {
-      prisma.user.findUnique.mockResolvedValue({ stripeCustomerId: null });
-      await expect(service.createPortalSession(userId)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-    });
-
-    it("returns portal url from Stripe", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        stripeCustomerId: "cus_portal",
-      });
-      stripeService.createBillingPortalSession.mockResolvedValue({
-        url: "https://billing.test/portal",
-      });
-
-      const result = await service.createPortalSession(userId);
-
-      expect(result).toEqual({ url: "https://billing.test/portal" });
-      expect(stripeService.createBillingPortalSession).toHaveBeenCalledWith({
-        customerId: "cus_portal",
-        returnUrl: "http://localhost:5173/billing",
-      });
-    });
-
-    it("throws BadRequestException when portal session has no url", async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        stripeCustomerId: "cus_portal",
-      });
-      stripeService.createBillingPortalSession.mockResolvedValue({ url: null });
-
-      await expect(service.createPortalSession(userId)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
     });
   });
 });

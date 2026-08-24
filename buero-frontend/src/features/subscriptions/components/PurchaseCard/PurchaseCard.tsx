@@ -1,11 +1,10 @@
 import { Container, Section } from '@/components/layout';
 import { Icon } from '@/components/ui';
 import LinkBtn from '@/components/ui/Link';
+import { PAYMENT_RETURN_KEY } from '@/helpers/sessionPendingAuth';
 import { PurchaseCardProps } from '@/types/features/subscriptions/PurschaseCard.types';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const STRIPE_RETURN_KEY = 'stripe_return';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const cardStyle = {
   confirmed: 'bg-[var(--color-success)]',
@@ -26,7 +25,13 @@ const PurchaseCard: React.FC<PurchaseCardProps> = ({
   type,
 }) => {
   const [countdown, setCountdown] = useState(5);
-  const [allowed] = useState(() => sessionStorage.getItem(STRIPE_RETURN_KEY) === 'pending');
+  const [searchParams] = useSearchParams();
+  // orderReference приходить із редіректу WayForPay навіть тоді, коли sessionStorage порожній
+  const [allowed] = useState(
+    () =>
+      sessionStorage.getItem(PAYMENT_RETURN_KEY) === 'pending' ||
+      Boolean(searchParams.get('orderReference')),
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +49,7 @@ const PurchaseCard: React.FC<PurchaseCardProps> = ({
       navigate('/', { replace: true });
       return;
     }
-    sessionStorage.removeItem(STRIPE_RETURN_KEY);
+    sessionStorage.removeItem(PAYMENT_RETURN_KEY);
   }, [allowed, navigate]);
 
   if (!allowed) {

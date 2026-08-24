@@ -10,7 +10,7 @@
 
 - Навчання через **quiz** та **відео-уроки** (відео вбудовані в квізи/модулі).
 - **Вчитель** створює курси та контент, але не веде заняття — тільки автор контенту.
-- **Курси продаються окремо:** не підписка на весь сервіс, а **купівля/підписка на конкретний курс**. Кожен курс має власну тему навчання та інтеграцію (соціокультурний контекст за темою курсу). Оплата через Stripe (разова купівля курсу або підписка на курс — за політикою продукту).
+- **Курси продаються окремо:** не підписка на весь сервіс, а **купівля/підписка на конкретний курс**. Кожен курс має власну тему навчання та інтеграцію (соціокультурний контекст за темою курсу). Оплата — разова купівля курсу через WayForPay.
 - **Дві ролі:** Student (той, хто вчиться), Teacher (той, хто створює контент). Адмін-роль не передбачена.
 - **Placement Test** → визначення рівня (A1–B2) → Trial: доступ до **одного** курсу на обмежений період (наприклад за рекомендацією за рівнем).
 - **Інтерактивні сценарії** з гілками вибору (Scenario Engine), культурний контекст вбудований у курси.
@@ -28,8 +28,8 @@
 | Компонент    | Опис |
 |-------------|------|
 | **Frontend** | Landing, кабінет студента (курси, квізи, прогрес), кабінет вчителя (створення курсів/матеріалів). |
-| **Backend API** | Auth (JWT + refresh у Postgres), Users, Courses & Materials, Progress, Quiz/Scenario, Subscriptions, Stripe Webhooks. |
-| **Stripe** | Checkout (купівля/підписка на курс), Webhooks, Customer Portal (керування підписками на курси). |
+| **Backend API** | Auth (JWT + refresh у Postgres), Users, Courses & Materials, Progress, Quiz/Scenario, Subscriptions, WayForPay Webhooks. |
+| **WayForPay** | Платіжна сторінка (разова купівля курсу), serviceUrl-callback, CHECK_STATUS. |
 
 ### Authentication
 
@@ -38,11 +38,13 @@
 - Logout / інвалідація: revoke refresh token (blacklist через `revoked_at`).
 - Ролі: `student` | `teacher`; доступ до API за роллю.
 
-### Payments (Stripe)
+### Payments (WayForPay)
 
-- Картки не зберігаються; Stripe Checkout + Customer Portal.
+- Картки не зберігаються; оплата відбувається на платіжній сторінці WayForPay.
+- Разова купівля курсу: `payments` створюється зі статусом `pending` та унікальним `order_reference`.
 - **Trial** активується після проходження Placement Test: студент отримує доступ до **одного** курсу на обмежений період (запис у `user_course_access` з типом trial).
-- Webhooks: верифікація signature, ідемпотентність через таблицю `stripe_webhook_events`.
+- Webhooks: верифікація HMAC-MD5 підпису, ідемпотентність через таблицю `payment_webhook_events`.
+- Stripe виведено з експлуатації; історичні записи лишаються в `payments` з `provider = 'stripe'`.
 
 ---
 
@@ -196,22 +198,28 @@
 | id                | PK        | |
 | user_id           | FK → users| |
 | course_id         | FK → courses | nullable; для разової купівлі курсу |
-| subscription_id   | FK → subscriptions | nullable; для платежів по підписці |
-| stripe_invoice_id | string    | UNIQUE (ідемпотентність) |
+| subscription_id   | FK → subscriptions | nullable; історичні платежі по підписці |
+| provider          | string    | `wayforpay` (default) або `stripe` для історичних записів |
+| order_reference   | string    | UNIQUE, nullable; ідентифікатор замовлення WayForPay |
+| stripe_invoice_id | string    | UNIQUE, nullable; лише історичні Stripe-платежі |
 | amount            | decimal   | |
 | currency          | string    | |
-| status            | string    | |
+| status            | string    | `pending` → `paid` / `failed` |
 | created_at        | timestamp | |
+| updated_at        | timestamp | |
 
-### 3.11 stripe_webhook_events
+### 3.11 payment_webhook_events
 
-Ідемпотентність обробки Stripe webhook.
+Ідемпотентність обробки callback-ів платіжного провайдера.
 
-| Column          | Type      | Notes |
-|-----------------|-----------|--------|
-| id              | PK        | |
-| stripe_event_id | string    | UNIQUE (Stripe event id) |
-| processed_at    | timestamp | |
+| Column       | Type      | Notes |
+|--------------|-----------|--------|
+| id           | PK        | |
+| provider     | string    | `wayforpay` |
+| event_key    | string    | UNIQUE, `orderReference:transactionStatus:reasonCode` |
+| processed_at | timestamp | |
+
+Таблиця `stripe_webhook_events` лишається лише як історія обробки Stripe-подій.
 
 ### 3.12 course_progress
 
@@ -475,19 +483,28 @@ erDiagram
 
 ---
 
-## 5. Webhook Processing (Stripe)
+## 5. Webhook Processing (WayForPay)
 
-**Endpoint:** `POST /webhooks/stripe`
+**Endpoint:** `POST /api/webhooks/wayforpay` (serviceUrl)
 
-- Перевірка signature.
-- Ідемпотентність: перед обробкою `INSERT INTO stripe_webhook_events (stripe_event_id)`; при UNIQUE conflict — пропустити.
+- Перевірка HMAC-MD5 підпису за полями
+  `merchantAccount;orderReference;amount;currency;authCode;cardPan;transactionStatus;reasonCode`.
+- Ідемпотентність: перед обробкою `INSERT INTO payment_webhook_events (event_key)`; при UNIQUE conflict — пропустити.
+- Відповідь завжди підписана: `{ orderReference, status: "accept", time, signature }` — інакше WayForPay повторює callback кілька діб.
 
-| Event                          | Дія в БД |
-|--------------------------------|----------|
-| `checkout.session.completed`   | Створити/оновити subscription (з course_id з метаданих сесії), створити/оновити запис user_course_access для цього курсу. |
-| `invoice.paid`                 | Записати payment (course_id з subscription або з метаданих), оновити subscription.status = active. |
-| `customer.subscription.updated`| Синхронізувати period_start/end, status. |
-| `customer.subscription.deleted`| subscription.status = canceled, canceled_at = now(); оновити user_course_access (прибрати посилання на subscription або позначити недоступ). |
+| transactionStatus | Дія в БД |
+|-------------------|----------|
+| `Approved` | payment.status = paid; створити/оновити user_course_access (`purchase`, trial_ends_at = null). |
+| `InProcessing`, `Pending`, `WaitingAuthComplete` | Нічого не змінювати, чекати наступний callback. |
+| `Declined`, `Expired` | payment.status = failed (лише якщо був `pending`). |
+| `Refunded`, `Voided` | Записати в лог; доступ не змінюється автоматично. |
+
+**Endpoint:** `POST`/`GET /api/webhooks/wayforpay/return` (returnUrl) — WayForPay повертає браузер
+клієнта POST-формою; backend редіректить на `${CORS_ORIGIN}/purchase/success?orderReference=...`
+(або `/purchase/cancel` для неуспішних статусів).
+
+**Запасний шлях:** `POST /api/subscriptions/sync-checkout` викликає CHECK_STATUS у WayForPay, коли
+студент повернувся на сайт раніше за callback.
 
 ---
 
@@ -504,7 +521,7 @@ erDiagram
 ## 7. Security & NFR (з requirements)
 
 - HTTPS, bcrypt для паролів, JWT (access + refresh у Postgres), rate limiting, CORS.
-- Картки не зберігаються; Stripe Checkout + верифікація webhook.
+- Картки не зберігаються; платіжна сторінка WayForPay + верифікація підпису callback.
 - Перевірка прав доступу до модуля; за потреби — заборона "перескочити" рівень без проходження попереднього (логіка в бекенді на основі `course_progress` та `level`).
 
 Session management: у MVP без Redis — сесії через JWT; refresh токени в Postgres. НФ-002 (Redis для session) для MVP не застосовуємо.
@@ -532,6 +549,9 @@ CREATE INDEX idx_quiz_attempts_user ON quiz_attempts(user_id);
 CREATE INDEX idx_lesson_requests_student ON lesson_requests(student_id);
 CREATE INDEX idx_lesson_requests_teacher ON lesson_requests(teacher_id);
 CREATE UNIQUE INDEX idx_stripe_webhook_events_event_id ON stripe_webhook_events(stripe_event_id);
+CREATE INDEX idx_payments_user_id ON payments(user_id);
+CREATE UNIQUE INDEX idx_payments_order_reference ON payments(order_reference);
+CREATE UNIQUE INDEX idx_payment_webhook_events_event_key ON payment_webhook_events(event_key);
 ```
 
 ---
@@ -542,9 +562,8 @@ CREATE UNIQUE INDEX idx_stripe_webhook_events_event_id ON stripe_webhook_events(
 2. **Student:** проходження Placement Test → збереження рівня; підтвердження trial → доступ до **одного** курсу на обмежений період (user_course_access).
 3. Каталог курсів (всі опубліковані); перегляд матеріалів і проходження — лише по курсах, до яких є доступ (user_course_access).
 4. Збереження прогресу (course_progress, quiz_attempts).
-5. Купівля/підписка на курс (Stripe Checkout з course_id) → створення user_course_access та subscription/payment; продовження доступу після trial або новий курс.
+5. Купівля курсу (WayForPay, разова оплата з course_id) → pending payment → callback → user_course_access; продовження доступу після trial або новий курс.
 6. Опційно: "Request a lesson" (lesson_requests → обробка вручну).
-7. Скасування підписки на курс (Stripe Portal або наш UI) → webhook → оновлення статусу subscription та доступу.
 
 ---
 
@@ -555,7 +574,7 @@ CREATE UNIQUE INDEX idx_stripe_webhook_events_event_id ON stripe_webhook_events(
 | Backend API| Node.js    |
 | DB         | PostgreSQL |
 | ORM        | Prisma     |
-| Payments   | Stripe (Checkout, Subscriptions, Webhooks) |
+| Payments   | WayForPay (платіжна сторінка, serviceUrl-webhook, CHECK_STATUS) |
 | Auth       | JWT (access + refresh у Postgres) |
 | Кеш/сесії  | Не використовуємо Redis у MVP |
 
@@ -566,8 +585,8 @@ CREATE UNIQUE INDEX idx_stripe_webhook_events_event_id ON stripe_webhook_events(
 - **Ядро:** users (student/teacher), student_profiles (level), teacher_profiles, courses (category = language | sociocultural), **course_modules** (модулі курсу), course_materials (типи: video, quiz, scenario, …; належать модулю).
 - **Доступ до курсу:** user_course_access (trial / purchase / subscription на кожен курс); перевірка доступу до матеріалів — по цій таблиці.
 - **Навчання:** прогрес у course_progress та quiz_attempts; сценарії з гілками — JSON у content.
-- **Білінг:** курси продаються окремо; subscriptions (з course_id) + payments (з course_id) + stripe_webhook_events; Stripe Customer Portal для керування підписками на курси.
+- **Білінг:** курси продаються окремо, разовою оплатою через WayForPay; payments (з course_id, provider, order_reference) + payment_webhook_events для ідемпотентності callback-ів.
 - **Спрощене "урок":** lesson_requests без календаря.
 - **Integration & Life in Germany** — курси з `category = 'sociocultural'`; кожен курс включає тему та інтеграцію за нею.
 
-Далі можна додати: деталізацію JSON-схеми для сценаріїв, приклади API endpoints, або окремий файл `billing.md` для Stripe та політики скасування.
+Далі можна додати: деталізацію JSON-схеми для сценаріїв, приклади API endpoints, або окремий файл `billing.md` для WayForPay та політики повернення коштів.

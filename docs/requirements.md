@@ -117,13 +117,13 @@
 
 ---
 
-### Ф-008: Підписки через Stripe
+### Ф-008: Купівля курсів через WayForPay
 
 **Пріоритет:** Критичний
 
 **Опис**
 
-**Курси продаються окремо.** Оплата через **Stripe Checkout** (купівля курсу або підписка на курс); у сесії передається course_id. Керування підписками — **Stripe Customer Portal**. Webhook: верифікація signature; ідемпотентність через `stripe_webhook_events`. Події: checkout.session.completed, invoice.paid, customer.subscription.updated/deleted. Після успішної оплати/підписки — створення/оновлення **user_course_access** для цього курсу. Trial (доступ до одного курсу на обмежений період) надається в модулі Placement Test після підтвердження. Доступ до контенту курсу перевіряється по user_course_access; при скасуванні підписки на курс — оновлення статусу та припинення доступу до цього курсу.
+**Курси продаються окремо, разовою оплатою через WayForPay.** Checkout приймає course_id, створює `payments` зі статусом `pending` та унікальним `order_reference` і повертає URL платіжної сторінки. Webhook (`serviceUrl`): верифікація HMAC-MD5 підпису; ідемпотентність через `payment_webhook_events`; підписана accept-відповідь. Статус `Approved` → `payments.status = paid` і створення/оновлення **user_course_access** з типом `purchase`. Якщо студент повернувся раніше за callback, фронтенд викликає `sync-checkout`, який звіряє статус через CHECK_STATUS. Trial (доступ до одного курсу на обмежений період) надається в модулі Placement Test після підтвердження. Доступ до контенту курсу перевіряється по user_course_access.
 
 ---
 
@@ -163,7 +163,7 @@
 - Backend **stateless**: сесія = JWT (access + refresh у Postgres); **Redis у MVP не використовується** (architecture.md, Tech Stack).
 - Підтримка масштабування через Docker / Kubernetes.
 - База даних: індексація, оптимізація складних запитів; read-replicas — у майбутньому.
-- Webhooks Stripe ідемпотентні (таблиця `stripe_webhook_events`).
+- Webhooks WayForPay ідемпотентні (таблиця `payment_webhook_events`).
 
 ---
 
@@ -183,7 +183,7 @@
 | Зберігання паролів | bcrypt; мінімальна складність пароля |
 | Авторизація | JWT (access + refresh); ротація refresh токенів; blacklist токенів при logout |
 | Захист від атак | Rate limiting; CORS policy; захист від SQL injection (ORM / prepared statements); CSRF protection |
-| Платежі | Дані карт не зберігаються; Stripe webhook перевіряється через signature verification |
+| Платежі | Дані карт не зберігаються; WayForPay webhook перевіряється через HMAC-MD5 signature |
 | Доступ до контенту | матеріали курсу — лише при наявності доступу до курсу в user_course_access (trial/purchase/subscription); каталог курсів — опубліковані (architecture, модуль Courses) |
 | Сценарні відповіді | перевірка прав доступу до модуля; за потреби — неможливість «перескочити» без проходження (course_progress, level) |
 
@@ -201,7 +201,7 @@
 
 - **Доступність:** мінімум 99% uptime
 - **Обробка помилок:** централізований error handler; логування помилок; fallback response без розкриття внутрішньої логіки
-- **Відмовостійкість:** Stripe webhook retry-safe; транзакційність записів у БД
+- **Відмовостійкість:** WayForPay webhook retry-safe; транзакційність записів у БД
 - **Резервне копіювання:** щоденний backup БД; можливість відновлення протягом 24 годин
 
 ---
@@ -255,7 +255,7 @@
 
 - **Логування:** входи користувачів; проходження модулів; результати quiz
 - **Аналітика:** відсоток завершення модулів; середній час проходження; drop-off rate
-- **Моніторинг:** серверні помилки; Stripe webhook статуси
+- **Моніторинг:** серверні помилки; WayForPay webhook статуси
 
 ---
 

@@ -20,9 +20,24 @@ export class PaymentResponseDto {
   @IsUUID()
   subscription_id?: string;
 
-  @ApiProperty({ description: "ID Stripe Invoice" })
+  @ApiProperty({ description: "Платіжний провайдер", example: "wayforpay" })
   @IsString()
-  stripe_invoice_id!: string;
+  provider!: string;
+
+  @ApiPropertyOptional({
+    description: "orderReference WayForPay",
+    example: "bd-1755600000000-1a2b3c4d",
+  })
+  @IsOptional()
+  @IsString()
+  order_reference?: string;
+
+  @ApiPropertyOptional({
+    description: "ID Stripe Invoice (історичні платежі до міграції)",
+  })
+  @IsOptional()
+  @IsString()
+  stripe_invoice_id?: string;
 
   @ApiProperty({ description: "Сума платежа" })
   @IsNumber()

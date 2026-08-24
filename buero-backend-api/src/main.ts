@@ -6,21 +6,17 @@ import { AppModule } from "./app.module";
 import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
-import { json } from "express";
+import { json, text, urlencoded } from "express";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
-  // Body parser with raw body preserved for Stripe webhook signature verification
-  app.use(
-    json({
-      verify: (req: any, _res, buf: Buffer) => {
-        if (req.originalUrl?.includes("webhooks/stripe")) req.rawBody = buf;
-      },
-    }),
-  );
+  // WayForPay шле callback то як JSON, то як form-urlencoded, то як text/plain
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
+  app.use(text({ type: "text/plain" }));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -47,8 +43,10 @@ async function bootstrap() {
     "DATABASE_URL",
     "JWT_ACCESS_SECRET",
     "JWT_REFRESH_SECRET",
-    "STRIPE_SECRET_KEY",
-    "STRIPE_WEBHOOK_SECRET",
+    "WAYFORPAY_MERCHANT_ACCOUNT",
+    "WAYFORPAY_MERCHANT_SECRET",
+    "WAYFORPAY_MERCHANT_DOMAIN",
+    "WAYFORPAY_SERVICE_URL",
   ] as const;
   const optionalEnv = [
     "PORT",
@@ -58,6 +56,8 @@ async function bootstrap() {
     "COOKIE_DOMAIN",
     "COOKIE_SECURE",
     "CORS_ORIGIN",
+    "WAYFORPAY_CURRENCY",
+    "WAYFORPAY_RETURN_URL",
   ] as const;
 
   const missing = requiredEnv.filter((key) => !configService.get(key));
@@ -97,7 +97,7 @@ async function bootstrap() {
     )
     .addTag("course-modules", "Модулі курсу: CRUD у контексті курсу")
     .addTag("course-materials", "Матеріали модуля: CRUD у контексті курсу та модуля")
-    .addTag("subscriptions", "Підписки та Checkout, Customer Portal")
+    .addTag("subscriptions", "Купівля курсів через WayForPay та доступи")
     .addTag("payments", "Історія платежів")
     .addTag("health", "Перевірка стану сервера")
     .addTag(

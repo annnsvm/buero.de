@@ -3,16 +3,16 @@ import {
   CreateCheckoutSessionPayload,
   GetMyCourseAccessResponse,
   GetMyPaymentsResponse,
-  PortalSessionResponse,
+  SyncCheckoutResponse,
 } from '@/types/api/subscriptionApi.types';
 import { apiInstance } from './apiInstance';
 import { API_ENDPOINTS } from './apiEndpoints';
 
 export const subscriptionApi = {
-  syncCheckoutSession: async (sessionId: string): Promise<{ ok: boolean }> => {
-    const response = await apiInstance.post<{ ok: boolean }>(
+  syncCheckoutSession: async (orderReference: string): Promise<SyncCheckoutResponse> => {
+    const response = await apiInstance.post<SyncCheckoutResponse>(
       API_ENDPOINTS.subscriptions.syncCheckout,
-      { session_id: sessionId },
+      { order_reference: orderReference },
     );
     return response.data;
   },
@@ -34,13 +34,6 @@ export const subscriptionApi = {
         success_url: payload.successUrl,
         cancel_url: payload.cancelUrl,
       },
-    );
-    return response.data;
-  },
-
-  createPortalSession: async (): Promise<PortalSessionResponse> => {
-    const response = await apiInstance.post<PortalSessionResponse>(
-      API_ENDPOINTS.subscriptions.portal,
     );
     return response.data;
   },

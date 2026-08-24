@@ -4,7 +4,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Language, Level } from "src/generated/prisma/enums";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CloudinaryService } from "src/cloudinary/cloudinary.service";
-import { StripeService } from "../stripe/stripe.service";
+import { PaymentFulfillmentService } from "../subscriptions/payment-fulfillment.service";
 import { UserService } from "../user/user.service";
 import { CourseService } from "./course.service";
 import { CreateCourseDto } from "./dto/create-course.dto";
@@ -22,14 +22,12 @@ describe("CourseService", () => {
       create: jest.Mock;
       update: jest.Mock;
       delete: jest.Mock;
+      aggregate: jest.Mock;
     };
     courseModule: { findMany: jest.Mock };
     courseMaterial: { groupBy: jest.Mock };
     userCourseAccess: { findUnique: jest.Mock };
   };
-
-  let stripeService: { createProduct: jest.Mock; createPrice: jest.Mock };
-
   const courseRow = (over: Record<string, unknown> = {}) => ({
     id: "course-1",
     teacherId: null,
@@ -57,16 +55,12 @@ describe("CourseService", () => {
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+        aggregate: jest.fn().mockResolvedValue({ _max: { orderIndex: null } }),
       },
       courseModule: { findMany: jest.fn() },
       courseMaterial: { groupBy: jest.fn() },
       userCourseAccess: { findUnique: jest.fn() },
     };
-    stripeService = {
-      createProduct: jest.fn().mockResolvedValue({ id: "prod_x" }),
-      createPrice: jest.fn().mockResolvedValue({ id: "price_x" }),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CourseService,
@@ -77,7 +71,10 @@ describe("CourseService", () => {
           provide: CloudinaryService,
           useValue: { uploadImage: jest.fn() },
         },
-        { provide: StripeService, useValue: stripeService },
+        {
+          provide: PaymentFulfillmentService,
+          useValue: { reconcilePendingForUser: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -140,7 +137,7 @@ describe("CourseService", () => {
           ],
           tags: { hasSome: ["A", "B"] },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
       });
     });
 
@@ -240,13 +237,11 @@ describe("CourseService", () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it("updates fields without Stripe when not first publish with price", async () => {
+    it("updates fields of an already published course", async () => {
       prisma.course.findUnique.mockResolvedValue({
         id: "c1",
         title: "Old",
         price: { toString: () => "10" },
-        stripeProductId: null,
-        stripePriceId: null,
         isPublished: true,
       });
       prisma.course.update.mockResolvedValue(
@@ -254,36 +249,30 @@ describe("CourseService", () => {
       );
 
       const out = await service.update("c1", { title: "Updated" });
+
       expect(out.title).toBe("Updated");
-      expect(stripeService.createProduct).not.toHaveBeenCalled();
     });
 
-    it("creates Stripe product+price on first publish with positive price", async () => {
+    it("publishes a course with a price without any external calls", async () => {
       prisma.course.findUnique.mockResolvedValue({
         id: "c1",
         title: "Sell me",
         price: null,
-        stripeProductId: null,
-        stripePriceId: null,
         isPublished: false,
       });
       prisma.course.update.mockResolvedValue(
-        courseRow({
-          isPublished: true,
-          stripeProductId: "prod_x",
-          stripePriceId: "price_x",
-        }),
+        courseRow({ isPublished: true, price: { toString: () => "25" } }),
       );
 
-      await service.update("c1", { is_published: true, price: 25 });
+      const out = await service.update("c1", { is_published: true, price: 25 });
 
-      expect(stripeService.createProduct).toHaveBeenCalled();
-      expect(stripeService.createPrice).toHaveBeenCalledWith(
+      expect(prisma.course.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          productId: "prod_x",
-          unitAmountCents: 2500,
+          where: { id: "c1" },
+          data: expect.objectContaining({ isPublished: true, price: 25 }),
         }),
       );
+      expect(out.price).toBe(25);
     });
   });
 

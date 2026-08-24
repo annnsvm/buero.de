@@ -19,7 +19,11 @@ import { useSelector } from 'react-redux';
 import { selectAuthStatus } from '@/redux/slices/auth';
 import { createCheckoutSessionThunk } from '@/redux/slices/subscriptions/subscriptionsThunks';
 import { consumePendingCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
-import { PENDING_CHECKOUT_KEY } from '@/helpers/sessionPendingAuth';
+import {
+  PAYMENT_RETURN_KEY,
+  PENDING_CHECKOUT_KEY,
+  savePendingOrderReference,
+} from '@/helpers/sessionPendingAuth';
 
 type PendingCheckoutPayload = {
   courseId: string;
@@ -79,7 +83,8 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
             if (createCheckoutSessionThunk.fulfilled.match(checkoutAction)) {
               const checkoutUrl = checkoutAction.payload.url;
               if (checkoutUrl) {
-                sessionStorage.setItem('stripe_return', 'pending');
+                sessionStorage.setItem(PAYMENT_RETURN_KEY, 'pending');
+                savePendingOrderReference(checkoutAction.payload.order_reference);
                 onDismiss();
                 window.location.href = checkoutUrl;
                 return;

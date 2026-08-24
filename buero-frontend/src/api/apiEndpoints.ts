@@ -40,8 +40,7 @@ export const API_ENDPOINTS = {
   subscriptions: {
     checkout: '/subscriptions/checkout',
     syncCheckout: '/subscriptions/sync-checkout',
-    myAccess: '/subscriptions/me', 
-    portal: '/subscriptions/portal', 
+    myAccess: '/subscriptions/me',
   },
   payments: {
     myPayments: '/payments/me',

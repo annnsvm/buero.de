@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module";
 import { UserModule } from "../user/user.module";
+import { PaymentFulfillmentService } from "./payment-fulfillment.service";
 import { PaymentService } from "./payment.service";
 import { PaymentsController } from "./payments.controller";
 import { PrismaModule } from "src/prisma/prisma.module";
@@ -16,7 +17,12 @@ import { WebhookService } from "./webhook.service";
     PaymentsController,
     WebhookController,
   ],
-  providers: [SubscriptionsService, PaymentService, WebhookService],
-  exports: [SubscriptionsService, PaymentService],
+  providers: [
+    SubscriptionsService,
+    PaymentService,
+    PaymentFulfillmentService,
+    WebhookService,
+  ],
+  exports: [SubscriptionsService, PaymentService, PaymentFulfillmentService],
 })
 export class SubscriptionsModule {}

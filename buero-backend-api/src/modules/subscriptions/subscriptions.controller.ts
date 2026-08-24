@@ -10,6 +10,7 @@ import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CourseAccessResponseDto } from "./dto/course-access-response.dto";
 import { CreateCheckoutDto } from "./dto/create-checkout.dto";
+import { SyncCheckoutDto } from "./dto/sync-checkout.dto";
 import { SubscriptionsService } from "./subscriptions.service";
 
 @ApiTags("subscriptions")
@@ -21,13 +22,26 @@ export class SubscriptionsController {
 
   @Post("checkout")
   @ApiOperation({
-    summary: "Створити Checkout Session (купівля курсу)",
+    summary: "Створити оплату курсу (WayForPay)",
     description:
-      "Створює Stripe Checkout Session для одноразової оплати курсу. Повертає URL для редіректу на оплату. Якщо у user немає stripe_customer_id — створюється Stripe Customer. STRIPE_PRICE_ID має бути one-time ціною.",
+      "Створює платіжну сторінку WayForPay для разової оплати курсу та pending-платіж з orderReference. Повертає URL для редіректу на оплату.",
   })
   @ApiBody({ type: CreateCheckoutDto })
-  @ApiResponse({ status: 200, description: "URL для редіректу", schema: { type: "object", properties: { url: { type: "string" } } } })
-  @ApiResponse({ status: 400, description: "Невалідні дані або помилка Stripe" })
+  @ApiResponse({
+    status: 200,
+    description: "URL для редіректу та orderReference",
+    schema: {
+      type: "object",
+      properties: {
+        url: { type: "string" },
+        order_reference: { type: "string" },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Курс не опублікований, без уроків, без ціни або помилка WayForPay",
+  })
   @ApiResponse({ status: 401, description: "Не авторизовано" })
   @ApiResponse({ status: 404, description: "User або курс не знайдено" })
   @ApiResponse({
@@ -38,8 +52,35 @@ export class SubscriptionsController {
   async createCheckoutSession(
     @CurrentUser("id") userId: string,
     @Body() body: CreateCheckoutDto,
-  ): Promise<{ url: string }> {
+  ): Promise<{ url: string; order_reference: string }> {
     return this.subscriptionsService.createCheckoutSession(userId, body);
+  }
+
+  @Post("sync-checkout")
+  @ApiOperation({
+    summary: "Синхронізувати статус оплати",
+    description:
+      "Запитує CHECK_STATUS у WayForPay і відкриває доступ, якщо оплата пройшла. Потрібно, коли студент повернувся на сайт раніше за serviceUrl-callback.",
+  })
+  @ApiBody({ type: SyncCheckoutDto })
+  @ApiResponse({
+    status: 200,
+    description: "Результат синхронізації",
+    schema: {
+      type: "object",
+      properties: {
+        ok: { type: "boolean" },
+        status: { type: "string", example: "paid" },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: "Не авторизовано" })
+  @ApiResponse({ status: 404, description: "Платіж не знайдено" })
+  async syncCheckout(
+    @CurrentUser("id") userId: string,
+    @Body() body: SyncCheckoutDto,
+  ): Promise<{ ok: boolean; status: string }> {
+    return this.subscriptionsService.syncCheckout(userId, body);
   }
 
   @Get("me")
@@ -58,19 +99,5 @@ export class SubscriptionsController {
     @CurrentUser("id") userId: string,
   ): Promise<CourseAccessResponseDto[]> {
     return this.subscriptionsService.getMyCourseAccess(userId);
-  }
-
-  @Post("portal")
-  @ApiOperation({
-    summary: "Stripe Customer Portal",
-    description:
-      "Генерує URL Stripe Customer Portal (історія платежів, способи оплати). Потрібен stripe_customer_id (після хоча б одного checkout).",
-  })
-  @ApiResponse({ status: 200, description: "URL для редіректу", schema: { type: "object", properties: { url: { type: "string" } } } })
-  @ApiResponse({ status: 400, description: "Немає Stripe customer (спочатку здійсніть покупку)" })
-  @ApiResponse({ status: 401, description: "Не авторизовано" })
-  @ApiResponse({ status: 404, description: "User не знайдено" })
-  async createPortalSession(@CurrentUser("id") userId: string): Promise<{ url: string }> {
-    return this.subscriptionsService.createPortalSession(userId);
   }
 }
