@@ -6,20 +6,26 @@ import { ICON_NAMES } from '@/helpers/iconNames';
 type CallToActionButtonsProps = {
   primaryText: string;
   primaryTo: string;
-  secondaryText: string;
-  secondaryTo: string;
 };
 
 const CallToActionButtons: React.FC<CallToActionButtonsProps> = ({
-  secondaryText,
-  secondaryTo,
+  primaryText,
+  primaryTo,
 }) => (
-  <div
-    className="flex w-full justify-center"
-    aria-label="Call to action buttons"
-  >
-    <LinkBtn to={secondaryTo} variant="outline" className="px-12">
-      {secondaryText}
+  <div className="flex w-full justify-center" aria-label="Call to action buttons">
+    <LinkBtn
+      to={primaryTo}
+      variant="primary"
+      className="flex items-center justify-center gap-3 px-12 py-3"
+    >
+      <span>{primaryText}</span>
+      <Icon
+        name={ICON_NAMES.ARROW_RIGHT}
+        color="var(--color-white)"
+        size={15}
+        strokeWidth={3}
+        className="animate-bounce-x"
+      />
     </LinkBtn>
   </div>
 );

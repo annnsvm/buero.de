@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
     { to: ROUTES.HOME, label: t('footer.blog') },
     { to: ROUTES.HOME, label: t('footer.community') },
     { to: ROUTES.HOME, label: t('footer.support') },
-    { to: ROUTES.HOME, label: t('footer.faq') },
+    { to: `${ROUTES.HOME}#faq`, label: t('footer.faq') },
   ] as const;
 
   return (

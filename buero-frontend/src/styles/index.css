@@ -457,3 +457,93 @@
   min-height: 100%;
   flex-direction: column;
 }
+
+/* Landing: scroll reveal + product demos */
+.buero-reveal {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.buero-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.buero-progress-fill {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.buero-progress-fill--visible {
+  transform: scaleX(1);
+}
+
+.buero-flip-scene {
+  perspective: 1200px;
+}
+
+.buero-flip-card {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.buero-flip-card--flipped {
+  transform: rotateY(180deg);
+}
+
+.buero-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 1.25rem;
+}
+
+.buero-flip-face--back {
+  transform: rotateY(180deg);
+}
+
+@keyframes buero-float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.buero-float-soft {
+  animation: buero-float-soft 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buero-reveal,
+  .buero-reveal--visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .buero-progress-fill,
+  .buero-progress-fill--visible {
+    transform: none;
+    transition: none;
+  }
+
+  .buero-flip-card {
+    transition: none;
+  }
+
+  .buero-float-soft {
+    animation: none;
+  }
+}
+

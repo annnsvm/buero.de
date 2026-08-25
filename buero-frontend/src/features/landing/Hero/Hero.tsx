@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import HeroBackground from './HeroBackground';
 import HeroTitle from './HeroTitle';
 import HeroActionBtn from './HeroActionBtn';
-import HeroStatistic from './HeroStatistic';
+import HeroBenefits from './HeroBenefits';
 
 const Hero: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -31,7 +31,7 @@ const Hero: React.FC = () => {
               </Text>
               <HeroActionBtn />
             </div>
-            <HeroStatistic />
+            <HeroBenefits />
           </div>
         </Container>
       </div>

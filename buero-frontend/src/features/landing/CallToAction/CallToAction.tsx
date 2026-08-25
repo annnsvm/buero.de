@@ -10,9 +10,7 @@ const CallToAction: React.FC<CallToActionProps> = ({
   title,
   description,
   primaryButtonText,
-  secondaryButtonText,
-  primaryButtonTo = ROUTES.HOME,
-  secondaryButtonTo = ROUTES.COURSES,
+  primaryButtonTo = ROUTES.COURSES,
 }) => {
   const { t } = useTranslation();
 
@@ -29,8 +27,6 @@ const CallToAction: React.FC<CallToActionProps> = ({
           <CallToActionButtons
             primaryText={primaryButtonText ?? t('landing.startFreeTrial')}
             primaryTo={primaryButtonTo}
-            secondaryText={secondaryButtonText ?? t('landing.viewPricing')}
-            secondaryTo={secondaryButtonTo}
           />
         </Container>
       </CallToActionBanner>

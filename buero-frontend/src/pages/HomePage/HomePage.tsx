@@ -1,7 +1,15 @@
-
-import { CallToAction, Hero, Proposition, WhyBuro } from '@/features/landing';
-import Review from '@/features/landing/Review';
-import { TrackYourProgress } from '@/features/landing/TrackYourProgress';
+import {
+  CallToAction,
+  Faq,
+  Hero,
+  LearningLoop,
+  PlatformPreview,
+  QuizDemo,
+  Teachers,
+  VocabularyDemo,
+  WhatYouGet,
+  WhyBuro,
+} from '@/features/landing';
 
 import React from 'react';
 
@@ -10,9 +18,13 @@ const HomePage: React.FC = () => {
     <div aria-label="Home Page">
       <Hero />
       <WhyBuro />
-      <Proposition />
-      <TrackYourProgress />
-      <Review/>
+      <LearningLoop />
+      <PlatformPreview />
+      <VocabularyDemo />
+      <QuizDemo />
+      <Teachers />
+      <WhatYouGet />
+      <Faq />
       <CallToAction />
     </div>
   );

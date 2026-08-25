@@ -8,12 +8,19 @@ import Footer from '../Footer/Footer';
 const SCROLL_THRESHOLD = 400;
 
 const SharedLayout = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
+    if (hash) {
+      const el = document.getElementById(hash.slice(1));
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   useEffect(() => {
     const handleScroll = () => {

@@ -12,7 +12,7 @@ const Proposition: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <Section aria-label="Proposition Section" className="bg-[var(--color-surface-section)] py-16">
+    <Section aria-label="Proposition Section" className="bg-[var(--color-soapstone-base)] py-16">
       <Container className="flex flex-col-reverse gap-8 lg:flex-row lg:justify-between">
         <PropositionImg />
         <div className="flex w-full flex-col lg:w-[600px] lg:pt-7">
