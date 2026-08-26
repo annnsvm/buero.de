@@ -47,7 +47,7 @@ const FooterBrand: React.FC = () => {
             {t('footer.contactUs')}
           </Button>
         </div>
-        <p className="max-w-none whitespace-nowrap text-[0.75rem] leading-[1.4] text-[var(--color-neutral-base)]">
+        <p className="max-w-full text-center text-[0.75rem] leading-[1.5] text-[var(--color-neutral-base)] sm:whitespace-nowrap">
           {t('footer.privacyConsent')}{' '}
           <Link to={ROUTES.PRIVACY} className="underline hover:text-[var(--color-neutral-light)]">
             {t('footer.privacyPolicyLink')}
