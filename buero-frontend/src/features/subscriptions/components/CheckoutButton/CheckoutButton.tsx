@@ -18,6 +18,7 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   cancelUrl,
   className = '',
   label = 'Buy course',
+  onRequireAuth,
 }) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectSubscriptionStatus);
@@ -33,9 +34,10 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
         PENDING_CHECKOUT_KEY,
         JSON.stringify({ courseId, successUrl, cancelUrl }),
       );
+      onRequireAuth?.();
       dispatch(
         openGlobalModal({
-          type: 'login',
+          type: 'signup',
           redirectTo: '/courses',
         }),
       );

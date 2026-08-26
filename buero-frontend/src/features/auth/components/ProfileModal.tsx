@@ -167,7 +167,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
       }}
       openCloseAnimation
       onExitAnimationComplete={onExitAnimationComplete}
-      contentClassName="relative z-[1] flex max-h-[min(90vh,800px)] w-full max-w-[min(100vw-2rem,760px)] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 lg:pt-10 lg:pb-10 lg:pl-10 lg:pr-0"
+      contentClassName="buero-dialog-panel-max relative z-[1] flex w-full max-w-[min(100vw-2rem,760px)] flex-col overflow-hidden rounded-2xl bg-white pt-6 pr-0 pb-6 pl-6 focus:outline-none sm:pl-8 lg:pt-10 lg:pb-10 lg:pl-10 lg:pr-0"
     >
       <ModalScrollArea contentGutter>
         <div className="flex flex-col">

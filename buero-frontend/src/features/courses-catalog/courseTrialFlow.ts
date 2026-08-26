@@ -52,7 +52,7 @@ export const requestCourseTrial = async (
     sessionStorage.setItem(PENDING_TRIAL_KEY, JSON.stringify({ courseId }));
     dispatch(
       openGlobalModal({
-        type: 'login',
+        type: 'signup',
         redirectTo: ROUTES.COURSES,
       }),
     );

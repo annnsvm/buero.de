@@ -143,7 +143,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
       <span className="text-xl font-semibold text-[var(--color-neutral-darkest)] sm:text-2xl">
         {displayPrice}
       </span>
-      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-2 sm:gap-3">
         {canShowTrialButton ? (
           <button
             type="button"
@@ -157,9 +157,9 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
         <button
           type="button"
           onClick={handleBuyClick}
-          className="flex max-w-[140px] items-center justify-center rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-on-accent)] shadow-md transition-all hover:bg-[var(--color-primary-hover)] active:scale-95 sm:px-5 sm:py-2 sm:text-lg"
+          className="flex items-center justify-center rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-on-accent)] shadow-md transition-all hover:bg-[var(--color-primary-hover)] active:scale-95 sm:px-5 sm:py-2 sm:text-lg"
         >
-          Buy Course
+          {t('courses.buyCourse')}
         </button>
       </div>
     </>
@@ -373,8 +373,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
             </div>
 
             
-            <div className="mt-4 flex flex-row gap-2 sm:mt-5 items-center flex-wrap justify-between"
-            >
+            <div className="mt-4 flex flex-row flex-wrap items-center justify-between gap-2 sm:mt-5">
               {buttonsComponent}
             </div>
           </div>

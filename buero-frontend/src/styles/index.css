@@ -369,6 +369,44 @@
   }
 }
 
+/*
+  iOS Safari: classic `vh` includes space behind the URL/search chrome,
+  so fixed modals get clipped. Prefer small/dynamic viewport units + safe-area.
+*/
+.buero-dialog-shell {
+  top: var(--buero-vv-top, 0px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: var(--buero-vv-height, 100vh);
+  height: var(--buero-vv-height, 100dvh);
+  height: var(--buero-vv-height, 100svh);
+  max-height: var(--buero-vv-height, 100svh);
+  box-sizing: border-box;
+}
+
+.buero-dialog-shell--padded {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+}
+
+.buero-dialog-panel-max {
+  max-height: min(90vh, 800px);
+  max-height: min(90dvh, 800px);
+  max-height: min(90svh, 800px);
+}
+
+.buero-dialog-panel-tall {
+  height: min(90vh, 100%);
+  max-height: min(90vh, 100%);
+  height: min(90dvh, 100%);
+  max-height: min(90dvh, 100%);
+  height: min(90svh, 100%);
+  max-height: min(90svh, 100%);
+}
+
 @layer utilities {
   .no-scroll {
     overflow: hidden;

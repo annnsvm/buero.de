@@ -236,11 +236,11 @@ const ModalRoot: React.FC<ModalRootProps> = ({ globalModal, uiModalStack }) => {
 
   return (
     <>
-      {renderAuthModal()}
+      {renderUiModals()}
+      {renderGlobalModal()}
       {renderProfileModal()}
       {renderLogoutConfirmModal()}
-      {renderGlobalModal()}
-      {renderUiModals()}
+      {renderAuthModal()}
     </>
   );
 };

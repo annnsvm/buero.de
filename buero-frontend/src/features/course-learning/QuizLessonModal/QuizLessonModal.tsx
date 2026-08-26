@@ -327,7 +327,7 @@ const QuizLessonModal: React.FC<QuizLessonModalProps> = ({
       isOpen={isOpen}
       handleOpenChange={onOpenChange}
       openCloseAnimation
-      contentClassName="relative z-[1] flex max-h-[calc(100vh-48px-24px)] w-full max-w-[min(96vw,720px)] flex-col overflow-hidden rounded-[12px] bg-[var(--color-neutral-white)] px-6 pt-6 pb-6 shadow-xl focus:outline-none sm:px-8 md:px-10 md:pb-10"
+      contentClassName="buero-dialog-panel-max relative z-[1] flex w-full max-w-[min(96vw,720px)] flex-col overflow-hidden rounded-[12px] bg-[var(--color-neutral-white)] px-6 pt-6 pb-6 shadow-xl focus:outline-none sm:px-8 md:px-10 md:pb-10"
     >
       <ModalScrollArea>
         <div className="flex flex-col">

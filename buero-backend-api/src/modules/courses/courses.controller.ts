@@ -28,6 +28,7 @@ import {
 } from "@nestjs/swagger";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { OptionalJwtAuthGuard } from "../auth/guards/optional-jwt-auth.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Role } from "src/generated/prisma/enums";
@@ -135,10 +136,12 @@ export class CoursesController {
   }
 
   @Get(":id")
+  @UseGuards(OptionalJwtAuthGuard)
+  @ApiBearerAuth("access_token")
   @ApiOperation({
     summary: "Один курс по id (з модулями та матеріалами)",
     description:
-      "Повертає курс разом з **модулями** та **матеріалами** кожного модуля в одному запиті (дерево Course → Modules → Materials). Модулі та матеріали відсортовані за order_index. Одного запиту достатньо для відображення повної структури курсу на фронті. 404, якщо не знайдено.",
+      "Публічний перегляд структури курсу (модулі + матеріали). JWT опційний: якщо є валідний токен і доступ до курсу — у відповіді також my_access. Модулі та матеріали відсортовані за order_index.",
   })
   @ApiParam({ name: "id", description: "UUID курсу" })
   @ApiResponse({
@@ -202,17 +205,17 @@ export class CoursesController {
       },
     },
   })
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth("access_token")
   @ApiResponse({ status: 404, description: "Курс не знайдено" })
   @ApiResponse({
     status: 200,
     description:
       "При наявному доступі до курсу у відповіді є my_access: { access_type, trial_ends_at?, first_module_id? }",
   })
-  @ApiResponse({ status: 401, description: "Не авторизовано" })
-  getById(@CurrentUser("id") userId: string, @Param("id") id: string) {
-    return this.courseService.findById(id, true, userId);
+  getById(
+    @CurrentUser("id") userId: string | undefined,
+    @Param("id") id: string,
+  ) {
+    return this.courseService.findById(id, true, userId ?? null);
   }
 
   @Post()

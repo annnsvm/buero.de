@@ -95,7 +95,7 @@ const AddVocabularyModal: React.FC<AddVocabularyModalProps> = ({
   };
 
   const customDialogClass =
-    'relative z-[1] flex max-h-[min(90vh,720px)] w-[calc(100%-2rem)] max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white px-6 pt-6 pb-6 focus:outline-none sm:px-8 sm:pb-8 [&>button:hover]:text-[var(--color-primary)]';
+    'buero-dialog-panel-max relative z-[1] flex w-[calc(100%-2rem)] max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white px-6 pt-6 pb-6 focus:outline-none sm:px-8 sm:pb-8 [&>button:hover]:text-[var(--color-primary)]';
 
   return (
     <BaseDialog

@@ -84,6 +84,13 @@ Render PostgreSQL
 | `CLOUDINARY_*` | Ні | для обкладинок курсів |
 | `THROTTLE_TTL` / `THROTTLE_LIMIT` | Ні | `60` / `100` |
 | `TRIAL_DAYS` | Ні | `7` |
+| `SMTP_HOST` | Ні | `smtp.gmail.com` |
+| `SMTP_PORT` | Ні | `587` |
+| `SMTP_USER` | Так (для contact) | Gmail, напр. `burode452@gmail.com` |
+| `SMTP_PASS` | Так (для contact) | Google App Password |
+| `CONTACT_INBOX` | Ні | куди падають заявки (дефолт = `SMTP_USER`) |
+| `MAIL_FROM` | Ні | `"Büro.de <burode452@gmail.com>"` |
+| `PUBLIC_SITE_URL` | Ні | `https://www.buro-de.com` (посилання в листах) |
 
 ---
 

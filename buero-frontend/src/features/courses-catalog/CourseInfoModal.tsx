@@ -210,8 +210,8 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   }, [isOpen, courseId]);
 
   const contentClassName = [
-    'relative z-[1] flex h-[90vh] max-h-[90vh] min-h-0 flex-col overflow-hidden',
-    'w-[min(960px,calc(100vw-1rem))] sm:w-[min(960px,calc(100vw-2rem))] md:w-[min(960px,calc(100vw-3rem))] lg:w-[min(960px,calc(100vw-4rem))]',
+    'buero-dialog-panel-tall relative z-[1] flex min-h-0 w-[min(960px,calc(100vw-1rem))] flex-col overflow-hidden',
+    'sm:w-[min(960px,calc(100vw-2rem))] md:w-[min(960px,calc(100vw-3rem))] lg:w-[min(960px,calc(100vw-4rem))]',
     'rounded-xl sm:rounded-2xl bg-[var(--color-surface-overlay)] focus:outline-none',
   ].join(' ');
   return (
@@ -378,7 +378,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                 {t('courses.comingSoon')}
               </span>
             ) : (
-              <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
+              <div className="ml-auto flex flex-wrap items-center justify-end gap-2 sm:gap-4">
                 {canShowTryForFree ? (
                   <button
                     type="button"
@@ -391,7 +391,8 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
                 ) : null}
                 <CheckoutButton
                   courseId={courseId}
-                  label="Buy Course"
+                  label={t('courses.buyCourse')}
+                  onRequireAuth={handleClose}
                   className="rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-[var(--color-text-on-accent)] hover:bg-[var(--color-primary-hover)] sm:px-6 sm:py-2.5 sm:text-lg"
                 />
               </div>

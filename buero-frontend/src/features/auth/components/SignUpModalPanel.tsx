@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import ModalBody from '@/components/modal/ui/ModalBody';
 import ModalHeader from '@/components/modal/ui/ModalHeader';
 import ModalFooter from '@/components/modal/ui/ModalFooter';
-import { Button, FormField, Input, Spinner } from '@/components/ui';
+import { Button, FormField, Input, PasswordInput, Spinner } from '@/components/ui';
 import { useAppDispatch } from '@/redux/hooks';
 import { signUpSchema } from '@/features/auth/validation/signUpSchema';
 import { SignUpFormValues } from '@/types/features/auth/validation.types';
@@ -160,9 +160,8 @@ const SignUpModalPanel: React.FC<SignUpModalPanelProps> = ({ redirectTo, onDismi
         </FormField>
 
         <FormField name="password" error={errors.password?.message}>
-          <Input
+          <PasswordInput
             id="signup-password"
-            type="password"
             placeholder={t('auth.password')}
             autoComplete="new-password"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"

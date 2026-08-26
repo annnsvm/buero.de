@@ -26,6 +26,8 @@
     "signUpDescription": "Create a new account",
     "email": "Email",
     "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "name": "Name",
     "loginButton": "Log In",
     "signUpButton": "Sign Up",

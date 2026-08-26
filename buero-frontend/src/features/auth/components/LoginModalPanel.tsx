@@ -5,7 +5,7 @@ import loginSchema from '../validation/loginSchema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAppDispatch } from '@/redux/hooks';
-import { Button, FormField, Input, Spinner } from '@/components/ui';
+import { Button, FormField, Input, PasswordInput, Spinner } from '@/components/ui';
 import { loginThunk } from '@/redux/slices/auth/authThunks';
 import { LoginFormValues } from '@/types/features/auth/validation.types';
 import { ModalBody, ModalFooter, ModalHeader } from '@/components/modal';
@@ -149,9 +149,8 @@ const LoginModalPanel: React.FC<LoginModalPanelProps> = ({ redirectTo, onDismiss
         </FormField>
 
         <FormField name="login-password" error={errors.password?.message}>
-          <Input
+          <PasswordInput
             id="login-password"
-            type="password"
             placeholder={t('auth.password')}
             autoComplete="current-password"
             className="rounded-[12px] bg-[var(--opacity-neutral-darkest-5)] px-4 py-2 text-[1.125rem] leading-[1.5] text-[var(--color-text-primary)] placeholder:text-[var(--opacity-neutral-darkest-60)]"
