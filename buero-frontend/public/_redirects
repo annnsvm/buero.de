@@ -1,0 +1,2 @@
+# SPA fallback for client-only routes. Real files (prerendered /privacy etc.) are served first.
+/*    /index.html   200

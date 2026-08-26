@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /course-management
+Disallow: /teacher
+Disallow: /settings
+Disallow: /my-learning
+Disallow: /profile
+Disallow: /purchase
+Disallow: /assessment
+Disallow: /results
+
+Sitemap: https://buro-de.com/sitemap.xml

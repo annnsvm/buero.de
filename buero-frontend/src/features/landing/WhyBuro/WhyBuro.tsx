@@ -3,6 +3,8 @@ import { Container, Section, SectionTitle, Text, Title } from '@/components/layo
 import { ICON_NAMES } from '@/helpers/iconNames';
 import BenefitCard from './BenefitCard';
 import Reveal from '../shared/Reveal';
+import LandingCta from '../shared/LandingCta';
+import { ROUTES } from '@/helpers/routes';
 
 const WhyBuro = () => {
   const { t } = useTranslation();
@@ -63,6 +65,13 @@ const WhyBuro = () => {
             </Reveal>
           </li>
         </ul>
+
+        <Reveal delayMs={200} className="mt-12 flex flex-col items-center gap-3 sm:mt-14">
+          <LandingCta label={t('landing.ctaAfterWhy')} to={ROUTES.COURSES} />
+          <p className="text-center text-[0.95rem] text-[var(--color-text-secondary)]">
+            {t('landing.ctaAfterWhyHint')}
+          </p>
+        </Reveal>
       </Container>
     </Section>
   );

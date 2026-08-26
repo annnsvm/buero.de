@@ -1,7 +1,6 @@
 import React from 'react';
-import { Icon } from '@/components/ui';
-import LinkBtn from '@/components/ui/Link';
-import { ICON_NAMES } from '@/helpers/iconNames';
+import { useTranslation } from 'react-i18next';
+import LandingCta from '../shared/LandingCta';
 
 type CallToActionButtonsProps = {
   primaryText: string;
@@ -13,20 +12,7 @@ const CallToActionButtons: React.FC<CallToActionButtonsProps> = ({
   primaryTo,
 }) => (
   <div className="flex w-full justify-center" aria-label="Call to action buttons">
-    <LinkBtn
-      to={primaryTo}
-      variant="primary"
-      className="flex items-center justify-center gap-3 px-12 py-3"
-    >
-      <span>{primaryText}</span>
-      <Icon
-        name={ICON_NAMES.ARROW_RIGHT}
-        color="var(--color-white)"
-        size={15}
-        strokeWidth={3}
-        className="animate-bounce-x"
-      />
-    </LinkBtn>
+    <LandingCta label={primaryText} to={primaryTo} />
   </div>
 );
 

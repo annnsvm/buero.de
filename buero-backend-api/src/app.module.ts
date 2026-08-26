@@ -16,6 +16,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { ProgressQuizModule } from './modules/progress-quiz/progress-quiz.module';
 import { VocabularyModule } from './modules/vocabulary/vocabulary.module';
 import { LessonRequestsModule } from './modules/lesson-requests/lesson-requests.module';
+import { ContactModule } from './modules/contact/contact.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { LessonRequestsModule } from './modules/lesson-requests/lesson-requests.
     ProgressQuizModule,
     VocabularyModule,
     LessonRequestsModule,
+    ContactModule,
   ],
   providers: [
     {

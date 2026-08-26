@@ -2,7 +2,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { Container, Section, SectionTitle, Text, Title } from '@/components/layout';
+import { ROUTES } from '@/helpers/routes';
 import Reveal from '../shared/Reveal';
+import LandingCta from '../shared/LandingCta';
 
 const ITEM_KEYS = [
   'whatYouGetTrial',
@@ -89,6 +91,13 @@ const WhatYouGet: React.FC = () => {
             );
           })}
         </ul>
+
+        <Reveal delayMs={160} className="mt-12 flex flex-col items-center gap-3 sm:mt-14">
+          <LandingCta label={t('landing.ctaAfterBenefits')} to={ROUTES.COURSES} />
+          <p className="max-w-md text-center text-[0.95rem] text-[var(--color-text-secondary)]">
+            {t('landing.ctaAfterBenefitsHint')}
+          </p>
+        </Reveal>
       </Container>
     </Section>
   );

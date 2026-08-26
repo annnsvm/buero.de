@@ -6,9 +6,8 @@ import useModal from '@/components/modal/context/useModal';
 import { ROUTES } from '@/helpers/routes';
 
 const inputClass =
-  'min-w-0 w-full rounded-[12px] border border-[var(--color-neutral-lighter)] bg-transparent px-4 py-2.5 text-[0.9375rem] text-[var(--color-neutral-white)] placeholder:text-[var(--color-neutral-base)] transition-colors hover:border-[var(--color-neutral-light)] focus:border-[var(--color-accent-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-primary)] focus:ring-offset-0';
-const contactBtnClass =
-  'w-full shrink-0 rounded-[100px] px-5 py-2.5 sm:w-auto';
+  'min-w-0 w-full rounded-[12px] border border-[var(--color-neutral-lighter)] bg-transparent px-4 py-2.5 text-center text-[0.9375rem] text-[var(--color-neutral-white)] placeholder:text-[var(--color-neutral-base)] transition-colors hover:border-[var(--color-neutral-light)] focus:border-[var(--color-accent-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-primary)] focus:ring-offset-0 sm:text-left';
+const contactBtnClass = 'w-full shrink-0 rounded-[100px] px-6 py-2.5 sm:w-auto';
 
 const FooterBrand: React.FC = () => {
   const { t } = useTranslation();
@@ -23,19 +22,16 @@ const FooterBrand: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full max-w-[520px] flex-col items-center gap-5">
       <Link
         to={ROUTES.HOME}
-        className="inline-flex w-fit transition-opacity hover:opacity-80"
+        className="inline-flex transition-opacity hover:opacity-80"
         aria-label={t('header.goHome')}
       >
-        <Logo width={70} height={28} isLight/>
+        <Logo width={70} height={28} isLight />
       </Link>
-      <p className="text-[0.9375rem] leading-[1.5] text-[var(--color-neutral-light)] max-w-[280px]">
-        {t('footer.tagline')}
-      </p>
-      <div className="flex flex-col gap-6">
-        <div className="flex max-w-[500px] flex-col items-start gap-6 sm:flex-row sm:gap-4">
+      <div className="flex w-full flex-col items-center gap-3">
+        <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
           <div className="min-w-0 w-full flex-1">
             <Input
               id="footer-contact-email"
@@ -51,10 +47,10 @@ const FooterBrand: React.FC = () => {
             {t('footer.contactUs')}
           </Button>
         </div>
-        <p className="text-[0.75rem] leading-[1.4] text-[var(--color-neutral-base)]">
+        <p className="max-w-none whitespace-nowrap text-[0.75rem] leading-[1.4] text-[var(--color-neutral-base)]">
           {t('footer.privacyConsent')}{' '}
           <Link to={ROUTES.PRIVACY} className="underline hover:text-[var(--color-neutral-light)]">
-            {t('footer.privacyPolicy')}
+            {t('footer.privacyPolicyLink')}
           </Link>
           .
         </p>

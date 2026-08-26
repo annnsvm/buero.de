@@ -1,32 +1,59 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@/components/ui';
 import { ICON_NAMES } from '@/helpers/iconNames';
 
-type SocialLink = { name: string; icon: (typeof ICON_NAMES)[keyof typeof ICON_NAMES]; href: string };
+type SocialLink = {
+  name: string;
+  icon: (typeof ICON_NAMES)[keyof typeof ICON_NAMES];
+  href?: string;
+};
 
 const SOCIAL_LINKS: SocialLink[] = [
-  { name: 'Facebook', icon: ICON_NAMES.FACEBOOK, href: 'https://facebook.com' },
-  { name: 'Instagram', icon: ICON_NAMES.INSTAGRAM, href: 'https://instagram.com' },
-  { name: 'X', icon: ICON_NAMES.X_TWITTER, href: 'https://x.com' },
-  { name: 'LinkedIn', icon: ICON_NAMES.LINKEDIN, href: 'https://linkedin.com' },
-  { name: 'YouTube', icon: ICON_NAMES.YOUTUBE, href: 'https://youtube.com' },
+  {
+    name: 'Instagram',
+    icon: ICON_NAMES.INSTAGRAM,
+    href: 'https://www.instagram.com/buro.de.german/',
+  },
+  { name: 'LinkedIn', icon: ICON_NAMES.LINKEDIN },
+  { name: 'TikTok', icon: ICON_NAMES.TIKTOK },
 ];
 
-const linkClass =
-  'flex items-center justify-center gap-3 text-[0.9375rem] text-[var(--color-neutral-light)] transition-colors hover:text-[var(--color-neutral-white)] sm:justify-start';
+const baseClass =
+  'inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--opacity-neutral-darkest-15)] transition-colors';
 
-const FooterSocialLinks: React.FC = () => (
-  <ul className="flex flex-col items-center gap-3 sm:items-start">
-    {SOCIAL_LINKS.map(({ name, icon, href }) => (
-      <li key={name}>
-        <Link to={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-          <Icon name={icon} size={18} color="currentColor" />
-          {name}
-        </Link>
-      </li>
-    ))}
-  </ul>
-);
+const activeClass =
+  `${baseClass} text-[var(--color-neutral-light)] hover:border-[var(--color-burnt-siena-base)] hover:bg-[var(--color-burnt-siena-base)] hover:text-white`;
+
+const mutedClass =
+  `${baseClass} cursor-default text-[var(--color-neutral-base)] opacity-70`;
+
+const FooterSocialLinks: React.FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <ul className="flex items-center justify-center gap-3" aria-label={t('footer.followUs')}>
+      {SOCIAL_LINKS.map(({ name, icon, href }) => (
+        <li key={name}>
+          {href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={activeClass}
+              aria-label={name}
+            >
+              <Icon name={icon} size={18} color="currentColor" />
+            </a>
+          ) : (
+            <span className={mutedClass} title={t('footer.socialComingSoon')} aria-label={`${name} — ${t('footer.socialComingSoon')}`}>
+              <Icon name={icon} size={18} color="currentColor" />
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 export default FooterSocialLinks;

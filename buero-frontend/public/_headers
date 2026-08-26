@@ -1,0 +1,20 @@
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/courses/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/privacy/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/terms/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/cookies/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

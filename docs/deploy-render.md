@@ -107,6 +107,10 @@ Render PostgreSQL
 
 Після зміни `VITE_*` потрібен redeploy Static Site.
 
+`npm run build` prerender-ить `/`, `/courses`, `/privacy`, `/terms`, `/cookies` у статичний HTML, щоб crawler-и бачили контент без JavaScript.
+
+Після деплою фронту HTML може ще ~5 хв лежати в CDN Render (`s-maxage=300`; у заголовках видно `server: cloudflare` — це інфраструктура Render, окремий Cloudflare-акаунт не потрібен). Перевірка без JS: `curl -sL https://buro-de.com | grep "Вивчай німецьку"`.
+
 ---
 
 ## Auto-Deploy

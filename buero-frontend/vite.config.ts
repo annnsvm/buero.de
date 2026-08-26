@@ -3,11 +3,12 @@ import { fileURLToPath } from 'url';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { prerenderPublicPages } from './vite-plugin-prerender';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), prerenderPublicPages()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

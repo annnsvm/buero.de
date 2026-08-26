@@ -30,6 +30,7 @@ const ICON_NAMES = {
   X: 'icon-x',
   X_TWITTER: 'icon-X',
   YOUTUBE: 'icon-youtube',
+  TIKTOK: 'icon-tiktok',
   ADD_RECORD: "icon-add-record",
   EDIT: 'icon-edit',
   TRASH: 'icon-trash',

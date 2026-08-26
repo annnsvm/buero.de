@@ -42,9 +42,11 @@
     "contactUs": "Contact us",
     "privacyConsent": "By contacting us you agree to our",
     "privacyPolicy": "Privacy Policy",
+    "privacyPolicyLink": "Privacy Policy",
     "platform": "Platform",
     "resources": "Resources",
     "followUs": "Follow Us",
+    "socialComingSoon": "Link coming soon",
     "allCourses": "All courses",
     "freeTrial": "Free Trial",
     "myLearning": "My Learning",
@@ -209,9 +211,15 @@
     "propositionItem3": "Finding apartments, setting up utilities",
     "propositionItem4": "Understanding the Pfand system and recycling culture",
     "seeAllCourses": "See all courses",
-    "ctaTitle": "Ready to start?",
-    "ctaDescription": "Open the first module free — language or integration, at your pace.",
-    "startFreeTrial": "Try the First Module"
+    "ctaHero": "Start free — first module on us",
+    "ctaAfterWhy": "I want to try it free",
+    "ctaAfterWhyHint": "No card required for the first module.",
+    "ctaAfterDemo": "Go the courses",
+    "ctaAfterBenefits": "Get lifetime access",
+    "ctaAfterBenefitsHint": "One purchase. Learn language and life in Germany.",
+    "ctaTitle": "Your German starts with one click",
+    "ctaDescription": "Open the first module free. Feel the platform. Then decide — language, integration, or both.",
+    "startFreeTrial": "Start now"
   },
   "courses": {
     "pageLabel": "Courses catalog",
@@ -300,6 +308,9 @@
       "termsPrefix": "I accept the",
       "terms": "Terms",
       "submit": "Submit",
+      "submitSuccess": "Thank you! Your request was sent. We’ll review it shortly — please check your email.",
+      "submitError": "Could not send your request. Please try again or email burode452@gmail.com.",
+      "close": "Close",
       "bookSessionSubject": "Book 1-on-1 Session"
     }
   },

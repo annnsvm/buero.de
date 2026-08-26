@@ -55,6 +55,9 @@ export const API_ENDPOINTS = {
     complete: (courseId: string, moduleId: string, materialId: string) =>
       `/courses/${courseId}/modules/${moduleId}/materials/${materialId}/complete`,
   },
+  contact: {
+    submit: '/contact',
+  },
 } as const;
 
 export const PUBLIC_ENDPOINT_PREFIXE = [
@@ -62,5 +65,6 @@ export const PUBLIC_ENDPOINT_PREFIXE = [
     API_ENDPOINTS.auth.register,
     API_ENDPOINTS.auth.refresh,
     API_ENDPOINTS.auth.logout,
-    API_ENDPOINTS.courses.list
+    API_ENDPOINTS.courses.list,
+    API_ENDPOINTS.contact.submit,
 ] as const;

@@ -13,8 +13,8 @@ const FooterBottomBar: React.FC = () => {
 
   return (
     <div className="border-t border-[var(--opacity-neutral-darkest-15)]">
-      <Container className="flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
-        <p className="order-2 text-[0.8125rem] text-[var(--color-neutral-base)] sm:order-1">
+      <Container className="flex flex-col items-center justify-between gap-3 py-4 sm:flex-row">
+        <p className="order-2 text-[0.75rem] text-[var(--color-neutral-base)] sm:order-1">
           {t('footer.copyright', { year: currentYear })}
         </p>
         <nav aria-label={t('footer.legalNav')} className="order-1 flex flex-wrap items-center justify-center gap-4 sm:order-2">
