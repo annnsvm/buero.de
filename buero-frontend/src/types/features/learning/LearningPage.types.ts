@@ -1,3 +1,5 @@
+import type { MaterialAttachment } from '@/types/features/courseManagment/MaterialAttachment.types';
+
 export type LearningLesson = {
   materialId?: string;
   materialType?: string;
@@ -10,10 +12,13 @@ export type LearningLesson = {
   title: string;
   description: string;
   videoUrl: string;
+  attachments?: MaterialAttachment[];
 };
 
 export type LearningPageProps = {
   lesson?: LearningLesson;
+  courseId?: string;
+  moduleId?: string;
   hasNextVideoLesson?: boolean;
   onNextVideoLesson?: () => void;
   isVideoLessonCompleted?: boolean;

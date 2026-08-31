@@ -35,13 +35,14 @@
 
 | Метод | Шлях | Опис | Роль |
 |-------|------|------|------|
-| GET | /api/courses | Каталог: список опублікованих курсів (фільтри за бажанням). | авторизований |
+| GET | /api/courses | Каталог: список опублікованих курсів (фільтри за бажанням). У відповіді також `lessonsCount`, `videoLessonCount`, `avgVideoLessonMinutes` (середня тривалість відеоуроку; квізи не входять). | авторизований |
 | GET | /api/courses/:id | Один курс по id з модулями та матеріалами (структура для модалки/каталогу). JWT опційний: без токена — публічний перегляд; з токеном і доступом — також `my_access`. Відкриття окремих матеріалів / сторінки навчання — з перевіркою `user_course_access`. | публічний (JWT опційний) |
 | GET | /api/courses/:id/modules | Список модулів курсу (по order_index). Доступ: якщо є user_course_access до курсу або вчитель. | авторизований |
 | POST | /api/courses/:id/modules | Створити модуль у курсі. | teacher |
 | GET | /api/courses/:id/modules/:moduleId | Один модуль. | авторизований |
 | PATCH | /api/courses/:id/modules/:moduleId | Оновити модуль. | teacher |
 | DELETE | /api/courses/:id/modules/:moduleId | Видалити модуль. | teacher |
+| PATCH | /api/courses/:courseId/structure | Змінити порядок модулів і уроків (у т.ч. перемістити урок в інший модуль) одним транзакційним запитом. | teacher |
 | GET | /api/courses/my | Курси, до яких у студента є доступ (user_course_access). | студент |
 | POST | /api/courses | Створити курс. | teacher |
 | PATCH | /api/courses/:id | Оновити курс. | teacher |

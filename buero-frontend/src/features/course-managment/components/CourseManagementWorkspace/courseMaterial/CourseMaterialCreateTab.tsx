@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, FormField, Input, Select, Spinner } from '@/components/ui';
 import type {
   CreateCourseMaterialModalValues,
@@ -13,9 +13,11 @@ import { MATERIAL_TYPE_OPTIONS } from '@/features/course-managment/helpers/cours
 import CourseMaterialCreateSection from './CourseMaterialCreateSection';
 import CourseMaterialQuizEditor from './CourseMaterialQuizEditor';
 import CourseMaterialVideoFields from './CourseMaterialVideoFields';
+import CourseMaterialAttachmentsSection from './CourseMaterialAttachmentsSection';
 import { getInitialMaterialState } from './helpers/courseMaterialInitialState';
 
 const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
+  courseId,
   modules,
   activeModuleId,
   activeMaterialId,
@@ -50,6 +52,9 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(initialState.savedSnapshot);
   const [lastCommitKind, setLastCommitKind] = useState<'create' | 'update' | null>(null);
   const [isMutating, setIsMutating] = useState(false);
+  const [hasAttachmentsDraft, setHasAttachmentsDraft] = useState(false);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const flushAttachmentsRef = useRef<(() => Promise<void>) | null>(null);
 
   const isBusy = isSubmitting || isMutating;
 
@@ -75,8 +80,13 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
         };
 
   const currentSnapshot = JSON.stringify(buildPayload());
-  const isInSync = Boolean(createdMaterialId) && savedSnapshot === currentSnapshot;
-  const hasUnsavedChanges = Boolean(createdMaterialId) && savedSnapshot !== currentSnapshot;
+  const hasFormChanges = Boolean(createdMaterialId) && savedSnapshot !== currentSnapshot;
+  const hasUnsavedChanges = hasFormChanges || hasAttachmentsDraft;
+  const isInSync = Boolean(createdMaterialId) && !hasUnsavedChanges;
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) setNeedsConfirm(false);
+  }, [hasUnsavedChanges]);
 
   const syncedButtonLabel = (() => {
     if (!isInSync) return null;
@@ -114,16 +124,27 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
     setError(null);
     const payload = buildPayload();
 
-    if (createdMaterialId && savedSnapshot === currentSnapshot) {
+    if (createdMaterialId && !hasUnsavedChanges) {
+      return;
+    }
+
+    if (createdMaterialId && !needsConfirm) {
+      setNeedsConfirm(true);
       return;
     }
 
     setIsMutating(true);
     try {
       if (createdMaterialId) {
-        await onUpdate(createdMaterialId, payload);
-        setSavedSnapshot(JSON.stringify(payload));
+        if (hasFormChanges) {
+          await onUpdate(createdMaterialId, payload);
+          setSavedSnapshot(JSON.stringify(payload));
+        }
+        if (flushAttachmentsRef.current) {
+          await flushAttachmentsRef.current();
+        }
         setLastCommitKind('update');
+        setNeedsConfirm(false);
         return;
       }
       const created = await onCreate(payload);
@@ -208,6 +229,20 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
         )}
       </div>
 
+      {createdMaterialId && courseId && activeModuleId ? (
+        <CourseMaterialAttachmentsSection
+          courseId={courseId}
+          moduleId={activeModuleId}
+          materialId={createdMaterialId}
+          onDraftChange={setHasAttachmentsDraft}
+          flushRef={flushAttachmentsRef}
+        />
+      ) : (
+        <p className="mt-6 text-xs text-[var(--color-text-secondary)]">
+          Save the lesson first to add attachments.
+        </p>
+      )}
+
       {error ? <p className="mt-2 text-sm text-[var(--color-error)]">{error}</p> : null}
 
       {activeMaterialId && onRequestDeleteMaterial ? (
@@ -238,8 +273,10 @@ const CourseMaterialCreateTab: React.FC<CourseMaterialCreateTabProps> = ({
             </span>
           ) : isInSync ? (
             syncedButtonLabel
+          ) : createdMaterialId && needsConfirm ? (
+            'Confirm'
           ) : hasUnsavedChanges ? (
-            'Update'
+            'Save changes'
           ) : (
             'Create material'
           )}

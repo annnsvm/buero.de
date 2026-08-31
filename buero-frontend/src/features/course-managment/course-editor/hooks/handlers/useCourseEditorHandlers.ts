@@ -34,6 +34,7 @@ export const useCourseEditorHandlers = ({
     setIsCreatingCourse,
     setIsUpdatingCourse,
     setLastCourseCommitKind,
+    setIsStructureDirty,
     isEditingCourse,
     setIsPublishingCourse,
     setIsUnpublishingCourse,
@@ -368,6 +369,7 @@ export const useCourseEditorHandlers = ({
       order_index: nextOrderIndex,
     });
     await fetchCourseTree(courseId);
+    setIsStructureDirty(false);
   };
 
   return {

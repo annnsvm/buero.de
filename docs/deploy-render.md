@@ -81,7 +81,7 @@ Render PostgreSQL
 | `WAYFORPAY_SERVICE_URL` | Так | `https://buro-de.onrender.com/api/webhooks/wayforpay` |
 | `WAYFORPAY_CURRENCY` | Ні | `EUR` |
 | `WAYFORPAY_RETURN_URL` | Ні | типово `${WAYFORPAY_SERVICE_URL}/return` |
-| `CLOUDINARY_*` | Ні | для обкладинок курсів |
+| `CLOUDINARY_*` | Ні | обкладинки курсів і вкладення уроків. На Free-плані в Settings → Security увімкнути **Allow delivery of PDF and ZIP files**, інакше PDF/ZIP можуть не скачуватись |
 | `THROTTLE_TTL` / `THROTTLE_LIMIT` | Ні | `60` / `100` |
 | `TRIAL_DAYS` | Ні | `7` |
 | `SMTP_HOST` | Ні | `smtp.gmail.com` |

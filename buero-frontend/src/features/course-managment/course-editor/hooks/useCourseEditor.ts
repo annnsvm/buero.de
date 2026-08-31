@@ -5,6 +5,7 @@ import { useCourseEditorHandlers } from './handlers/useCourseEditorHandlers';
 import { useCourseEditorRouter } from './router/useCourseEditorRouter';
 import { useCourseEditorState } from './state/useCourseEditorState';
 import { useCourseEditorTree } from './tree/useCourseEditorTree';
+import { useCourseEditorStructureDnd } from './useCourseEditorStructureDnd';
 
 export const useCourseEditor = () => {
   const router = useCourseEditorRouter();
@@ -13,6 +14,11 @@ export const useCourseEditor = () => {
     setValue: state.setValue,
     setModules: state.setModules,
     setIsCoursePublished: state.setIsCoursePublished,
+  });
+  const { persistStructure } = useCourseEditorStructureDnd({
+    courseId: state.courseId,
+    setModules: state.setModules,
+    fetchCourseTree: tree.fetchCourseTree,
   });
 
   useCourseEditorEffects({
@@ -37,8 +43,13 @@ export const useCourseEditor = () => {
     canUpdate,
     isCreatingCourse,
     isUpdatingCourse,
+    setIsUpdatingCourse,
     lastCourseCommitKind,
+    setLastCourseCommitKind,
+    isStructureDirty,
+    setIsStructureDirty,
     createCourseError,
+    setCreateCourseError,
     setCoverFile,
     setCoverPreviewUrl,
     watchedTitle,
@@ -98,16 +109,41 @@ export const useCourseEditor = () => {
   } = handlers;
 
   const runCourseUpdate = useCallback(() => {
-    if (coverFile !== null && !isDirty) {
-      void submitCourseCoverOnly();
-      return;
-    }
-    void handleSubmit(handleUpdateCourseSubmit)();
+    void (async () => {
+      if (coverFile !== null && !isDirty) {
+        await submitCourseCoverOnly();
+      } else if (isDirty) {
+        await handleSubmit(handleUpdateCourseSubmit)();
+      }
+
+      if (!courseId || !isStructureDirty) return;
+
+      setIsUpdatingCourse(true);
+      try {
+        await persistStructure(modules);
+        setIsStructureDirty(false);
+        setLastCourseCommitKind('update');
+        setCreateCourseError(null);
+      } catch {
+        setCreateCourseError('Failed to save module and lesson order');
+        setIsStructureDirty(false);
+      } finally {
+        setIsUpdatingCourse(false);
+      }
+    })();
   }, [
     coverFile,
-    isDirty,
+    courseId,
     handleSubmit,
     handleUpdateCourseSubmit,
+    isDirty,
+    isStructureDirty,
+    modules,
+    persistStructure,
+    setCreateCourseError,
+    setIsStructureDirty,
+    setIsUpdatingCourse,
+    setLastCourseCommitKind,
     submitCourseCoverOnly,
   ]);
 
@@ -162,6 +198,13 @@ export const useCourseEditor = () => {
       onRequestPublishCourse: () => setIsPublishModalOpen(true),
       showUnpublishCourseButton: Boolean(courseId) && isCoursePublished,
       onRequestUnpublishCourse: () => setIsUnpublishModalOpen(true),
+      onDraftStructureChange: courseId
+        ? (next) => {
+            state.setModules(next);
+            setIsStructureDirty(true);
+          }
+        : undefined,
+      hasUnsavedStructure: isStructureDirty,
     },
     headerProps: {
       watchedTitle,
@@ -199,6 +242,7 @@ export const useCourseEditor = () => {
       coverFile,
     },
     materialPanelProps: {
+      courseId,
       modules,
       activeModuleIdForMaterial,
       activeMaterialIdForEdit,

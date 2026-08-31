@@ -153,6 +153,25 @@
 - `nodes`: масив `{ id, type: "situation"|"choice"|"consequence"|"explanation", text, choices?: [{ text, nextNodeId, isCorrect, feedback }] }`.
 - Мінімум 3 гілки на сценарій (Ф-004); збереження результату проходження — у `quiz_attempts` або окремому полі в `course_progress`. Курс для матеріалу визначається через `material.module.courseId`.
 
+### 3.7.1 material_attachments
+
+Додаткові файли та посилання до уроку (матеріалу). Не обов'язкові: урок можна зберегти без вкладень. Файли (PDF, зображення, документи) зберігаються в Cloudinary; посилання — як URL. Студент бачить список під уроком. Доступ до списку = доступ до матеріалу (курс / trial).
+
+| Column      | Type       | Notes |
+|-------------|------------|--------|
+| id          | PK         | |
+| material_id | FK → course_materials | cascade delete |
+| kind        | enum       | `file` \| `link` |
+| title       | string     | |
+| url         | string     | Cloudinary `secure_url` або зовнішнє посилання |
+| file_name   | string     | nullable; оригінальна назва файлу |
+| mime_type   | string     | nullable |
+| size_bytes  | int        | nullable |
+| storage_key | string     | nullable; `{resource_type}:{public_id}` для видалення з Cloudinary |
+| order_index | int        | порядок під уроком |
+| created_at  | timestamp  | |
+| updated_at  | timestamp  | |
+
 ### 3.8 user_course_access
 
 Доступ студента до курсу: купівля, trial або підписка на цей курс. Один запис на пару (user_id, course_id). Перевірка доступу до контенту курсу — наявність активного запису (trial_ends_at > now() для trial, або активна підписка, або access_type = purchase).
@@ -321,6 +340,7 @@ erDiagram
     courses ||--o{ user_course_access : "access to"
     courses ||--o{ course_modules : contains
     course_modules ||--o{ course_materials : contains
+    course_materials ||--o{ material_attachments : has
     users ||--o{ course_progress : has
     users ||--o{ quiz_attempts : has
     users ||--o{ lesson_requests : "student requests"
@@ -397,6 +417,21 @@ erDiagram
         timestamp updated_at
     }
 
+    material_attachments {
+        uuid id PK
+        uuid material_id FK
+        enum kind "file|link"
+        string title
+        string url
+        string file_name
+        string mime_type
+        int size_bytes
+        string storage_key
+        int order_index
+        timestamp created_at
+        timestamp updated_at
+    }
+
     user_course_access {
         uuid id PK
         uuid user_id FK
@@ -467,6 +502,7 @@ erDiagram
     users ||--o{ courses : "teacher creates"
     courses ||--o{ course_modules : contains
     course_modules ||--o{ course_materials : contains
+    course_materials ||--o{ material_attachments : has
 ```
 
 **Схема зв’язків (текстом):**
@@ -475,6 +511,7 @@ erDiagram
 - **courses** — належать teacher; мають **category** (`language` | `sociocultural`); кожен курс — окремий продукт (своя тема, інтеграція).
 - **course_modules** — модулі курсу; ієрархія **Course → Module → Material**. Доступ до модулів = доступ до курсу (user_course_access), окремої таблиці доступу до модулів немає.
 - **course_materials** — елементи **модуля** (відео, квіз, сценарій тощо); сценарії з гілками в `content` (JSON). Матеріали типу **quiz** — тести в кінці курсу або в модулі.
+- **material_attachments** — файли (Cloudinary) і посилання, прикріплені до матеріалу; студент бачить їх під уроком.
 - **user_course_access** — доступ студента до курсу: trial, purchase або subscription на цей курс; UNIQUE(user_id, course_id).
 - **subscriptions** / **payments** — підписка та платежі **прив’язані до курсу** (subscriptions.course_id, payments.course_id); один активний subscription на (user_id, course_id).
 - **course_progress** + **quiz_attempts** — прогрес і результати квізів/сценаріїв.

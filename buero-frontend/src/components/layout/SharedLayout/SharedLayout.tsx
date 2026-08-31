@@ -40,7 +40,7 @@ const SharedLayout = () => {
     /^\/teacher\/courses\/[^/]+\/edit$/.test(pathname);
 
   const hideHeader = isTeacherCourseEditor || pathname.startsWith('/courses/');
-  const hideFooter = pathname.includes('/teacher/courses/');
+  const hideFooter = hideHeader;
 
   return (
     <div className="flex min-h-screen flex-col">

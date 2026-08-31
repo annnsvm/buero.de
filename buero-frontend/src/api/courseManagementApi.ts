@@ -72,3 +72,14 @@ export const deleteMaterial = async (
   materialId: string,
 ) =>
   apiInstance.delete(API_ENDPOINTS.courseMaterials.delete(courseId, moduleId, materialId));
+
+export type ReorderStructurePayload = {
+  id: string;
+  order_index: number;
+  materials: { id: string; order_index: number }[];
+}[];
+
+export const reorderCourseStructure = async (
+  courseId: string,
+  modules: ReorderStructurePayload,
+) => apiInstance.patch(API_ENDPOINTS.courses.structure(courseId), { modules });

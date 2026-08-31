@@ -14,7 +14,7 @@ export class MulterExceptionFilter implements ExceptionFilter {
     let message = exception.message;
 
     if (exception.code === "LIMIT_FILE_SIZE") {
-      message = "Розмір файлу не може перевищувати 5 MB";
+      message = "File is too large";
     }
 
     res.status(HttpStatus.BAD_REQUEST).json({

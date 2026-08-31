@@ -59,10 +59,13 @@ export class CourseService {
       const videoByCourse =
         await this.countVideoMaterialsByCourseIds(courseIds);
       const lessonsByCourse = await this.countMaterialsByCourseIds(courseIds);
+      const avgVideoByCourse =
+        await this.averageVideoLessonMinutesByCourseIds(courseIds);
       return active.map((a) => ({
         ...this.serializeCourse(a.course as Record<string, unknown>),
         videoLessonCount: videoByCourse.get(a.courseId) ?? 0,
         lessonsCount: lessonsByCourse.get(a.courseId) ?? 0,
+        avgVideoLessonMinutes: avgVideoByCourse.get(a.courseId) ?? null,
         my_access: {
           access_type: a.accessType,
           ...(a.accessType === "trial" &&
@@ -116,16 +119,16 @@ export class CourseService {
         where,
         orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
       });
-      const videoByCourse = await this.countVideoMaterialsByCourseIds(
-        courses.map((c) => c.id)
-      );
-      const lessonsByCourse = await this.countMaterialsByCourseIds(
-        courses.map((c) => c.id)
-      );
+      const courseIds = courses.map((c) => c.id);
+      const videoByCourse = await this.countVideoMaterialsByCourseIds(courseIds);
+      const lessonsByCourse = await this.countMaterialsByCourseIds(courseIds);
+      const avgVideoByCourse =
+        await this.averageVideoLessonMinutesByCourseIds(courseIds);
       return courses.map((c) => ({
         ...this.serializeCourse(c as Record<string, unknown>),
         videoLessonCount: videoByCourse.get(c.id) ?? 0,
         lessonsCount: lessonsByCourse.get(c.id) ?? 0,
+        avgVideoLessonMinutes: avgVideoByCourse.get(c.id) ?? null,
       }));
     } catch (error) {
       throw this.mapPrismaError(error);
@@ -141,7 +144,12 @@ export class CourseService {
               modules: {
                 orderBy: { orderIndex: "asc" },
                 include: {
-                  materials: { orderBy: { orderIndex: "asc" } },
+                  materials: {
+                    orderBy: { orderIndex: "asc" },
+                    include: {
+                      attachments: { orderBy: { orderIndex: "asc" } },
+                    },
+                  },
                 },
               },
             }
@@ -415,6 +423,73 @@ export class CourseService {
     return this.countMaterialsByCourseIds(courseIds, CourseMaterialType.video);
   }
 
+  /**
+   * Average video length in minutes, from materials with a parseable duration.
+   * Quizzes and videos without duration are ignored.
+   */
+  private async averageVideoLessonMinutesByCourseIds(
+    courseIds: string[],
+  ): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (courseIds.length === 0) return map;
+    const modules = await this.prisma.courseModule.findMany({
+      where: { courseId: { in: courseIds } },
+      select: { id: true, courseId: true },
+    });
+    if (modules.length === 0) return map;
+    const moduleIdToCourseId = new Map(
+      modules.map((m) => [m.id, m.courseId] as const),
+    );
+    const videos = await this.prisma.courseMaterial.findMany({
+      where: {
+        moduleId: { in: modules.map((m) => m.id) },
+        type: CourseMaterialType.video,
+      },
+      select: { moduleId: true, content: true },
+    });
+
+    const totals = new Map<string, { seconds: number; count: number }>();
+    for (const video of videos) {
+      const courseId = moduleIdToCourseId.get(video.moduleId);
+      if (!courseId) continue;
+      const seconds = this.parseContentDurationSeconds(video.content);
+      if (seconds == null || seconds <= 0) continue;
+      const prev = totals.get(courseId) ?? { seconds: 0, count: 0 };
+      totals.set(courseId, {
+        seconds: prev.seconds + seconds,
+        count: prev.count + 1,
+      });
+    }
+    for (const [courseId, { seconds, count }] of totals) {
+      map.set(courseId, Math.max(1, Math.round(seconds / count / 60)));
+    }
+    return map;
+  }
+
+  private parseContentDurationSeconds(content: unknown): number | null {
+    if (content == null || typeof content !== "object") return null;
+    const raw = (content as { duration?: unknown }).duration;
+    if (typeof raw === "number" && Number.isFinite(raw) && raw >= 0) {
+      return raw;
+    }
+    if (typeof raw !== "string") return null;
+    const value = raw.trim();
+    const hms = value.match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+    if (hms) {
+      return (
+        Number(hms[1]) * 3600 + Number(hms[2]) * 60 + Number(hms[3])
+      );
+    }
+    const ms = value.match(/^(\d+):([0-5]\d)$/);
+    if (ms) {
+      return Number(ms[1]) * 60 + Number(ms[2]);
+    }
+    if (/^\d+$/.test(value)) {
+      return Number(value);
+    }
+    return null;
+  }
+
   /** Усі матеріали (або лише обраний type) по курсах — для lessonsCount та «coming soon». */
   private async countMaterialsByCourseIds(
     courseIds: string[],
@@ -467,10 +542,40 @@ export class CourseService {
       imageUrl?: string | null;
     };
     return {
-      ...rest,
+      ...this.stripAttachmentStorageKeys(rest as Record<string, unknown>),
       price: priceAsNumber,
       image_url: imageUrl ?? null,
     } as unknown as T;
+  }
+
+  private stripAttachmentStorageKeys(
+    course: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const modules = course.modules;
+    if (!Array.isArray(modules)) return course;
+    return {
+      ...course,
+      modules: modules.map((mod: Record<string, unknown>) => {
+        const materials = mod.materials;
+        if (!Array.isArray(materials)) return mod;
+        return {
+          ...mod,
+          materials: materials.map((mat: Record<string, unknown>) => {
+            const attachments = mat.attachments;
+            if (!Array.isArray(attachments)) return mat;
+            return {
+              ...mat,
+              attachments: attachments.map(
+                (item: Record<string, unknown>) => {
+                  const { storageKey: _storageKey, ...rest } = item;
+                  return rest;
+                },
+              ),
+            };
+          }),
+        };
+      }),
+    };
   }
 
   private mapPrismaError(error: unknown): never {

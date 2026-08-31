@@ -4,6 +4,7 @@ import CourseMaterialCreateTab from '@/features/course-managment/components/Cour
 import type { CourseEditorMaterialPanelProps } from '@/types/features/courseManagment/CourseEditorComponents.types';
 
 const CourseEditorMaterialPanel: React.FC<CourseEditorMaterialPanelProps> = ({
+  courseId,
   modules,
   activeModuleIdForMaterial,
   activeMaterialIdForEdit,
@@ -16,6 +17,7 @@ const CourseEditorMaterialPanel: React.FC<CourseEditorMaterialPanelProps> = ({
     <Container className="max-w-[1100px] px-4 sm:px-6">
       <CourseMaterialCreateTab
         key={`${activeModuleIdForMaterial ?? 'module-none'}:${activeMaterialIdForEdit ?? 'material-new'}`}
+        courseId={courseId}
         modules={modules}
         activeModuleId={activeModuleIdForMaterial}
         activeMaterialId={activeMaterialIdForEdit}

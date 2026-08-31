@@ -13,6 +13,7 @@ const sampleCourses = [
     is_published: true,
     duration_hours: 1,
     videoLessonCount: 1,
+    avgVideoLessonMinutes: 6,
   },
   {
     id: 'e2e-course-beta',
@@ -25,6 +26,7 @@ const sampleCourses = [
     is_published: true,
     duration_hours: 2,
     videoLessonCount: 2,
+    avgVideoLessonMinutes: 8,
   },
 ];
 

@@ -4,10 +4,11 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { UserModule } from '../user/user.module';
 import { CourseModuleService } from './course-module.service';
 import { CourseModulesController } from './course-modules.controller';
+import { CourseStructureController } from './course-structure.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule, UserModule],
-  controllers: [CourseModulesController],
+  controllers: [CourseModulesController, CourseStructureController],
   providers: [CourseModuleService],
   exports: [CourseModuleService],
 })

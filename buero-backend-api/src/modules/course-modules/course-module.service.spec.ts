@@ -16,7 +16,9 @@ describe("CourseModuleService", () => {
       update: jest.Mock;
       delete: jest.Mock;
     };
+    courseMaterial: { update: jest.Mock };
     userCourseAccess: { findUnique: jest.Mock };
+    $transaction: jest.Mock;
   };
 
   const courseId = "cccccccc-cccc-cccc-cccc-cccccccccccc";
@@ -33,7 +35,9 @@ describe("CourseModuleService", () => {
         update: jest.fn(),
         delete: jest.fn(),
       },
+      courseMaterial: { update: jest.fn() },
       userCourseAccess: { findUnique: jest.fn() },
+      $transaction: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

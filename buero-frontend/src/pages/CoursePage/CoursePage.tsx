@@ -14,6 +14,7 @@ import {
   MaterialWindow,
   QuizLessonModal,
 } from '@/features/course-learning';
+import LessonAttachments from '@/features/course-learning/MaterialWindow/LessonAttachments';
 import type { QuizResultSummary } from '@/features/course-learning/QuizLessonModal';
 
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
@@ -33,6 +34,7 @@ import {
   mapApiModulesToCourseStructure,
   parseDurationLabelToSeconds,
   parseQuizMaterialContent,
+  mapApiAttachments,
 } from './coursePageMappers';
 
 const CoursePage: React.FC = () => {
@@ -425,6 +427,8 @@ const CoursePage: React.FC = () => {
             <MaterialWindow
               key={selectedMaterialId ?? currentLesson.materialId ?? currentLesson.videoUrl}
               lesson={currentLesson}
+              courseId={courseId}
+              moduleId={selectedModuleId ?? undefined}
               hasNextVideoLesson={Boolean(nextVideoMaterialId)}
               onNextVideoLesson={handleNextVideoLesson}
               isVideoLessonCompleted={
@@ -477,6 +481,14 @@ const CoursePage: React.FC = () => {
               >
                 {t('coursePage.openQuiz')}
               </button>
+              <div className="w-full max-w-md">
+                <LessonAttachments
+                  attachments={mapApiAttachments(selectedMaterial?.attachments)}
+                  courseId={courseId}
+                  moduleId={selectedModuleId ?? undefined}
+                  materialId={selectedMaterial?.id}
+                />
+              </div>
             </div>
           ) : null}
         </section>
@@ -491,6 +503,9 @@ const CoursePage: React.FC = () => {
           greetingName={greetingName}
           quizMaterialTitle={selectedMaterial.title || t('coursePage.quiz')}
           questions={parsedQuizQuestions}
+          attachments={mapApiAttachments(selectedMaterial.attachments)}
+          courseId={courseId}
+          moduleId={selectedModuleId ?? undefined}
           onQuizResult={setQuizPlaceholderResult}
         />
       ) : null}

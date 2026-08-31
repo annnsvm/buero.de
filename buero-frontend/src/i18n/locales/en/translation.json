@@ -255,6 +255,7 @@
     },
     "lessonsCount_one": "{{count}} lesson",
     "lessonsCount_other": "{{count}} lessons",
+    "avgLessonMinutes": "~{{count}} min",
     "published": "Published",
     "unpublished": "Unpublished",
     "editCourse": "Edit course",
@@ -279,6 +280,7 @@
     "modal": {
       "loadingStructure": "Loading course structure…",
       "duration": "Duration",
+      "avgLesson": "Avg. lesson",
       "lessons": "Lessons",
       "questionsTitle": "Have questions about this course?",
       "contactSupport": "Contact Support",
@@ -349,7 +351,15 @@
     "addUnknownWord": "Add Unknown Word",
     "needClarification": "Need clarification?",
     "clarificationDescription": "Book a 1-on-1 session with our instructors if something feels unclear. Get personalized guidance and answers to your specific questions.",
-    "bookSession": "Book 1-on-1 Session"
+    "bookSession": "Book 1-on-1 Session",
+    "attachments": {
+      "title": "Lesson materials",
+      "download": "Download",
+      "downloading": "Downloading…",
+      "downloadFailed": "Could not download the file",
+      "openLink": "Open",
+      "empty": "No extra materials for this lesson."
+    }
   },
   "vocabulary": {
     "title": "Vocabulary",

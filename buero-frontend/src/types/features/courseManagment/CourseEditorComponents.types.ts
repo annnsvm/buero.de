@@ -83,6 +83,7 @@ export type CourseEditorCourseFormTabProps = {
 };
 
 export type CourseEditorMaterialPanelProps = {
+  courseId: string | null;
   modules: Modules[];
   activeModuleIdForMaterial: string | null;
   activeMaterialIdForEdit: string | null;
