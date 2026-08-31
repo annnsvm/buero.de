@@ -1,9 +1,9 @@
 export const SITE_URL = 'https://buro-de.com';
 export const SITE_NAME = 'Büro.de';
 
-export const DEFAULT_TITLE = 'Büro.de - Learn German. Live German.';
+export const DEFAULT_TITLE = 'Büro.de — Вивчай німецьку. Живи німецькою.';
 export const DEFAULT_DESCRIPTION =
-  'Language courses and integration guides — so you can speak German and know how to use it in everyday life in Germany.';
+  'Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині.';
 
 export type PublicPage = {
   path: string;
@@ -22,27 +22,27 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   {
     path: '/courses',
     file: 'courses/index.html',
-    title: 'Courses | Büro.de',
+    title: 'Курси | Büro.de',
     description:
-      'Language courses, integration guides, and cultural deep-dives. Start with a free trial or dive right in.',
+      'Мовні курси, інтеграційні гіди та культурні матеріали. Почни з безкоштовного модуля або одразу обирай курс.',
   },
   {
     path: '/privacy',
     file: 'privacy/index.html',
-    title: 'Privacy Policy | Büro.de',
-    description: 'How Büro.de collects, uses, and protects personal data.',
+    title: 'Політика конфіденційності | Büro.de',
+    description: 'Як Büro.de збирає, використовує та захищає персональні дані.',
   },
   {
     path: '/terms',
     file: 'terms/index.html',
-    title: 'Terms of Service | Büro.de',
-    description: 'Terms for using the Büro.de German learning platform.',
+    title: 'Умови використання | Büro.de',
+    description: 'Умови користування платформою вивчення німецької Büro.de.',
   },
   {
     path: '/cookies',
     file: 'cookies/index.html',
-    title: 'Cookie Policy | Büro.de',
-    description: 'How Büro.de uses cookies and similar technologies.',
+    title: 'Політика Cookie | Büro.de',
+    description: 'Як Büro.de використовує cookies та подібні технології.',
   },
 ];
 

@@ -8,6 +8,7 @@ import SharedLayout from '@/components/layout/SharedLayout/SharedLayout';
 import { ModalProvider } from '@/components/modal';
 import { ROUTES } from '@/helpers/routes';
 import i18n, { i18nReady } from '@/i18n';
+import { DEFAULT_LOCALE } from '@/i18n/constants';
 import CookiesPolicyPage from '@/pages/CookiesPolicyPage/CookiesPolicyPage';
 import CoursesCatalogPage from '@/pages/CoursesCatalogPage/CoursesCatalogPage';
 import HomePage from '@/pages/HomePage/HomePage';
@@ -39,5 +40,6 @@ const PrerenderApp = ({ url }: { url: string }) => (
 
 export const renderPath = async (url: string): Promise<string> => {
   await i18nReady;
+  await i18n.changeLanguage(DEFAULT_LOCALE);
   return renderToString(<PrerenderApp url={url} />);
 };

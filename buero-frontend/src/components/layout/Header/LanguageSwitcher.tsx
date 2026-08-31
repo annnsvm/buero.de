@@ -14,6 +14,15 @@ type LanguageSwitcherProps = {
   className?: string;
 };
 
+const normalizeLocale = (value: string | null | undefined): AppLocale | null => {
+  if (!value) return null;
+  const base = value.toLowerCase().split('-')[0];
+  if (SUPPORTED_LOCALES.includes(base as AppLocale)) {
+    return base as AppLocale;
+  }
+  return null;
+};
+
 const nextLocale = (current: AppLocale): AppLocale => {
   const index = SUPPORTED_LOCALES.indexOf(current);
   return SUPPORTED_LOCALES[(index + 1) % SUPPORTED_LOCALES.length] ?? 'uk';
@@ -21,7 +30,7 @@ const nextLocale = (current: AppLocale): AppLocale => {
 
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ isLight = false, className = '' }) => {
   const { i18n, t } = useTranslation();
-  const current = (i18n.language === 'en' ? 'en' : 'uk') as AppLocale;
+  const current = (normalizeLocale(i18n.language) ?? 'uk') as AppLocale;
 
   const handleToggle = () => {
     const next = nextLocale(current);

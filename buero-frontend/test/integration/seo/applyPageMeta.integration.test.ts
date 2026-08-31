@@ -5,14 +5,14 @@ import { PUBLIC_PAGES } from '@/seo/publicPages';
 const homeTemplate = `<!doctype html>
 <html lang="uk">
   <head>
-    <title>Büro.de - Learn German. Live German.</title>
-    <meta name="description" content="Language courses and integration guides — so you can speak German and know how to use it in everyday life in Germany." />
+    <title>Büro.de — Вивчай німецьку. Живи німецькою.</title>
+    <meta name="description" content="Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
     <link rel="canonical" href="https://buro-de.com/" />
     <meta property="og:url" content="https://buro-de.com/" />
-    <meta property="og:title" content="Büro.de - Learn German. Live German." />
-    <meta property="og:description" content="Language courses and integration guides — so you can speak German and know how to use it in everyday life in Germany." />
-    <meta name="twitter:title" content="Büro.de - Learn German. Live German." />
-    <meta name="twitter:description" content="Language courses and integration guides — so you can speak German and know how to use it in everyday life in Germany." />
+    <meta property="og:title" content="Büro.de — Вивчай німецьку. Живи німецькою." />
+    <meta property="og:description" content="Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
+    <meta name="twitter:title" content="Büro.de — Вивчай німецьку. Живи німецькою." />
+    <meta name="twitter:description" content="Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
   </head>
   <body></body>
 </html>`;
@@ -26,8 +26,8 @@ describe('applyPageMeta', () => {
 
     const html = applyPageMeta(homeTemplate, privacy);
 
-    expect(html).toContain('<title>Privacy Policy | Büro.de</title>');
-    expect(html).toContain('content="How Büro.de collects, uses, and protects personal data."');
+    expect(html).toContain('<title>Політика конфіденційності | Büro.de</title>');
+    expect(html).toContain('content="Як Büro.de збирає, використовує та захищає персональні дані."');
     expect(html).toContain('href="https://buro-de.com/privacy"');
     expect(html).toContain('content="https://buro-de.com/privacy"');
   });

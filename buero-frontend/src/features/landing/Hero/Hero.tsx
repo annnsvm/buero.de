@@ -7,7 +7,7 @@ import HeroBenefits from './HeroBenefits';
 
 const Hero: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const isUk = i18n.language === 'uk';
+  const isUk = i18n.language.toLowerCase().startsWith('uk');
 
   return (
     <Section className="relative">

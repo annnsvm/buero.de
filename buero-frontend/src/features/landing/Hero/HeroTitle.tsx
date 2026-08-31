@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 const HeroTitle: React.FC<HeroTitleProps> = ({ children }) => {
   const { i18n } = useTranslation();
-  const isUk = i18n.language === 'uk';
+  const isUk = i18n.language.toLowerCase().startsWith('uk');
 
   const sizeClasses = isUk
     ? 'text-[clamp(1.75rem,4.5vw+0.5rem,4rem)] font-medium leading-[1.15] tracking-[-0.02em]'
