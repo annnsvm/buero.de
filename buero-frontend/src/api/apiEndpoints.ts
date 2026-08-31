@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     cover: (id: string) => `/courses/${id}/cover`,
     startTrial: (id: string) => `/courses/${id}/start-trial`,
     reorder: '/courses/reorder',
+    structure: (id: string) => `/courses/${id}/structure`,
   },
   courseMaterials: {
     list: (courseId: string, moduleId: string) => `/courses/${courseId}/modules/${moduleId}/materials`,
@@ -30,6 +31,24 @@ export const API_ENDPOINTS = {
       `/courses/${courseId}/modules/${moduleId}/materials/${id}`,
     delete: (courseId: string, moduleId: string, id: string) =>
       `/courses/${courseId}/modules/${moduleId}/materials/${id}`,
+    attachments: (courseId: string, moduleId: string, materialId: string) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${materialId}/attachments`,
+    attachmentLink: (courseId: string, moduleId: string, materialId: string) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${materialId}/attachments/link`,
+    attachmentById: (
+      courseId: string,
+      moduleId: string,
+      materialId: string,
+      attachmentId: string,
+    ) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${materialId}/attachments/${attachmentId}`,
+    attachmentDownload: (
+      courseId: string,
+      moduleId: string,
+      materialId: string,
+      attachmentId: string,
+    ) =>
+      `/courses/${courseId}/modules/${moduleId}/materials/${materialId}/attachments/${attachmentId}/download`,
   },
   courseModules: {
     list: (courseId: string) => `/courses/${courseId}/modules`,

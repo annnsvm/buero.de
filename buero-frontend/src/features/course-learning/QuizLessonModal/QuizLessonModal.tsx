@@ -5,6 +5,8 @@ import ModalScrollArea from '@/components/modal/ModalScrollArea';
 import { startQuizAttempt, submitQuizAttempt } from '@/api/quizApi';
 import { getErrorMessage } from '@/helpers/getErrorMessage';
 import type { ParsedQuizQuestion } from '@/pages/CoursePage/coursePageMappers';
+import LessonAttachments from '@/features/course-learning/MaterialWindow/LessonAttachments';
+import type { MaterialAttachment } from '@/types/features/courseManagment/MaterialAttachment.types';
 
 export type QuizResultSummary = {
   correct: number;
@@ -16,9 +18,12 @@ export type QuizLessonModalProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   courseMaterialId: string;
+  courseId?: string;
+  moduleId?: string;
   greetingName: string;
   quizMaterialTitle: string;
   questions: ParsedQuizQuestion[];
+  attachments?: MaterialAttachment[];
   onQuizResult?: (result: QuizResultSummary | null) => void;
 };
 
@@ -26,18 +31,24 @@ const letterLabel = (index: number) => String.fromCharCode(97 + index);
 
 type QuizLessonModalBodyProps = {
   courseMaterialId: string;
+  courseId?: string;
+  moduleId?: string;
   greetingName: string;
   quizMaterialTitle: string;
   questions: ParsedQuizQuestion[];
+  attachments?: MaterialAttachment[];
   onOpenChange: (open: boolean) => void;
   onQuizResult?: (result: QuizResultSummary | null) => void;
 };
 
 const QuizLessonModalBody: React.FC<QuizLessonModalBodyProps> = ({
   courseMaterialId,
+  courseId,
+  moduleId,
   greetingName,
   quizMaterialTitle,
   questions,
+  attachments,
   onOpenChange,
   onQuizResult,
 }) => {
@@ -304,6 +315,13 @@ const QuizLessonModalBody: React.FC<QuizLessonModalBodyProps> = ({
           </>
         )}
       </div>
+
+      <LessonAttachments
+        attachments={attachments}
+        courseId={courseId}
+        moduleId={moduleId}
+        materialId={courseMaterialId}
+      />
     </>
   );
 };
@@ -312,9 +330,12 @@ const QuizLessonModal: React.FC<QuizLessonModalProps> = ({
   isOpen,
   onOpenChange,
   courseMaterialId,
+  courseId,
+  moduleId,
   greetingName,
   quizMaterialTitle,
   questions,
+  attachments,
   onQuizResult,
 }) => {
   const bodyKey = useMemo(
@@ -334,9 +355,12 @@ const QuizLessonModal: React.FC<QuizLessonModalProps> = ({
           <QuizLessonModalBody
             key={bodyKey}
             courseMaterialId={courseMaterialId}
+            courseId={courseId}
+            moduleId={moduleId}
             greetingName={greetingName}
             quizMaterialTitle={quizMaterialTitle}
             questions={questions}
+            attachments={attachments}
             onOpenChange={onOpenChange}
             onQuizResult={onQuizResult}
           />

@@ -259,6 +259,7 @@
     "lessonsCount_few": "{{count}} уроки",
     "lessonsCount_many": "{{count}} уроків",
     "lessonsCount_other": "{{count}} уроків",
+    "avgLessonMinutes": "~{{count}} хв",
     "published": "Опубліковано",
     "unpublished": "Не опубліковано",
     "editCourse": "Редагувати курс",
@@ -285,6 +286,7 @@
     "modal": {
       "loadingStructure": "Завантаження структури курсу…",
       "duration": "Тривалість",
+      "avgLesson": "Середній урок",
       "lessons": "Уроки",
       "questionsTitle": "Є питання щодо цього курсу?",
       "contactSupport": "Зв'язатися з підтримкою",
@@ -355,7 +357,15 @@
     "addUnknownWord": "Додати невідоме слово",
     "needClarification": "Потрібні пояснення?",
     "clarificationDescription": "Забронюйте індивідуальне заняття з викладачем, якщо щось незрозуміло. Отримайте персональні поради та відповіді на ваші запитання.",
-    "bookSession": "Забронювати індивідуальне заняття"
+    "bookSession": "Забронювати індивідуальне заняття",
+    "attachments": {
+      "title": "Матеріали уроку",
+      "download": "Завантажити",
+      "downloading": "Завантаження…",
+      "downloadFailed": "Не вдалося завантажити файл",
+      "openLink": "Відкрити",
+      "empty": "Для цього уроку немає додаткових матеріалів."
+    }
   },
   "vocabulary": {
     "title": "Словник",

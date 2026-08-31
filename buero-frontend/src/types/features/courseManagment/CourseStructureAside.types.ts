@@ -19,6 +19,8 @@ export type CourseStructureAsideProps = {
   courseStructureMobileOpen?: boolean;
   onCourseStructureMobileChange?: (open: boolean) => void;
   hideMobileFloatingStructureButton?: boolean;
+  onDraftStructureChange?: (modules: Modules[]) => void;
+  hasUnsavedStructure?: boolean;
 };
 
 export type CourseAsideActionButtonProps = {

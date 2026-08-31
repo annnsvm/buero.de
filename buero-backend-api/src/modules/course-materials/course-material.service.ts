@@ -97,10 +97,14 @@ export class CourseMaterialService {
   async findAllByModuleId(courseId: string, moduleId: string) {
     try {
       await this.ensureModuleBelongsToCourse(moduleId, courseId);
-      return this.prisma.courseMaterial.findMany({
+      const items = await this.prisma.courseMaterial.findMany({
         where: { moduleId },
         orderBy: { orderIndex: 'asc' },
+        include: {
+          attachments: { orderBy: { orderIndex: 'asc' } },
+        },
       });
+      return items.map((item) => this.omitAttachmentStorageKeys(item));
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw this.mapError(error);
@@ -112,13 +116,16 @@ export class CourseMaterialService {
       await this.ensureModuleBelongsToCourse(moduleId, courseId);
       const material = await this.prisma.courseMaterial.findFirst({
         where: { id, moduleId },
+        include: {
+          attachments: { orderBy: { orderIndex: 'asc' } },
+        },
       });
       if (!material) {
         throw new NotFoundException(
           `Матеріал з id ${id} не знайдено або не належить модулю`,
         );
       }
-      return material;
+      return this.omitAttachmentStorageKeys(material);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw this.mapError(error);
@@ -181,6 +188,19 @@ export class CourseMaterialService {
       if (error instanceof NotFoundException) throw error;
       throw this.mapError(error);
     }
+  }
+
+  private omitAttachmentStorageKeys<
+    T extends { attachments?: Array<Record<string, unknown> & { storageKey?: unknown }> },
+  >(material: T): T {
+    if (!material.attachments) return material;
+    return {
+      ...material,
+      attachments: material.attachments.map((item) => {
+        const { storageKey: _storageKey, ...rest } = item;
+        return rest;
+      }),
+    };
   }
 
   private mapError(error: unknown): never {

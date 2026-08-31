@@ -28,6 +28,7 @@ export const useCourseEditorEffects = ({
     setCoverFile,
     setCoverPreviewUrl,
     setLastCourseCommitKind,
+    setIsStructureDirty,
   } = state;
 
   const { syncCourseDurationHours } = tree;
@@ -57,6 +58,7 @@ export const useCourseEditorEffects = ({
         const formValues = mapCourseToForm(data);
         reset(formValues);
         setLastCourseCommitKind(null);
+        setIsStructureDirty(false);
         setCourseId(routeCourseId);
         setModules(data.modules ?? []);
         setIsCoursePublished(publishedFromApi(data));
@@ -91,5 +93,6 @@ export const useCourseEditorEffects = ({
     syncCourseDurationHours,
     setIsBootstrappingCourse,
     setLastCourseCommitKind,
+    setIsStructureDirty,
   ]);
 };

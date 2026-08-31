@@ -12,6 +12,7 @@ export type CourseCardProps = {
   price: string;
   lessonsCount: number;
   durationHours: number;
+  avgVideoLessonMinutes?: number | null;
   tags: string[];
   rating?: number;
   isAdded?: boolean;

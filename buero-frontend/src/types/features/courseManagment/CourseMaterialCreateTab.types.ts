@@ -4,6 +4,7 @@ import type { CreateCourseMaterialModalValues } from '@/types/features/courseMan
 export type CourseMaterialType = 'video' | 'quiz';
 
 export type CourseMaterialCreateTabProps = {
+  courseId: string | null;
   modules: Modules[];
   activeModuleId: string | null;
   activeMaterialId: string | null;

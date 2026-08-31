@@ -1,17 +1,42 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCorners,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 import { useSlideInSheet } from '@/hooks/useSlideInSheet';
 import Icon from '@/components/ui/Icon';
 import { ICON_NAMES } from '@/helpers/iconNames';
-import CourseModule from '@/components/ui/CourseStructure/CourseModule/CourseModule';
+import type { Modules } from '@/types/components/ui/ModuleMaterial.types';
 import type { CourseStructureAsideProps } from '@/types/features/courseManagment/CourseStructureAside.types';
 import CourseStructureAsideCourseHeader from './CourseStructureAsideCourseHeader';
 import CourseStructureAsideActionButton from './CourseStructureAsideActionButton';
 import CourseStructureAsideEmptyState from './CourseStructureAsideEmptyState';
+import SortableCourseModule from './SortableCourseModule';
+import { getStructureDragData, toModuleSortableId } from './courseStructureDnd.ids';
 import { Button, Logo } from '@/components/ui';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/helpers/routes';
 import { WorkspaceScrollArea } from '@/components/modal';
+
+const cloneModules = (modules: Modules[]): Modules[] =>
+  modules.map((mod) => ({ ...mod, materials: [...mod.materials] }));
+
+const findModuleIdByMaterial = (modules: Modules[], materialId: string): string | undefined =>
+  modules.find((mod) => mod.materials.some((material) => material.id === materialId))?.id;
 
 const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   modules,
@@ -32,8 +57,11 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   courseStructureMobileOpen,
   onCourseStructureMobileChange,
   hideMobileFloatingStructureButton = false,
+  onDraftStructureChange,
+  hasUnsavedStructure = false,
 }) => {
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
+  const [forceExpandedModuleId, setForceExpandedModuleId] = useState<string | null>(null);
   const isControlled =
     courseStructureMobileOpen !== undefined && onCourseStructureMobileChange !== undefined;
   const isOpenMobile = isControlled ? courseStructureMobileOpen! : internalMobileOpen;
@@ -41,6 +69,12 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
   const { mounted: sheetMounted, entered: sheetEntered } = useSlideInSheet(isOpenMobile);
   const hasStructure = modules.length > 0;
   const hasCourse = courseId != null;
+  const dragEnabled = Boolean(hasCourse && onDraftStructureChange);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const handleOpen = () => setIsOpenMobile(true);
   const handleClose = () => setIsOpenMobile(false);
@@ -65,6 +99,140 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
     handleRequestUnpublish();
   };
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const data = getStructureDragData(event.active.data.current);
+    if (data?.type === 'material') setForceExpandedModuleId(data.moduleId);
+  }, []);
+
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      if (!dragEnabled || !onDraftStructureChange) return;
+      const { active, over } = event;
+      if (!over) return;
+
+      const activeData = getStructureDragData(active.data.current);
+      const overData = getStructureDragData(over.data.current);
+      if (activeData?.type !== 'material') return;
+
+      const overModuleId =
+        overData?.type === 'material' || overData?.type === 'module' || overData?.type === 'module-drop'
+          ? overData.moduleId
+          : undefined;
+      if (!overModuleId) return;
+      setForceExpandedModuleId(overModuleId);
+
+      const fromModuleId = findModuleIdByMaterial(modules, activeData.materialId);
+      if (!fromModuleId || fromModuleId === overModuleId) return;
+
+      const next = cloneModules(modules);
+      const fromModule = next.find((mod) => mod.id === fromModuleId);
+      const toModule = next.find((mod) => mod.id === overModuleId);
+      if (!fromModule || !toModule) return;
+
+      const fromIndex = fromModule.materials.findIndex((item) => item.id === activeData.materialId);
+      if (fromIndex < 0) return;
+      const [moved] = fromModule.materials.splice(fromIndex, 1);
+      if (!moved) return;
+
+      let insertIndex = toModule.materials.length;
+      if (overData?.type === 'material') {
+        const overIndex = toModule.materials.findIndex((item) => item.id === overData.materialId);
+        if (overIndex >= 0) insertIndex = overIndex;
+      }
+      toModule.materials.splice(insertIndex, 0, moved);
+      onDraftStructureChange(next);
+    },
+    [dragEnabled, modules, onDraftStructureChange],
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setForceExpandedModuleId(null);
+      if (!dragEnabled || !onDraftStructureChange) return;
+
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const activeData = getStructureDragData(active.data.current);
+      const overData = getStructureDragData(over.data.current);
+      if (!activeData) return;
+
+      if (activeData.type === 'module') {
+        const overModuleId =
+          overData?.type === 'module' || overData?.type === 'module-drop' || overData?.type === 'material'
+            ? overData.moduleId
+            : undefined;
+        if (!overModuleId) return;
+        const oldIndex = modules.findIndex((mod) => mod.id === activeData.moduleId);
+        const newIndex = modules.findIndex((mod) => mod.id === overModuleId);
+        if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
+        onDraftStructureChange(arrayMove(modules, oldIndex, newIndex));
+        return;
+      }
+
+      const materialId = activeData.materialId;
+      const currentModuleId = findModuleIdByMaterial(modules, materialId);
+      const overModuleId =
+        overData?.type === 'material' || overData?.type === 'module' || overData?.type === 'module-drop'
+          ? overData.moduleId
+          : currentModuleId;
+      if (!currentModuleId || !overModuleId) return;
+
+      if (currentModuleId === overModuleId && overData?.type === 'material') {
+        const next = cloneModules(modules);
+        const target = next.find((mod) => mod.id === currentModuleId);
+        if (!target) return;
+        const oldIndex = target.materials.findIndex((item) => item.id === materialId);
+        const newIndex = target.materials.findIndex((item) => item.id === overData.materialId);
+        if (oldIndex >= 0 && newIndex >= 0 && oldIndex !== newIndex) {
+          target.materials = arrayMove(target.materials, oldIndex, newIndex);
+          onDraftStructureChange(next);
+        }
+        return;
+      }
+
+      onDraftStructureChange(modules);
+    },
+    [dragEnabled, modules, onDraftStructureChange],
+  );
+
+  const handleDragCancel = useCallback(() => {
+    setForceExpandedModuleId(null);
+  }, []);
+
+  const renderStructureList = () => (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext
+        items={modules.map((mod) => toModuleSortableId(mod.id))}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul className="space-y-2">
+          {modules.map((mod, index) => (
+            <SortableCourseModule
+              key={mod.id}
+              module={mod}
+              displayPosition={index + 1}
+              dragEnabled={dragEnabled}
+              forceExpanded={forceExpandedModuleId === mod.id}
+              onCreateMaterial={onCreateMaterial}
+              onEditModule={onEditModule}
+              onSelectMaterial={onSelectMaterial}
+              onRequestDeleteModule={onRequestDeleteModule}
+              onRequestDeleteMaterial={onRequestDeleteMaterial}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
+  );
+
   const renderScrollableBody = (isMobile: boolean) => (
     <>
       {hasCourse ? (
@@ -75,25 +243,18 @@ const CourseStructureAside: React.FC<CourseStructureAsideProps> = ({
             onAfterClick={isMobile ? handleClose : undefined}
             onRequestDeleteCourse={onRequestDeleteCourse}
           />
+          {hasUnsavedStructure ? (
+            <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
+              New order is not saved yet. Open the course and click Save changes, then Confirm.
+            </p>
+          ) : null}
         </div>
       ) : null}
 
       {!hasStructure ? (
         <CourseStructureAsideEmptyState hasCourse={hasCourse} />
       ) : (
-        <ul className={isMobile ? 'space-y-2' : 'mt-4 space-y-2'}>
-          {modules.map((m) => (
-            <CourseModule
-              key={m.id}
-              module={m}
-              onCreateMaterial={onCreateMaterial}
-              onEditModule={onEditModule}
-              onSelectMaterial={onSelectMaterial}
-              onRequestDeleteModule={onRequestDeleteModule}
-              onRequestDeleteMaterial={onRequestDeleteMaterial}
-            />
-          ))}
-        </ul>
+        <div className={isMobile ? '' : 'mt-4'}>{renderStructureList()}</div>
       )}
     </>
   );

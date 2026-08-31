@@ -25,7 +25,7 @@ describe("CourseService", () => {
       aggregate: jest.Mock;
     };
     courseModule: { findMany: jest.Mock };
-    courseMaterial: { groupBy: jest.Mock };
+    courseMaterial: { groupBy: jest.Mock; findMany: jest.Mock };
     userCourseAccess: { findUnique: jest.Mock };
   };
   const courseRow = (over: Record<string, unknown> = {}) => ({
@@ -58,7 +58,7 @@ describe("CourseService", () => {
         aggregate: jest.fn().mockResolvedValue({ _max: { orderIndex: null } }),
       },
       courseModule: { findMany: jest.fn() },
-      courseMaterial: { groupBy: jest.fn() },
+      courseMaterial: { groupBy: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
       userCourseAccess: { findUnique: jest.fn() },
     };
     const module: TestingModule = await Test.createTestingModule({
@@ -154,10 +154,30 @@ describe("CourseService", () => {
         publicationFilter: PublicationStatus.published,
       });
       expect(list[0].videoLessonCount).toBe(3);
+      expect(list[0].avgVideoLessonMinutes).toBeNull();
       expect((list[0] as unknown as { price: number }).price).toBeCloseTo(
         19.99,
         2,
       );
+    });
+
+    it("adds avgVideoLessonMinutes from video durations", async () => {
+      prisma.course.findMany.mockResolvedValue([courseRow({ id: "c1" })]);
+      prisma.courseModule.findMany.mockResolvedValue([
+        { id: "m1", courseId: "c1" },
+      ]);
+      prisma.courseMaterial.groupBy.mockResolvedValue([
+        { moduleId: "m1", _count: { _all: 2 } },
+      ]);
+      prisma.courseMaterial.findMany.mockResolvedValue([
+        { moduleId: "m1", content: { duration: "04:00" } },
+        { moduleId: "m1", content: { duration: "08:00" } },
+      ]);
+
+      const list = await service.findAll(undefined, {
+        publicationFilter: PublicationStatus.published,
+      });
+      expect(list[0].avgVideoLessonMinutes).toBe(6);
     });
   });
 

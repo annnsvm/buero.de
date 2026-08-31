@@ -10,6 +10,7 @@ import { WayForPayModule } from "./modules/wayforpay/wayforpay.module";
 import { CoursesModule } from './modules/courses/courses.module';
 import { CourseModulesModule } from './modules/course-modules/course-modules.module';
 import { CourseMaterialsModule } from './modules/course-materials/course-materials.module';
+import { MaterialAttachmentsModule } from './modules/material-attachments/material-attachments.module';
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
@@ -44,6 +45,7 @@ import { ContactModule } from './modules/contact/contact.module';
     CoursesModule,
     CourseModulesModule,
     CourseMaterialsModule,
+    MaterialAttachmentsModule,
     UserModule,
     AuthModule,
     JwtModule.registerAsync({

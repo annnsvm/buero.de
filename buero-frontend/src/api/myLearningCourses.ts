@@ -9,6 +9,25 @@ import type {
 
 export type { CatalogCourse } from '@/types/api/myLearningCourses.types';
 
+const readAvgVideoLessonMinutes = (course: CatalogCourse): number | null => {
+  const raw = course.avgVideoLessonMinutes ?? course.avg_video_lesson_minutes;
+  if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
+    return Math.round(raw);
+  }
+  const durationRaw = course.durationHours ?? course.duration_hours;
+  const durationHours = typeof durationRaw === 'number' ? durationRaw : Number(durationRaw ?? 0);
+  const videoCount =
+    typeof course.videoLessonCount === 'number'
+      ? course.videoLessonCount
+      : typeof course.video_lesson_count === 'number'
+        ? course.video_lesson_count
+        : 0;
+  if (Number.isFinite(durationHours) && durationHours > 0 && videoCount > 0) {
+    return Math.max(1, Math.round((durationHours * 60) / videoCount));
+  }
+  return null;
+};
+
 const readIsPublished = (course: CatalogCourse): boolean | undefined => {
   const raw = course as Record<string, unknown>;
   if (typeof raw.isPublished === 'boolean') return raw.isPublished;
@@ -53,6 +72,7 @@ export const mapApiCourseToCourseInfo = (course: CatalogCourse): CourseInfoData 
           ? course.videoLessonCount
           : 0,
     durationHours: Number.isFinite(durationHours) && durationHours > 0 ? durationHours : 1,
+    avgVideoLessonMinutes: readAvgVideoLessonMinutes(course),
     tags,
     hasTrial:
       !!course.my_access &&
@@ -106,6 +126,7 @@ export const mapApiCourseToCourseCard = (course: CatalogCourse): CourseCardProps
           ? course.videoLessonCount
           : 0,
     durationHours: Number.isFinite(durationHours) && durationHours > 0 ? durationHours : 1,
+    avgVideoLessonMinutes: readAvgVideoLessonMinutes(course),
     tags,
     isPublished: readIsPublished(course),
     isAdded,

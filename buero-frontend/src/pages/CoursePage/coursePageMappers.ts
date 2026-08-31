@@ -1,6 +1,21 @@
 import type { CourseModule } from '@/features/courses-catalog/CourseStructure';
 import type { LearningLesson } from '@/types/features/learning/LearningPage.types';
+import type { MaterialAttachment } from '@/types/features/courseManagment/MaterialAttachment.types';
 import i18n from '@/i18n';
+
+export type ApiMaterialAttachment = {
+  id: string;
+  kind?: string;
+  title?: string;
+  url?: string;
+  fileName?: string | null;
+  file_name?: string | null;
+  mimeType?: string | null;
+  mime_type?: string | null;
+  sizeBytes?: number | null;
+  size_bytes?: number | null;
+  orderIndex?: number;
+};
 
 export type ApiCourseMaterial = {
   id: string;
@@ -8,6 +23,7 @@ export type ApiCourseMaterial = {
   type: string;
   orderIndex?: number;
   content?: Record<string, unknown> | null;
+  attachments?: ApiMaterialAttachment[];
 };
 
 export type ApiCourseModule = {
@@ -139,6 +155,26 @@ export const parseQuizMaterialContent = (material: ApiCourseMaterial): ParsedQui
   });
 };
 
+export const mapApiAttachments = (
+  raw: ApiMaterialAttachment[] | undefined,
+): MaterialAttachment[] => {
+  if (!raw?.length) return [];
+  return [...raw]
+    .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+    .filter((item) => typeof item.id === 'string' && typeof item.url === 'string' && item.url)
+    .map((item) => ({
+      id: item.id,
+      materialId: '',
+      kind: item.kind === 'link' ? 'link' : 'file',
+      title: item.title?.trim() || item.fileName || item.file_name || 'Attachment',
+      url: item.url as string,
+      fileName: item.fileName ?? item.file_name ?? null,
+      mimeType: item.mimeType ?? item.mime_type ?? null,
+      sizeBytes: item.sizeBytes ?? item.size_bytes ?? null,
+      orderIndex: item.orderIndex ?? 0,
+    }));
+};
+
 const youtubeEmbedUrl = (material: ApiCourseMaterial): string => {
   if (material.type !== 'video' || !material.content || typeof material.content !== 'object') {
     return '';
@@ -178,5 +214,6 @@ export const buildLearningLessonFromMaterial = (
     title: material.title,
     description: i18n.t('coursePage.defaultDescription'),
     videoUrl: embed || 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    attachments: mapApiAttachments(material.attachments),
   };
 };

@@ -52,7 +52,7 @@ export class CoursesController {
   @ApiOperation({
     summary: "Список опублікованих курсів (каталог)",
     description:
-      "Публічний каталог опублікованих курсів (is_published = true). Опційні query: search (підрядок у title АБО description, без урахування регістру), language, tags (через кому), level. У відповіді: price, tags, level, durationHours, videoLessonCount (кількість матеріалів type=video).",
+      "Публічний каталог опублікованих курсів (is_published = true). Опційні query: search (підрядок у title АБО description, без урахування регістру), language, tags (через кому), level. У відповіді: price, tags, level, durationHours, videoLessonCount, lessonsCount, avgVideoLessonMinutes (середня тривалість відеоуроку).",
   })
   @ApiQuery({
     name: "search",

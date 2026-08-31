@@ -41,6 +41,11 @@ enum CourseMaterialType {
   text
 }
 
+enum AttachmentKind {
+  file
+  link
+}
+
 enum UserCourseAccessType {
   trial
   purchase
@@ -191,12 +196,33 @@ model CourseMaterial {
   createdAt  DateTime           @default(now()) @map("created_at")
   updatedAt  DateTime           @updatedAt @map("updated_at")
 
-  module         CourseModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module         CourseModule          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   courseProgress CourseProgress[]
   quizAttempts   QuizAttempt[]
+  attachments    MaterialAttachment[]
 
   @@index([moduleId])
   @@map("course_materials")
+}
+
+model MaterialAttachment {
+  id         String         @id @default(uuid())
+  materialId String         @map("material_id")
+  kind       AttachmentKind
+  title      String
+  url        String
+  fileName   String?        @map("file_name")
+  mimeType   String?        @map("mime_type")
+  sizeBytes  Int?           @map("size_bytes")
+  storageKey String?        @map("storage_key")
+  orderIndex Int            @map("order_index")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+
+  material CourseMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([materialId])
+  @@map("material_attachments")
 }
 
 // ─── Access & Billing ───────────────────────────────────────────────────────

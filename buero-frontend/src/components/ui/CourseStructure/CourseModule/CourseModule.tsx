@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { GripVertical } from 'lucide-react';
 import Icon from '../../Icon';
 import ModuleMaterial from '../ModuleMaterial/ModuleMaterial';
 import { ICON_NAMES } from '@/helpers/iconNames';
 import { ModuleMaterialType, ModulesProps } from '@/types/components/ui/ModuleMaterial.types';
-import { CourseStructureAsideActionButton } from '@/features/course-managment/components/CourseManagementWorkspace/courseStructureAside';
+import CourseStructureAsideActionButton from '@/features/course-managment/components/CourseManagementWorkspace/courseStructureAside/CourseStructureAsideActionButton';
 
 const CourseModule: React.FC<ModulesProps> = ({
   module,
@@ -12,14 +13,34 @@ const CourseModule: React.FC<ModulesProps> = ({
   onEditModule,
   onRequestDeleteModule,
   onRequestDeleteMaterial,
+  displayPosition,
+  dragHandleProps,
+  isDragging = false,
+  forceExpanded = false,
+  setDropTargetRef,
+  renderMaterialsList,
+  sortableRef,
+  sortableStyle,
 }) => {
   const { id, title, orderIndex, materials } = module;
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const expanded = isExpanded || forceExpanded;
+  const moduleNumber = displayPosition ?? (orderIndex ?? 0) + 1;
+
   return (
-    <li>
-      <div key={id} className="rounded-lg bg-[var(--color-surface-card)]">
+    <li ref={sortableRef} style={sortableStyle} className={isDragging ? 'z-10 opacity-80' : undefined}>
+      <div ref={setDropTargetRef} className="rounded-lg bg-[var(--color-surface-card)]">
         <div className="flex items-center gap-2 px-4 py-3">
+          {dragHandleProps ? (
+            <button
+              type="button"
+              {...dragHandleProps}
+              className="flex shrink-0 cursor-grab touch-none items-center justify-center rounded-lg p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-section)] active:cursor-grabbing"
+            >
+              <GripVertical className="h-4 w-4" aria-hidden />
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => setIsExpanded((prev) => !prev)}
@@ -27,9 +48,7 @@ const CourseModule: React.FC<ModulesProps> = ({
           >
             <div>
               <div className="flex flex-col font-bold text-[var(--color-text-primary)]">
-                <span className="text-[var(--color-text-secondary)]">
-                  MODULE {(orderIndex ?? 0) + 1}
-                </span>
+                <span className="text-[var(--color-text-secondary)]">MODULE {moduleNumber}</span>
                 <span>{title}</span>
               </div>
               <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
@@ -37,7 +56,7 @@ const CourseModule: React.FC<ModulesProps> = ({
               </p>
             </div>
             <Icon
-              name={isExpanded ? ICON_NAMES.CHEVRON_UP : ICON_NAMES.CHEVRON_DOWN}
+              name={expanded ? ICON_NAMES.CHEVRON_UP : ICON_NAMES.CHEVRON_DOWN}
               size={20}
               className="text-[var(--color-text-secondary)]"
             />
@@ -69,22 +88,24 @@ const CourseModule: React.FC<ModulesProps> = ({
             ) : null}
           </div>
         </div>
-        {isExpanded ? (
+        {expanded ? (
           <div className="px-4 pb-4">
             {materials.length > 0 ? (
               <ul className="mt-2 space-y-2 pl-4">
-                {materials.map((material: ModuleMaterialType) => (
-                  <ModuleMaterial
-                    key={material.id}
-                    material={material}
-                    onSelectMaterial={(materialId) => onSelectMaterial(id, materialId)}
-                    onRequestDeleteMaterial={
-                      onRequestDeleteMaterial
-                        ? (materialId) => onRequestDeleteMaterial(id, materialId)
-                        : undefined
-                    }
-                  />
-                ))}
+                {renderMaterialsList
+                  ? renderMaterialsList()
+                  : materials.map((material: ModuleMaterialType) => (
+                      <ModuleMaterial
+                        key={material.id}
+                        material={material}
+                        onSelectMaterial={(materialId) => onSelectMaterial(id, materialId)}
+                        onRequestDeleteMaterial={
+                          onRequestDeleteMaterial
+                            ? (materialId) => onRequestDeleteMaterial(id, materialId)
+                            : undefined
+                        }
+                      />
+                    ))}
               </ul>
             ) : (
               <p className="mt-2 text-xs text-[var(--color-text-secondary)]">

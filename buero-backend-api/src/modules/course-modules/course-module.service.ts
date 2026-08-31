@@ -7,6 +7,7 @@ import {
 import { Role, UserCourseAccessType } from "src/generated/prisma/enums";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateCourseModuleDto } from "./dto/create-course-module.dto";
+import { ReorderCourseStructureDto } from "./dto/reorder-course-structure.dto";
 import { UpdateCourseModuleDto } from "./dto/update-course-module.dto";
 
 @Injectable()
@@ -168,6 +169,129 @@ export class CourseModuleService {
       });
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
+      throw this.mapError(error);
+    }
+  }
+
+  /**
+   * Persists the whole course structure in one transaction: module order plus,
+   * for every listed material, its position and owning module (cross-module drag).
+   */
+  async reorderStructure(courseId: string, dto: ReorderCourseStructureDto) {
+    try {
+      await this.ensureCourseExists(courseId);
+
+      const courseModules = await this.prisma.courseModule.findMany({
+        where: { courseId },
+        select: {
+          id: true,
+          orderIndex: true,
+          materials: { select: { id: true, orderIndex: true, moduleId: true } },
+        },
+      });
+      const knownModuleIds = new Set(courseModules.map((m) => m.id));
+      const knownMaterialIds = new Set(
+        courseModules.flatMap((m) => m.materials.map((mat) => mat.id))
+      );
+      const currentModuleById = new Map(
+        courseModules.map((m) => [m.id, m.orderIndex])
+      );
+      const currentMaterialById = new Map(
+        courseModules.flatMap((m) =>
+          m.materials.map((mat) => [mat.id, mat] as const)
+        )
+      );
+
+      const seenModuleIds = new Set<string>();
+      const seenMaterialIds = new Set<string>();
+
+      for (const moduleItem of dto.modules) {
+        if (!knownModuleIds.has(moduleItem.id)) {
+          throw new NotFoundException(
+            `Module ${moduleItem.id} not found in this course`
+          );
+        }
+        if (seenModuleIds.has(moduleItem.id)) {
+          throw new BadRequestException(
+            `Duplicate module ${moduleItem.id} in payload`
+          );
+        }
+        seenModuleIds.add(moduleItem.id);
+
+        for (const materialItem of moduleItem.materials ?? []) {
+          if (!knownMaterialIds.has(materialItem.id)) {
+            throw new NotFoundException(
+              `Material ${materialItem.id} not found in this course`
+            );
+          }
+          if (seenMaterialIds.has(materialItem.id)) {
+            throw new BadRequestException(
+              `Duplicate material ${materialItem.id} in payload`
+            );
+          }
+          seenMaterialIds.add(materialItem.id);
+        }
+      }
+
+      const moduleUpdates = dto.modules.filter(
+        (moduleItem) =>
+          currentModuleById.get(moduleItem.id) !== moduleItem.order_index
+      );
+      const materialUpdates = dto.modules.flatMap((moduleItem) =>
+        (moduleItem.materials ?? [])
+          .filter((materialItem) => {
+            const current = currentMaterialById.get(materialItem.id);
+            return (
+              !current ||
+              current.moduleId !== moduleItem.id ||
+              current.orderIndex !== materialItem.order_index
+            );
+          })
+          .map((materialItem) => ({
+            id: materialItem.id,
+            moduleId: moduleItem.id,
+            orderIndex: materialItem.order_index,
+          }))
+      );
+
+      if (moduleUpdates.length > 0 || materialUpdates.length > 0) {
+        await this.prisma.$transaction(
+          async (tx) => {
+            for (const moduleItem of moduleUpdates) {
+              await tx.courseModule.update({
+                where: { id: moduleItem.id },
+                data: { orderIndex: moduleItem.order_index },
+              });
+            }
+            for (const materialItem of materialUpdates) {
+              await tx.courseMaterial.update({
+                where: { id: materialItem.id },
+                data: {
+                  moduleId: materialItem.moduleId,
+                  orderIndex: materialItem.orderIndex,
+                },
+              });
+            }
+          },
+          { timeout: 20000, maxWait: 10000 }
+        );
+      }
+
+      return this.prisma.courseModule.findMany({
+        where: { courseId },
+        orderBy: { orderIndex: "asc" },
+        include: {
+          materials: {
+            orderBy: { orderIndex: "asc" },
+            include: {
+              attachments: { orderBy: { orderIndex: "asc" } },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      if (error instanceof BadRequestException) throw error;
       throw this.mapError(error);
     }
   }

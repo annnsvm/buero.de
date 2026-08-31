@@ -10,6 +10,7 @@
 | `state/useCourseEditorState.ts` | `useForm` + усі `useState` редактора + похідні (`totalMaterialsCount`, `resetEditorToEmpty`) |
 | `router/useCourseEditorRouter.ts` | `navigate`, `location`, `routeCourseId` з маршруту edit |
 | `tree/useCourseEditorTree.ts` | `syncCourseDurationHours`, `fetchCourseTree` (GET дерева + синхронізація duration) |
+| `useCourseEditorStructureDnd.ts` | Persist reorder (`PATCH /courses/:id/structure`) only after course Save changes → Confirm |
 | `effects/useCourseEditorEffects.ts` | Ефекти: скидання на create/management, завантаження курсу по `routeCourseId` |
 | `handlers/useCourseEditorHandlers.ts` | Усі API-операції та обробники (submit, delete, publish, матеріали, модалка модуля) |
 

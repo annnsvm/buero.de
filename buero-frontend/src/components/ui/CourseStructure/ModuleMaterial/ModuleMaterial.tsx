@@ -1,4 +1,5 @@
 import React from 'react';
+import { GripVertical } from 'lucide-react';
 import Icon from '../../Icon';
 import { ModuleMaterialProps } from '@/types/components/ui/ModuleMaterial.types';
 import { ICON_NAMES } from '@/helpers/iconNames';
@@ -7,6 +8,10 @@ const ModuleMaterial: React.FC<ModuleMaterialProps> = ({
   material,
   onSelectMaterial,
   onRequestDeleteMaterial,
+  dragHandleProps,
+  isDragging = false,
+  sortableRef,
+  sortableStyle,
 }) => {
   const { type, id, title, content } = material;
   const durationLabel =
@@ -30,6 +35,17 @@ const ModuleMaterial: React.FC<ModuleMaterialProps> = ({
         ? 'Delete quiz'
         : 'Delete material';
 
+  const renderDragHandle = () =>
+    dragHandleProps ? (
+      <button
+        type="button"
+        {...dragHandleProps}
+        className="flex shrink-0 cursor-grab touch-none items-center justify-center rounded-lg px-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-section)] active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4" aria-hidden />
+      </button>
+    ) : null;
+
   const renderMainButton = (iconName: string, iconWrapperClass: string, iconColor: string) => (
     <button
       type="button"
@@ -52,55 +68,50 @@ const ModuleMaterial: React.FC<ModuleMaterialProps> = ({
     </button>
   );
 
+  const renderDeleteButton = () =>
+    onRequestDeleteMaterial ? (
+      <button
+        type="button"
+        aria-label={deleteAriaLabel}
+        tabIndex={0}
+        className="flex shrink-0 items-center justify-center rounded-lg px-2 hover:bg-[var(--color-surface-section)]"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRequestDeleteMaterial(id);
+        }}
+        onKeyDown={handleDeleteKeyDown}
+      >
+        <Icon name={ICON_NAMES.TRASH} size={18} className="text-[var(--color-text-secondary)]" />
+      </button>
+    ) : null;
+
+  const rowClassName = `flex items-stretch gap-1 rounded-lg ${
+    isDragging ? 'bg-[var(--color-surface-section)] opacity-80 shadow-sm' : ''
+  }`;
+
   switch (type) {
     case 'video': {
       return (
-        <li>
-          <div className="flex items-stretch gap-1">
+        <li ref={sortableRef} style={sortableStyle}>
+          <div className={rowClassName}>
+            {renderDragHandle()}
             {renderMainButton(ICON_NAMES.PLAY_ARROW, 'bg-[var(--color-primary)]', 'var(--color-white)')}
-            {onRequestDeleteMaterial ? (
-              <button
-                type="button"
-                aria-label={deleteAriaLabel}
-                tabIndex={0}
-                className="flex shrink-0 items-center justify-center rounded-lg px-2 hover:bg-[var(--color-surface-section)]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRequestDeleteMaterial(id);
-                }}
-                onKeyDown={handleDeleteKeyDown}
-              >
-                <Icon name={ICON_NAMES.TRASH} size={18} className="text-[var(--color-text-secondary)]" />
-              </button>
-            ) : null}
+            {renderDeleteButton()}
           </div>
         </li>
       );
     }
     default: {
       return (
-        <li>
-          <div className="flex items-stretch gap-1">
+        <li ref={sortableRef} style={sortableStyle}>
+          <div className={rowClassName}>
+            {renderDragHandle()}
             {renderMainButton(
               ICON_NAMES.BOOK,
               'bg-[var(--color-surface-section)]',
               'var(--color-text-primary)',
             )}
-            {onRequestDeleteMaterial ? (
-              <button
-                type="button"
-                aria-label={deleteAriaLabel}
-                tabIndex={0}
-                className="flex shrink-0 items-center justify-center rounded-lg px-2 hover:bg-[var(--color-surface-section)]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRequestDeleteMaterial(id);
-                }}
-                onKeyDown={handleDeleteKeyDown}
-              >
-                <Icon name={ICON_NAMES.TRASH} size={18} className="text-[var(--color-text-secondary)]" />
-              </button>
-            ) : null}
+            {renderDeleteButton()}
           </div>
         </li>
       );

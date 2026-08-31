@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Spinner } from '@/components/ui';
 import type { CourseCreateActionsProps } from '@/types/features/courseManagment/CourseCreateActions.types';
 
@@ -14,6 +14,11 @@ const CourseCreateActions: React.FC<CourseCreateActionsProps> = ({
   onUpdateCourse,
 }) => {
   const isEditMode = mode === 'edit';
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+
+  useEffect(() => {
+    if (!canUpdate) setNeedsConfirm(false);
+  }, [canUpdate]);
 
   const editSyncedLabel =
     lastCommitKind === 'update'
@@ -29,7 +34,11 @@ const CourseCreateActions: React.FC<CourseCreateActionsProps> = ({
     </span>
   ) : isEditMode ? (
     canUpdate ? (
-      'Update'
+      needsConfirm ? (
+        'Confirm'
+      ) : (
+        'Save changes'
+      )
     ) : (
       editSyncedLabel
     )
@@ -44,6 +53,18 @@ const CourseCreateActions: React.FC<CourseCreateActionsProps> = ({
 
   const buttonDisabled = isEditMode ? !canUpdate || isUpdating : !canCreate || isCreating;
 
+  const handleClick = () => {
+    if (!isEditMode) {
+      onCreateCourse();
+      return;
+    }
+    if (!needsConfirm) {
+      setNeedsConfirm(true);
+      return;
+    }
+    onUpdateCourse();
+  };
+
   return (
     <section
       className="rounded-2xl bg-[var(--color-surface-background)] p-6"
@@ -53,14 +74,16 @@ const CourseCreateActions: React.FC<CourseCreateActionsProps> = ({
         <div className="min-w-[220px] flex-1 self-start">
           <p className="text-sm font-semibold text-[var(--color-text-primary)]">Create course</p>
           <p className="mt-1 text-center text-xs text-[var(--color-text-secondary)]">
-            After creating the course you can add modules and materials.
+            {isEditMode
+              ? 'Module order, lesson order, and course details save only after Save changes → Confirm.'
+              : 'After creating the course you can add modules and materials.'}
           </p>
         </div>
 
         <Button
           type="button"
           variant="solid"
-          onClick={() => (isEditMode ? onUpdateCourse() : onCreateCourse())}
+          onClick={handleClick}
           disabled={buttonDisabled}
         >
           {buttonLabel}

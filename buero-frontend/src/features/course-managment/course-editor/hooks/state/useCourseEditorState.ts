@@ -64,6 +64,7 @@ export const useCourseEditorState = () => {
   const [lastCourseCommitKind, setLastCourseCommitKind] = useState<'create' | 'update' | null>(
     null,
   );
+  const [isStructureDirty, setIsStructureDirty] = useState(false);
 
   const [isCreateModuleOpen, setIsCreateModuleOpen] = useState(false);
   const [moduleModalMode, setModuleModalMode] = useState<CourseModuleModalMode>('create');
@@ -100,7 +101,8 @@ export const useCourseEditorState = () => {
     isEditingCourse &&
     !isCreatingCourse &&
     !isUpdatingCourse &&
-    ((isDirty && isValid) || coverFile !== null);
+    (((isDirty && isValid) || coverFile !== null || isStructureDirty) &&
+      (!isDirty || isValid));
 
   const resetEditorToEmpty = useCallback(() => {
     setCourseId(null);
@@ -114,6 +116,7 @@ export const useCourseEditorState = () => {
     setActiveMaterialIdForEdit(null);
     setActiveRightTab('course');
     setLastCourseCommitKind(null);
+    setIsStructureDirty(false);
     setDeleteTarget(null);
     setIsPublishModalOpen(false);
     setIsCreateModuleOpen(false);
@@ -167,6 +170,8 @@ export const useCourseEditorState = () => {
     setIsUpdatingCourse,
     lastCourseCommitKind,
     setLastCourseCommitKind,
+    isStructureDirty,
+    setIsStructureDirty,
     createCourseError,
     setCreateCourseError,
     isFormDisabled,

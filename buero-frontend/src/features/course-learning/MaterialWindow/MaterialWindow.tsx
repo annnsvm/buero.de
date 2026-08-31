@@ -6,6 +6,7 @@ import { Container, Text, Title } from '@/components/layout';
 import useModal from '@/components/modal/context/useModal';
 import { loadYoutubeIframeApi } from '@/helpers/youtubeIframeApi';
 import { lessonContent } from './MaterialWindow.data';
+import LessonAttachments from './LessonAttachments';
 import type { LearningPageProps } from '@/types/features/learning/LearningPage.types';
 
 const extractYouTubeEmbedVideoId = (embedUrl: string): string | null => {
@@ -221,6 +222,8 @@ const LazyYouTubeEmbed: React.FC<LazyYouTubeEmbedProps> = ({
 
 const MaterialWindow: React.FC<LearningPageProps> = ({
   lesson = lessonContent,
+  courseId,
+  moduleId,
   hasNextVideoLesson = false,
   onNextVideoLesson,
   isVideoLessonCompleted = false,
@@ -372,6 +375,13 @@ const MaterialWindow: React.FC<LearningPageProps> = ({
             ) : null}
           </div>
         </section>
+
+        <LessonAttachments
+          attachments={lesson.attachments}
+          courseId={courseId}
+          moduleId={moduleId}
+          materialId={lesson.materialId}
+        />
 
         <section className="mt-6 rounded-[20px] bg-[var(--color-neutral-white)] p-6 shadow-sm sm:mt-8 sm:rounded-[22px] md:mt-10">
           <h2 className="text-xl font-semibold text-[#56504c] sm:text-2xl md:text-[2rem]">

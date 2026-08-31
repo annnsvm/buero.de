@@ -17,6 +17,7 @@
 | Таблиця | Операції |
 |---------|----------|
 | course_materials | читання, створення, оновлення, видалення (поле **module_id** → course_modules) |
+| material_attachments | читання; створення/оновлення/видалення вчителем |
 | course_modules | читання (перевірка, що модуль належить курсу) |
 | courses | читання (доступ до курсу = доступ до модулів і матеріалів) |
 
@@ -42,6 +43,25 @@
 | POST | /api/courses/:courseId/modules/:moduleId/materials | Додати матеріал до модуля (module має належати courseId). | teacher |
 | PATCH | /api/courses/:courseId/modules/:moduleId/materials/:id | Редагувати матеріал. | teacher |
 | DELETE | /api/courses/:courseId/modules/:moduleId/materials/:id | Видалити матеріал. | teacher |
+
+### 4.1 Вкладення уроку (attachments)
+
+Файли (PDF, зображення, Word/Excel, TXT, ZIP, до 10 MB — ліміт Cloudinary) і посилання. Не обов'язкові.
+
+| Метод | Шлях | Опис | Роль |
+|-------|------|------|------|
+| GET | /api/courses/:courseId/modules/:moduleId/materials/:materialId/attachments | Список вкладень за order_index. Перевірка доступу як до матеріалу. | авторизований |
+| GET | /api/courses/:courseId/modules/:moduleId/materials/:materialId/attachments/:attachmentId/download | Скачати файл (стрімить байти після перевірки доступу). Не для kind=link. | авторизований |
+| POST | /api/courses/:courseId/modules/:moduleId/materials/:materialId/attachments | Завантажити файл (multipart `file`, опційно `title`). | teacher |
+| POST | /api/courses/:courseId/modules/:moduleId/materials/:materialId/attachments/link | Додати посилання (`title`, `url`). | teacher |
+| PATCH | /api/courses/:courseId/modules/:moduleId/materials/:materialId/attachments/:attachmentId | Оновити title. | teacher |
+| DELETE | /api/courses/:courseId/modules/:moduleId/materials/:materialId/attachments/:attachmentId | Видалити вкладення (і файл у Cloudinary). | teacher |
+
+Список вкладень також повертається в дереві курсу (`GET /api/courses/:id`, вкладене `materials[].attachments`).
+
+Скачування файлів іде через API (cookie JWT), а не прямим Cloudinary URL: на Free-плані Cloudinary публічна віддача PDF/ZIP часто дає 401. Якщо signed download все одно не працює — у Cloudinary Settings → Security увімкнути **Allow delivery of PDF and ZIP files**.
+
+Порядок модулів і уроків (включно з переміщенням уроку між модулями): `PATCH /api/courses/:courseId/structure` (див. модуль Courses).
 
 Деталі request/response — на етапі реалізації.
 
