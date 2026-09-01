@@ -1,11 +1,20 @@
 import React from 'react';
 
+const HERO_SRC = '/images/home/hero.webp';
+const HERO_SRC_MOBILE = '/images/home/hero-800.webp';
+
 const HeroBackground: React.FC = () => {
   return (
     <>
-      <div
+      <img
+        src={HERO_SRC}
+        srcSet={`${HERO_SRC_MOBILE} 800w, ${HERO_SRC} 1600w`}
+        sizes="100vw"
+        alt=""
         aria-hidden="true"
-        className="absolute inset-0 bg-[url(/images/home/hero.webp)] bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 h-full w-full object-cover object-center"
+        fetchPriority="high"
+        decoding="async"
       />
       <div aria-hidden="true" className="absolute inset-0 bg-black/70" />
     </>

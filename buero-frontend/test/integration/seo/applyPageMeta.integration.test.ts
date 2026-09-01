@@ -30,5 +30,18 @@ describe('applyPageMeta', () => {
     expect(html).toContain('content="Як Büro.de збирає, використовує та захищає персональні дані."');
     expect(html).toContain('href="https://buro-de.com/privacy"');
     expect(html).toContain('content="https://buro-de.com/privacy"');
+    expect(html).not.toContain('rel="preload" as="image"');
+  });
+
+  it('preloads the landing hero image', () => {
+    const home = PUBLIC_PAGES.find((page) => page.path === '/');
+    if (!home) {
+      throw new Error('home page is missing from PUBLIC_PAGES');
+    }
+
+    const html = applyPageMeta(homeTemplate, home);
+
+    expect(html).toContain('rel="preload" as="image" href="/images/home/hero.webp"');
+    expect(html).toContain('imagesrcset="/images/home/hero-800.webp 800w, /images/home/hero.webp 1600w"');
   });
 });

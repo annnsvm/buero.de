@@ -12,9 +12,9 @@ const MyCoursesList: React.FC<MyCoursesListProps> = ({ courses }) => {
             role="list"
             className="flex flex-wrap justify-start gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16"
           >
-            {courses.map((course) => (
+            {courses.map((course, index) => (
               <li key={course.id} className="w-[min(100%,405px)] shrink-0">
-                <CourseCard {...course} variant="my-learning" />
+                <CourseCard {...course} variant="my-learning" imagePriority={index < 3} />
               </li>
             ))}
           </ul>

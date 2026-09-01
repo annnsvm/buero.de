@@ -38,5 +38,17 @@ export const applyPageMeta = (html: string, page: PublicPage): string => {
     ],
   ];
 
-  return replacements.reduce((result, [pattern, replacement]) => replaceOnce(result, pattern, replacement), html);
+  const withMeta = replacements.reduce(
+    (result, [pattern, replacement]) => replaceOnce(result, pattern, replacement),
+    html,
+  );
+
+  if (!page.preloadImage) return withMeta;
+
+  const { href, srcSet, sizes } = page.preloadImage;
+  const srcSetAttr = srcSet ? ` imagesrcset="${escapeAttr(srcSet)}"` : '';
+  const sizesAttr = sizes ? ` imagesizes="${escapeAttr(sizes)}"` : '';
+  const preloadTag = `<link rel="preload" as="image" href="${escapeAttr(href)}"${srcSetAttr}${sizesAttr} fetchpriority="high" />`;
+
+  return withMeta.replace('</head>', `    ${preloadTag}\n  </head>`);
 };

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ChevronUp } from 'lucide-react';
 import { ROUTES } from '@/helpers/routes';
+import { GlobalLoader } from '@/components/ui';
 import Header from '../Header/Header';
 import Footer from '../Footer/Footer';
 
@@ -46,7 +47,9 @@ const SharedLayout = () => {
     <div className="flex min-h-screen flex-col">
       {!hideHeader && <Header />}
       <main className="flex min-h-0 flex-1 flex-col">
-        <Outlet />
+        <Suspense fallback={<GlobalLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
       {!hideFooter && <Footer />}
 

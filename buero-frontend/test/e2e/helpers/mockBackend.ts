@@ -36,6 +36,17 @@ const sampleCourses = [
  */
 export const installCatalogApiMocks = async (page: Page) => {
   await page.route(
+    (url) => url.pathname === '/api/subscriptions/me',
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([]),
+      });
+    },
+  );
+
+  await page.route(
     (url) => url.pathname === '/api/courses/me',
     async (route) => {
       await route.fulfill({

@@ -52,7 +52,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const user = await this.userService.createUser(dto);
-    const accessToken = this.userService.signAccessToken(user.id);
+    const accessToken = this.userService.signAccessToken(user.id, user.role);
     const refreshToken = await this.userService.createRefreshToken(user.id);
     this.cookieService.setAuthCookies(res, accessToken, refreshToken);
     res.status(HttpStatus.CREATED).json({ user });
@@ -74,7 +74,7 @@ export class AuthController {
     if (!user) throw new UnauthorizedException("Invalid credentials");
     const valid = await this.userService.validatePassword(user, dto.password);
     if (!valid) throw new UnauthorizedException("Invalid credentials");
-    const accessToken = this.userService.signAccessToken(user.id);
+    const accessToken = this.userService.signAccessToken(user.id, user.role);
     const refreshToken = await this.userService.createRefreshToken(user.id);
     this.cookieService.setAuthCookies(res, accessToken, refreshToken);
     const userWithoutPassword = await this.userService.findUserById(user.id);
@@ -97,11 +97,11 @@ export class AuthController {
     const record = await this.userService.findRefreshToken(token);
     if (!record) throw new UnauthorizedException("Invalid refresh token");
     await this.userService.revokeRefreshToken(token);
-    const accessToken = this.userService.signAccessToken(record.userId);
-    const refreshToken = await this.userService.createRefreshToken(record.userId);
-    this.cookieService.setAuthCookies(res, accessToken, refreshToken);
     const user = await this.userService.findUserById(record.userId);
     if (!user) throw new UnauthorizedException("User not found");
+    const accessToken = this.userService.signAccessToken(user.id, user.role);
+    const refreshToken = await this.userService.createRefreshToken(user.id);
+    this.cookieService.setAuthCookies(res, accessToken, refreshToken);
     res.status(HttpStatus.OK).json({ user });
   }
 
@@ -148,7 +148,7 @@ export class AuthController {
       dto.current_password,
       dto.new_password,
     );
-    const accessToken = this.userService.signAccessToken(user.id);
+    const accessToken = this.userService.signAccessToken(user.id, user.role);
     const refreshToken = await this.userService.createRefreshToken(user.id);
     this.cookieService.setAuthCookies(res, accessToken, refreshToken);
     res.status(HttpStatus.OK).json({ user });

@@ -30,12 +30,14 @@ type SortableCourseItemProps = {
   course: CourseCardProps;
   dragEnabled: boolean;
   onCourseDeleted?: () => void;
+  imagePriority?: boolean;
 };
 
 const SortableCourseItem = ({
   course,
   dragEnabled,
   onCourseDeleted,
+  imagePriority = false,
 }: SortableCourseItemProps) => {
   const { t } = useTranslation();
   const {
@@ -74,6 +76,7 @@ const SortableCourseItem = ({
       <CourseCard
         {...course}
         variant="teacher-catalog"
+        imagePriority={imagePriority}
         onCourseDeleted={onCourseDeleted}
         onPublicationChange={onCourseDeleted}
         dragHandleProps={dragHandleProps}
@@ -114,7 +117,7 @@ const TeacherSortableCoursesGrid = ({
           })),
         );
       } catch {
-        void dispatch(fetchCoursesCatalogThunk());
+        void dispatch(fetchCoursesCatalogThunk({ force: true }));
       } finally {
         setIsSavingOrder(false);
       }
@@ -155,12 +158,13 @@ const TeacherSortableCoursesGrid = ({
         <SortableContext items={courses.map((course) => course.id)} strategy={rectSortingStrategy}>
           <ul className="flex flex-wrap justify-center lg:justify-start gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16">
             <CreateCourseCard />
-            {courses.map((course) => (
+            {courses.map((course, index) => (
               <SortableCourseItem
                 key={course.id}
                 course={course}
                 dragEnabled={dragEnabled}
                 onCourseDeleted={onCourseDeleted}
+                imagePriority={index < 3}
               />
             ))}
           </ul>

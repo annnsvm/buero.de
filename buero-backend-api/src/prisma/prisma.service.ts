@@ -10,6 +10,9 @@ function createPgAdapter(connectionString: string): PrismaPg {
 
   return new PrismaPg({
     connectionString,
+    max: 5,
+    idleTimeoutMillis: 60_000,
+    keepAlive: true,
     ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
   });
 }

@@ -26,7 +26,9 @@ describe("CourseService", () => {
     };
     courseModule: { findMany: jest.Mock };
     courseMaterial: { groupBy: jest.Mock; findMany: jest.Mock };
+    materialAttachment: { findMany: jest.Mock };
     userCourseAccess: { findUnique: jest.Mock };
+    $queryRaw: jest.Mock;
   };
   const courseRow = (over: Record<string, unknown> = {}) => ({
     id: "course-1",
@@ -57,9 +59,11 @@ describe("CourseService", () => {
         delete: jest.fn(),
         aggregate: jest.fn().mockResolvedValue({ _max: { orderIndex: null } }),
       },
-      courseModule: { findMany: jest.fn() },
+      courseModule: { findMany: jest.fn().mockResolvedValue([]) },
       courseMaterial: { groupBy: jest.fn(), findMany: jest.fn().mockResolvedValue([]) },
+      materialAttachment: { findMany: jest.fn().mockResolvedValue([]) },
       userCourseAccess: { findUnique: jest.fn() },
+      $queryRaw: jest.fn().mockResolvedValue([]),
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -79,12 +83,17 @@ describe("CourseService", () => {
     }).compile();
 
     service = module.get(CourseService);
+    (
+      service as unknown as { clearCourseCaches: () => void }
+    ).clearCourseCaches();
   });
 
   describe("findAll", () => {
     beforeEach(() => {
-      prisma.courseModule.findMany.mockResolvedValue([]);
-      prisma.courseMaterial.groupBy.mockResolvedValue([]);
+      prisma.$queryRaw.mockResolvedValue([]);
+      (
+        service as unknown as { clearCourseCaches: () => void }
+      ).clearCourseCaches();
     });
 
     it("filters published only by default (catalog)", async () => {
@@ -143,17 +152,15 @@ describe("CourseService", () => {
 
     it("adds videoLessonCount from groupBy", async () => {
       prisma.course.findMany.mockResolvedValue([courseRow({ id: "c1" })]);
-      prisma.courseModule.findMany.mockResolvedValue([
-        { id: "m1", courseId: "c1" },
-      ]);
-      prisma.courseMaterial.groupBy.mockResolvedValue([
-        { moduleId: "m1", _count: { _all: 3 } },
+      prisma.$queryRaw.mockResolvedValue([
+        { course_id: "c1", lessons: 3, videos: 3 },
       ]);
 
       const list = await service.findAll(undefined, {
         publicationFilter: PublicationStatus.published,
       });
       expect(list[0].videoLessonCount).toBe(3);
+      expect(list[0].lessonsCount).toBe(3);
       expect(list[0].avgVideoLessonMinutes).toBeNull();
       expect((list[0] as unknown as { price: number }).price).toBeCloseTo(
         19.99,
@@ -161,23 +168,17 @@ describe("CourseService", () => {
       );
     });
 
-    it("adds avgVideoLessonMinutes from video durations", async () => {
+    it("does not load video content JSON for catalog averages", async () => {
       prisma.course.findMany.mockResolvedValue([courseRow({ id: "c1" })]);
-      prisma.courseModule.findMany.mockResolvedValue([
-        { id: "m1", courseId: "c1" },
-      ]);
-      prisma.courseMaterial.groupBy.mockResolvedValue([
-        { moduleId: "m1", _count: { _all: 2 } },
-      ]);
-      prisma.courseMaterial.findMany.mockResolvedValue([
-        { moduleId: "m1", content: { duration: "04:00" } },
-        { moduleId: "m1", content: { duration: "08:00" } },
+      prisma.$queryRaw.mockResolvedValue([
+        { course_id: "c1", lessons: 2, videos: 2 },
       ]);
 
       const list = await service.findAll(undefined, {
         publicationFilter: PublicationStatus.published,
       });
-      expect(list[0].avgVideoLessonMinutes).toBe(6);
+      expect(prisma.courseMaterial.findMany).not.toHaveBeenCalled();
+      expect(list[0].avgVideoLessonMinutes).toBeNull();
     });
   });
 
@@ -190,10 +191,8 @@ describe("CourseService", () => {
     });
 
     it("returns serialized course with modules when no userId", async () => {
-      prisma.course.findUnique.mockResolvedValue({
-        ...courseRow(),
-        modules: [],
-      });
+      prisma.course.findUnique.mockResolvedValue(courseRow());
+      prisma.courseModule.findMany.mockResolvedValue([]);
       const result = await service.findById("course-1", true);
       expect(result).toMatchObject({
         id: "course-1",
@@ -205,10 +204,10 @@ describe("CourseService", () => {
 
     it("adds my_access when user has course access", async () => {
       const modId = "mod-first";
-      prisma.course.findUnique.mockResolvedValue({
-        ...courseRow(),
-        modules: [{ id: modId, orderIndex: 0 }],
-      });
+      prisma.course.findUnique.mockResolvedValue(courseRow());
+      prisma.courseModule.findMany.mockResolvedValue([
+        { id: modId, orderIndex: 0 },
+      ]);
       prisma.userCourseAccess.findUnique.mockResolvedValue({
         accessType: "trial",
         trialEndsAt: new Date("2099-01-01"),

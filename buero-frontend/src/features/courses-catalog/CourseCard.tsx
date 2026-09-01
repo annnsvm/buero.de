@@ -14,9 +14,11 @@ import ConfirmDeleteEntityModal from '@/features/course-managment/components/Cou
 import { deleteCourseCopy } from '@/features/course-managment/domain/deleteCourseCopy';
 import { translateCourseTag } from '@/features/courses-catalog/translateCourseTag';
 import { isCourseComingSoon } from '@/features/courses-catalog/isCourseComingSoon';
+import { prefetchCourseWorkspace } from '@/api/courseWorkspaceCache';
 import { requestCourseTrial } from '@/features/courses-catalog/courseTrialFlow';
 import { useAppDispatch } from '@/redux/hooks';
 import { selectIsAuthenticated } from '@/redux/slices/auth';
+import { optimizeCloudinaryUrl } from '@/helpers/optimizeCloudinaryUrl';
 import type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 export type { CourseCardProps } from '@/types/features/courses-catalog/CourseCard.types';
 
@@ -43,6 +45,7 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     onCourseDeleted,
     dragHandleProps,
     isDragging = false,
+    imagePriority = false,
   } = rawProps;
 
   const cleanPrice =
@@ -247,7 +250,11 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
 
     case 'my-learning': {
       buttonsComponent = (
-        <LinkBtn to={`${ROUTES.COURSES}/${id}`} variant="dark">
+        <LinkBtn
+          to={`${ROUTES.COURSES}/${id}`}
+          variant="dark"
+          onMouseEnter={() => prefetchCourseWorkspace(id)}
+        >
           {t('courses.continueLearning')}
         </LinkBtn>
       );
@@ -257,7 +264,11 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
     case 'catalog': {
       if (isAdded) {
         buttonsComponent = (
-          <LinkBtn to={`${ROUTES.COURSES}/${id}`} variant="dark">
+          <LinkBtn
+            to={`${ROUTES.COURSES}/${id}`}
+            variant="dark"
+            onMouseEnter={() => prefetchCourseWorkspace(id)}
+          >
             {t('courses.continueLearning')}
           </LinkBtn>
         );
@@ -311,9 +322,14 @@ const CourseCard: FC<CourseCardProps> = (rawProps) => {
             </button>
           ) : null}
           <img
-            src={imageUrl}
+            src={optimizeCloudinaryUrl(imageUrl, 'card')}
             alt={title}
+            width={405}
+            height={253}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading={imagePriority ? 'eager' : 'lazy'}
+            fetchPriority={imagePriority ? 'high' : undefined}
+            decoding="async"
           />
           <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
             <span className="flex items-center justify-center rounded-full bg-[var(--color-neutral-white)] text-xs sm:text-base font-semibold text-[var(--color-text-primary)] px-2.5 py-1 border border-[var(--opacity-neutral-darkest-15)]">  

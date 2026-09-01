@@ -71,24 +71,27 @@ export class ProgressService {
   }
 
   async getCourseProgress(userId: string, courseId: string) {
-    const course = await this.prisma.course.findUnique({
-      where: { id: courseId },
-    });
+    const [course, progressList] = await Promise.all([
+      this.prisma.course.findUnique({
+        where: { id: courseId },
+        select: { id: true },
+      }),
+      this.prisma.courseProgress.findMany({
+        where: { userId, courseId, courseMaterialId: { not: null } },
+        select: {
+          courseMaterialId: true,
+          completedAt: true,
+          score: true,
+        },
+        orderBy: { completedAt: 'desc' },
+      }),
+    ]);
     if (!course) {
       throw new NotFoundException(`Курс з id ${courseId} не знайдено`);
     }
 
-    const progressList = await this.prisma.courseProgress.findMany({
-      where: { userId, courseId, courseMaterialId: { not: null } },
-      include: {
-        courseMaterial: { select: { id: true, moduleId: true } },
-      },
-      orderBy: { completedAt: 'desc' },
-    });
-
     const completed_materials = progressList.map((p) => ({
       course_material_id: p.courseMaterialId!,
-      module_id: p.courseMaterial?.moduleId,
       completed_at: p.completedAt.toISOString(),
       score: p.score != null ? Number(p.score) : null,
     }));

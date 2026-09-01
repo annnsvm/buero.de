@@ -1,5 +1,6 @@
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
+import { invalidateMyLearningCourses } from '@/api/myLearningCourses';
 import {
   PENDING_TRIAL_KEY,
   clearPendingCheckoutSession,
@@ -32,7 +33,8 @@ export const consumePendingCourseTrial = async (
   if (!courseId) return false;
   try {
     await startCourseTrialRequest(courseId);
-    void dispatch(fetchCoursesCatalogThunk());
+    invalidateMyLearningCourses();
+    void dispatch(fetchCoursesCatalogThunk({ force: true }));
     navigate(getCoursePath(courseId));
     return true;
   } catch {
@@ -60,7 +62,8 @@ export const requestCourseTrial = async (
   }
   try {
     await startCourseTrialRequest(courseId);
-    void dispatch(fetchCoursesCatalogThunk());
+    invalidateMyLearningCourses();
+    void dispatch(fetchCoursesCatalogThunk({ force: true }));
     navigate(getCoursePath(courseId));
   } catch {
     navigate(ROUTES.COURSES);

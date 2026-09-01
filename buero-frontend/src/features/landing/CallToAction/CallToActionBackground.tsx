@@ -4,10 +4,13 @@ const CTA_BACKGROUND_IMAGE = '/images/home/offer_result.webp';
 
 const CallToActionBackground: React.FC = () => (
   <>
-    <div
+    <img
+      src={CTA_BACKGROUND_IMAGE}
+      alt=""
       aria-hidden
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${CTA_BACKGROUND_IMAGE})` }}
+      className="absolute inset-0 h-full w-full object-cover object-center"
+      loading="lazy"
+      decoding="async"
     />
     <div
       aria-hidden

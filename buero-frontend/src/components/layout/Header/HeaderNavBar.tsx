@@ -1,10 +1,12 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next';
+import { prefetchMyLearningCourses } from '@/api/myLearningCourses';
 import { ROUTES } from '@/helpers/routes';
 import { HeaderNavBarProps } from '@/types/components/layout/Header.types';
 import { NavLink } from 'react-router-dom';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { selectIsAuthenticated } from '@/redux/slices/auth';
+import { fetchCoursesCatalogThunk } from '@/redux/slices/coursesCatalog/coursesCatalogThunks';
 import { selectUserRole } from '@/redux/slices/user/userSelectors';
 
 const activeClassLight =
@@ -15,6 +17,7 @@ const inactiveClassDark = 'text-[var(--color-text-primary)]';
 
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, className }) => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const role = useAppSelector(selectUserRole);
   const isHomeActive = pathname === '/' || pathname === ROUTES.HOME;
@@ -44,6 +47,9 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
         to={ROUTES.COURSES}
         className={getClass(isCoursesActive)}
         onClick={(event) => handleNavClick(event, isCoursesActive)}
+        onMouseEnter={() => {
+          void dispatch(fetchCoursesCatalogThunk());
+        }}
       >
         {t('header.courses')}
       </NavLink>
@@ -52,6 +58,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({ pathname, isLight, classNam
           to={ROUTES.MY_LEARNING}
           className={getClass(isMyLearningActive)}
           onClick={(event) => handleNavClick(event, isMyLearningActive)}
+          onMouseEnter={() => prefetchMyLearningCourses()}
         >
           {t('header.myLearning')}
         </NavLink>

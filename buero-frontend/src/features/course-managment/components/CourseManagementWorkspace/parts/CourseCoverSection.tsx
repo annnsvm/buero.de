@@ -51,7 +51,12 @@ const CourseCoverSection: React.FC<CourseCoverSectionProps> = ({
       >
         {coverPreviewUrl ? (
           <>
-            <img src={coverPreviewUrl} alt="Course cover" className="h-full w-full object-cover" />
+            <img
+              src={coverPreviewUrl}
+              alt="Course cover"
+              className="h-full w-full object-cover"
+              decoding="async"
+            />
             {!disabled ? (
               <button
                 type="button"

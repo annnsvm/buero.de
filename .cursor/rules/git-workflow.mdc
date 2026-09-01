@@ -7,14 +7,12 @@ description: "Git: гілки, PR, код-рев'ю — buero.de"
 
 ## Гілки
 
-- Одна гілка **на задачу**. Формат назви гілки: **feature/TGIPR-JIRA_NUMBER/short-task-description**.
-- Приклад: `feature/TGIPR-42/auth-register-login`, `feature/TGIPR-101/courses-crud`.
+- Одна гілка **на задачу**. Без JIRA / `TGIPR-XX` і без зайвих префіксів команди.
+- Формат: **`feature/short-task-description`** або **`fix/short-task-description`**.
+- Приклад: `feature/page-load-performance`, `fix/course-sidebar-lessons`.
+- Remote має лишатися чистим: зрозумілі назви гілок, PR у `main`, без force-push у `main`.
 
 ## Pull Request
 
 - Створювати **Pull Request у гілку main**.
 - В описі PR обов'язково: **опис змін** (що зроблено, які модулі/ендпоінти затронуті). Не залишати порожній опис.
-
-## Code review
-
-- Перед мерджем у main потрібне **проходження код-рев'ю** — перегляд виконує один із розробників. Мерджити після апруву.

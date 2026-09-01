@@ -7,6 +7,7 @@ type LinkBtnPops = {
     children: ReactNode;
     className?: string;
     variant?: Variant;
+    onMouseEnter?: () => void;
 }
 
 

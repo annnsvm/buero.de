@@ -32,9 +32,9 @@ export class UserService {
     return createHash("sha256").update(token).digest("hex");
   }
 
-  signAccessToken(userId: string): string {
+  signAccessToken(userId: string, role?: Role): string {
     return this.jwtService.sign(
-      { sub: userId },
+      { sub: userId, ...(role ? { role } : {}) },
       {
         secret: this.configService.get<string>("JWT_ACCESS_SECRET"),
         expiresIn: (this.configService.get<string>("JWT_ACCESS_EXPIRES_IN") ??

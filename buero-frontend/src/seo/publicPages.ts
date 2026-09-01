@@ -10,6 +10,11 @@ export type PublicPage = {
   file: string;
   title: string;
   description: string;
+  preloadImage?: {
+    href: string;
+    srcSet?: string;
+    sizes?: string;
+  };
 };
 
 export const PUBLIC_PAGES: readonly PublicPage[] = [
@@ -18,6 +23,11 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     file: 'index.html',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
+    preloadImage: {
+      href: '/images/home/hero.webp',
+      srcSet: '/images/home/hero-800.webp 800w, /images/home/hero.webp 1600w',
+      sizes: '100vw',
+    },
   },
   {
     path: '/courses',
@@ -25,6 +35,11 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     title: 'Курси | Büro.de',
     description:
       'Мовні курси, інтеграційні гіди та культурні матеріали. Почни з безкоштовного модуля або одразу обирай курс.',
+    preloadImage: {
+      href: '/images/courses/choose.webp',
+      srcSet: '/images/courses/choose-800.webp 800w, /images/courses/choose.webp 1920w',
+      sizes: '100vw',
+    },
   },
   {
     path: '/privacy',

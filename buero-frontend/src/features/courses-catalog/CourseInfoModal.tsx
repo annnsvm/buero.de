@@ -11,6 +11,8 @@ import CheckoutButton from '@/features/subscriptions/components/CheckoutButton';
 import { apiInstance } from '@/api/apiInstance';
 import { API_ENDPOINTS } from '@/api/apiEndpoints';
 import { subscriptionApi } from '@/api/subscriptionApi';
+import { optimizeCloudinaryUrl } from '@/helpers/optimizeCloudinaryUrl';
+import { prefetchCourseWorkspace } from '@/api/courseWorkspaceCache';
 import { getCoursePath } from '@/helpers/routes';
 import type { CourseInfoData } from '@/types/components/modal/UIModalType.types';
 import { selectIsAuthenticated } from '@/redux/slices/auth';
@@ -112,8 +114,10 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         const list = await subscriptionApi.getMyAccess();
         if (cancelled) return;
         const arr = Array.isArray(list) ? list : [];
-        setHasCourseAccess(userHasAccessToCourse(arr, courseId));
+        const hasAccess = userHasAccessToCourse(arr, courseId);
+        setHasCourseAccess(hasAccess);
         setActiveTrialCourseIdFromApi(getActiveTrialCourseIdFromAccessList(arr));
+        if (hasAccess) prefetchCourseWorkspace(courseId);
       } catch {
         if (!cancelled) {
           setHasCourseAccess(false);
@@ -132,6 +136,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
   const handleClose = () => handleOpenChange(false);
 
   const handleContinueLearning = () => {
+    prefetchCourseWorkspace(courseId);
     handleClose();
     navigate(getCoursePath(courseId));
   };
@@ -151,7 +156,7 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
         is_published: next,
       });
       setLocalPublished(next);
-      dispatch(fetchCoursesCatalogThunk());
+      dispatch(fetchCoursesCatalogThunk({ force: true }));
       dispatch(fetchCourseByIdThunk(courseId));
     } finally {
       setIsPublishing(false);
@@ -231,9 +236,10 @@ const CourseInfoModal: React.FC<CourseInfoModalProps> = ({
           <ModalScrollArea ref={scrollAreaRef} className="h-full rounded-t-xl sm:rounded-t-2xl">
             <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl">
               <img
-                src={course.imageUrl}
+                src={optimizeCloudinaryUrl(course.imageUrl, 'modal')}
                 alt={course.title}
                 className="h-full w-full object-cover"
+                decoding="async"
               />
               <div className="absolute top-4 left-4 flex items-center gap-2 sm:top-6 sm:left-6 md:top-7 md:left-8 lg:top-8 lg:left-10">
                 <span className="flex items-center justify-center rounded-full border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text-primary)] sm:text-sm md:text-base">
