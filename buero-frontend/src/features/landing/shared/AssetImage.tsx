@@ -5,13 +5,20 @@ type AssetImageProps = {
   alt: string;
   className?: string;
   fallback: ReactNode;
+  loading?: 'lazy' | 'eager';
 };
 
 /**
  * Loads a real asset when it exists. Until the file is added, the styled
  * fallback stays visible — drop a jpg at `src` and this switches automatically.
  */
-const AssetImage = ({ src, alt, className = '', fallback }: AssetImageProps) => {
+const AssetImage = ({
+  src,
+  alt,
+  className = '',
+  fallback,
+  loading = 'lazy',
+}: AssetImageProps) => {
   const [ready, setReady] = useState(false);
 
   return (
@@ -20,7 +27,9 @@ const AssetImage = ({ src, alt, className = '', fallback }: AssetImageProps) => 
       <img
         src={src}
         alt={ready ? alt : ''}
-        className={ready ? className : 'hidden'}
+        className={ready ? className : `${className} opacity-0`}
+        loading={loading}
+        decoding="async"
         onLoad={() => setReady(true)}
       />
     </>

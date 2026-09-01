@@ -159,7 +159,7 @@ export class SubscriptionsService {
   async getMyCourseAccess(
     userId: string,
   ): Promise<CourseAccessResponseDto[]> {
-    await this.fulfillment.reconcilePendingForUser(userId);
+    void this.fulfillment.reconcilePendingForUser(userId);
 
     const list = await this.prisma.userCourseAccess.findMany({
       where: { userId },

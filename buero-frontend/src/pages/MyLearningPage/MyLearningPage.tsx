@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   fetchMyLearningCoursesFromCatalog,
   filterMyLearningCourses,
+  peekMyLearningCourses,
 } from '@/api/myLearningCourses';
 import { CoursesCatalogFilters, CoursesCatalogGridSkeleton } from '@/features/courses-catalog';
 import { MyCoursesList } from '@/features/my-courses-catalog';
@@ -28,8 +29,12 @@ const MyLearningPage: React.FC = () => {
   const filters = useSelector(selectCoursesCatalogFilters);
   const filtersRef = useRef(filters);
 
-  const [myCourses, setMyCourses] = useState<CourseInfoData[]>([]);
-  const [loadStatus, setLoadStatus] = useState<MyLearningLoadStatus>('loading');
+  const [myCourses, setMyCourses] = useState<CourseInfoData[]>(
+    () => peekMyLearningCourses() ?? [],
+  );
+  const [loadStatus, setLoadStatus] = useState<MyLearningLoadStatus>(() =>
+    peekMyLearningCourses() ? 'idle' : 'loading',
+  );
 
   const activeFilterId =
     filters.category === 'language'
@@ -47,7 +52,9 @@ const MyLearningPage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      setLoadStatus('loading');
+      if (!peekMyLearningCourses()) {
+        setLoadStatus('loading');
+      }
       try {
         const data = await fetchMyLearningCoursesFromCatalog();
         if (!cancelled) {
@@ -55,7 +62,7 @@ const MyLearningPage: React.FC = () => {
           setLoadStatus('idle');
         }
       } catch {
-        if (!cancelled) setLoadStatus('error');
+        if (!cancelled && !peekMyLearningCourses()) setLoadStatus('error');
       }
     };
     void load();

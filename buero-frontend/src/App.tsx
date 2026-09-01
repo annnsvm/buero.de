@@ -7,9 +7,11 @@ import { refreshUserThunk } from './redux/slices/auth/authThunks';
 
 export default function App() {
   const dispatch = useAppDispatch();
+
   useEffect(() => {
-    dispatch(refreshUserThunk());
-  })
+    void dispatch(refreshUserThunk());
+  }, [dispatch]);
+
   return (
     <AppErrorBoundary>
       <RouterProvider router={router} />

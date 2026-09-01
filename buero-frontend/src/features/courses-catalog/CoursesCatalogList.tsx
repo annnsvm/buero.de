@@ -19,7 +19,7 @@ const CoursesCatalogList = ({ courses, canReorderCourses = false }: CoursesGridP
   const activeTrialCourseId = useAppSelector(selectCatalogActiveTrialCourseId);
 
   const handleCourseDeleted = useCallback(() => {
-    void dispatch(fetchCoursesCatalogThunk());
+    void dispatch(fetchCoursesCatalogThunk({ force: true }));
   }, [dispatch]);
 
   return (
@@ -34,10 +34,11 @@ const CoursesCatalogList = ({ courses, canReorderCourses = false }: CoursesGridP
         ) : (
           <ul className="flex flex-wrap justify-center lg:justify-start gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-16">
             {courses?.length > 0 &&
-              courses.map((course) => (
+              courses.map((course, index) => (
                 <li key={course.id} className="w-[min(100%,405px)] shrink-0">
                   <CourseCard
                     {...course}
+                    imagePriority={index < 3}
                     activeTrialCourseId={role === 'student' ? activeTrialCourseId : null}
                     variant="catalog"
                   />

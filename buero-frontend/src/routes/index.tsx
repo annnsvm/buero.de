@@ -1,9 +1,8 @@
 import { createBrowserRouter, Outlet } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 
 import { ROUTES } from '../helpers/routes';
 import { ModalProvider } from '../components/modal';
-import { GlobalLoader } from '@/components/ui';
 import SharedLayout from '../components/layout/SharedLayout/SharedLayout';
 import PrivateGuard from '../components/guards/PrivateGuard/PrivateGuard';
 
@@ -20,9 +19,9 @@ const TeacherDirectoryPage = lazy(
   () => import('../pages/TeacherDirectoryPage/TeacherDirectoryPage'),
 );
 const AccountSettingsPage = lazy(() => import('../pages/AccountSettingsPage/AccountSettingsPage'));
-const CoursesCatalogPage = lazy(() => import('../pages/CoursesCatalogPage/CoursesCatalogPage'));
-const MyLearningPage = lazy(() => import('../pages/MyLearningPage/MyLearningPage'));
-const CoursePage = lazy(() => import('../pages/CoursePage/CoursePage'));
+import CoursesCatalogPage from '../pages/CoursesCatalogPage/CoursesCatalogPage';
+import MyLearningPage from '../pages/MyLearningPage/MyLearningPage';
+import CoursePage from '../pages/CoursePage/CoursePage';
 const CourseManagmentPage = lazy(() => import('../pages/CourseManagmentPage/CourseManagmentPage'));
 const UserProfilePage = lazy(() => import('../pages/UserProfilePage/UserProfilePage'));
 const VocabularyPage = lazy(() => import('../pages/VocabularyPage/VocabularyPage'));
@@ -43,11 +42,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: ROUTES.HOME,
-        element: (
-          <Suspense fallback={<GlobalLoader />}>
-            <SharedLayout />
-          </Suspense>
-        ),
+        element: <SharedLayout />,
         children: [
           { index: true, element: <HomePage /> },
           {

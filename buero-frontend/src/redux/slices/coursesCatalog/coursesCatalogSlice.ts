@@ -21,6 +21,8 @@ export type CoursesCatalogState = {
   pageSize: number;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
+  lastFetchKey: string | null;
+  lastFetchAt: number | null;
 };
 
 const initialState: CoursesCatalogState = {
@@ -32,6 +34,8 @@ const initialState: CoursesCatalogState = {
   pageSize: 12,
   status: 'idle',
   error: null,
+  lastFetchKey: null,
+  lastFetchAt: null,
 };
 
 const coursesCatalogSlice = createSlice({
@@ -55,6 +59,8 @@ const coursesCatalogSlice = createSlice({
       state.totalCount = 0;
       state.status = 'idle';
       state.error = null;
+      state.lastFetchKey = null;
+      state.lastFetchAt = null;
     },
     setCatalogItemOrder: (state, action: PayloadAction<CourseCardProps[]>) => {
       state.items = action.payload;
@@ -63,7 +69,9 @@ const coursesCatalogSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchCoursesCatalogThunk.pending, (state) => {
-        state.status = 'loading';
+        if (state.items.length === 0) {
+          state.status = 'loading';
+        }
         state.error = null;
       })
       .addCase(fetchCoursesCatalogThunk.fulfilled, (state, action) => {
@@ -71,6 +79,8 @@ const coursesCatalogSlice = createSlice({
         state.items = action.payload.items;
         state.totalCount = action.payload.totalCount;
         state.activeTrialCourseId = action.payload.activeTrialCourseId ?? null;
+        state.lastFetchKey = action.payload.fetchKey;
+        state.lastFetchAt = Date.now();
       })
       .addCase(fetchCoursesCatalogThunk.rejected, (state, action) => {
         state.status = 'failed';

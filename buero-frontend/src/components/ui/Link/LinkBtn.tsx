@@ -21,6 +21,7 @@ const LinkBtn: React.FC<LinkBtnPops> = ({
   to = ROUTES.HOME,
   variant = 'primary',
   className = '',
+  onMouseEnter,
 }) => {
   const key = (typeof variant === 'string' ? variant.trim() : variant) as keyof typeof VARIANTS;
   const variantClasses = VARIANTS[key] ?? VARIANTS.primary;
@@ -29,7 +30,7 @@ const LinkBtn: React.FC<LinkBtnPops> = ({
       ? [variantClasses, className].filter(Boolean).join(' ')
       : [BASE, variantClasses, className].filter(Boolean).join(' ');
   return (
-    <Link to={to} className={classes}>
+    <Link to={to} className={classes} onMouseEnter={onMouseEnter}>
       {children}
     </Link>
   );

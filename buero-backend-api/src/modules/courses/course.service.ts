@@ -7,7 +7,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
-  CourseMaterialType,
   Language,
   Level,
   Role,
@@ -25,9 +24,25 @@ import { ReorderCoursesDto } from "./dto/reorder-courses.dto";
 import { UserService } from "../user/user.service";
 import { PaymentFulfillmentService } from "../subscriptions/payment-fulfillment.service";
 
+type LessonCountRow = {
+  course_id: string;
+  lessons: number;
+  videos: number;
+};
+
+const LIST_FRESH_MS = 30_000;
+const LIST_STALE_MS = 5 * 60_000;
+
+type CourseListItem = Record<string, unknown>;
+
 @Injectable()
 export class CourseService {
   private readonly logger = new Logger(CourseService.name);
+  private readonly listCache = new Map<
+    string,
+    { at: number; data: CourseListItem[] }
+  >();
+  private readonly listInflight = new Map<string, Promise<CourseListItem[]>>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -42,30 +57,28 @@ export class CourseService {
    */
   async findMyAccessibleCourses(userId: string) {
     try {
-      await this.paymentFulfillment.reconcilePendingForUser(userId);
+      void this.paymentFulfillment.reconcilePendingForUser(userId);
 
-      const accesses = await this.prisma.userCourseAccess.findMany({
-        where: { userId },
-        include: { course: true },
-        orderBy: { createdAt: "desc" },
-      });
+      const [accesses, { videos: videoByCourse, lessons: lessonsByCourse }] =
+        await Promise.all([
+          this.prisma.userCourseAccess.findMany({
+            where: { userId },
+            include: { course: true },
+            orderBy: { createdAt: "desc" },
+          }),
+          this.countLessonsByCourseIds(),
+        ]);
       const now = new Date();
       const active = accesses.filter((a) => {
         if (a.accessType !== UserCourseAccessType.trial) return true;
         if (!a.trialEndsAt) return true;
         return a.trialEndsAt >= now;
       });
-      const courseIds = active.map((a) => a.courseId);
-      const videoByCourse =
-        await this.countVideoMaterialsByCourseIds(courseIds);
-      const lessonsByCourse = await this.countMaterialsByCourseIds(courseIds);
-      const avgVideoByCourse =
-        await this.averageVideoLessonMinutesByCourseIds(courseIds);
       return active.map((a) => ({
         ...this.serializeCourse(a.course as Record<string, unknown>),
         videoLessonCount: videoByCourse.get(a.courseId) ?? 0,
         lessonsCount: lessonsByCourse.get(a.courseId) ?? 0,
-        avgVideoLessonMinutes: avgVideoByCourse.get(a.courseId) ?? null,
+        avgVideoLessonMinutes: null,
         my_access: {
           access_type: a.accessType,
           ...(a.accessType === "trial" &&
@@ -115,21 +128,21 @@ export class CourseService {
         if (tagsArray.length > 0) where.tags = { hasSome: tagsArray };
       }
 
-      const courses = await this.prisma.course.findMany({
-        where,
-        orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
-      });
-      const courseIds = courses.map((c) => c.id);
-      const videoByCourse = await this.countVideoMaterialsByCourseIds(courseIds);
-      const lessonsByCourse = await this.countMaterialsByCourseIds(courseIds);
-      const avgVideoByCourse =
-        await this.averageVideoLessonMinutesByCourseIds(courseIds);
-      return courses.map((c) => ({
-        ...this.serializeCourse(c as Record<string, unknown>),
-        videoLessonCount: videoByCourse.get(c.id) ?? 0,
-        lessonsCount: lessonsByCourse.get(c.id) ?? 0,
-        avgVideoLessonMinutes: avgVideoByCourse.get(c.id) ?? null,
-      }));
+      const cacheKey = JSON.stringify({ pubFilter, filters: filters ?? {} });
+      const cached = this.listCache.get(cacheKey);
+      const age = cached ? Date.now() - cached.at : Number.POSITIVE_INFINITY;
+      if (cached && age < LIST_FRESH_MS) {
+        return cached.data;
+      }
+      if (cached && age < LIST_STALE_MS) {
+        void this.refreshCourseList(cacheKey, where).catch((error) => {
+          this.logger.warn(
+            `Catalog refresh failed: ${error instanceof Error ? error.message : String(error)}`,
+          );
+        });
+        return cached.data;
+      }
+      return await this.refreshCourseList(cacheKey, where);
     } catch (error) {
       throw this.mapPrismaError(error);
     }
@@ -137,34 +150,20 @@ export class CourseService {
 
   async findById(id: string, includeModules = true, userId?: string | null) {
     try {
-      const course = await this.prisma.course.findUnique({
-        where: { id },
-        include: includeModules
-          ? {
-              modules: {
-                orderBy: { orderIndex: "asc" },
-                include: {
-                  materials: {
-                    orderBy: { orderIndex: "asc" },
-                    include: {
-                      attachments: { orderBy: { orderIndex: "asc" } },
-                    },
-                  },
-                },
-              },
-            }
-          : undefined,
-      });
+      const [course, access] = await Promise.all([
+        includeModules
+          ? this.loadCourseTree(id)
+          : this.prisma.course.findUnique({ where: { id } }),
+        userId
+          ? this.prisma.userCourseAccess.findUnique({
+              where: { userId_courseId: { userId, courseId: id } },
+            })
+          : Promise.resolve(null),
+      ]);
       if (!course) {
         throw new NotFoundException(`Курс з id ${id} не знайдено`);
       }
 
-      if (!userId)
-        return this.serializeCourse(course as Record<string, unknown>) as any;
-
-      const access = await this.prisma.userCourseAccess.findUnique({
-        where: { userId_courseId: { userId, courseId: id } },
-      });
       if (!access)
         return this.serializeCourse(course as Record<string, unknown>) as any;
 
@@ -221,6 +220,7 @@ export class CourseService {
           }),
         },
       });
+      this.clearCourseCaches();
       return this.serializeCourse(course as Record<string, unknown>);
     } catch (error) {
       throw this.mapPrismaError(error);
@@ -246,6 +246,7 @@ export class CourseService {
         ),
       );
 
+      this.clearCourseCaches();
       return { updated: dto.items.length };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -291,6 +292,7 @@ export class CourseService {
           typeof this.prisma.course.update
         >[0]["data"],
       });
+      this.clearCourseCaches();
       return this.serializeCourse(course as Record<string, unknown>);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -315,10 +317,17 @@ export class CourseService {
 
   async delete(id: string) {
     try {
-      await this.findById(id);
+      const existing = await this.prisma.course.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      if (!existing) {
+        throw new NotFoundException(`Курс з id ${id} не знайдено`);
+      }
       await this.prisma.course.delete({
         where: { id },
       });
+      this.clearCourseCaches();
       return { deleted: true, id };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -342,6 +351,7 @@ export class CourseService {
         where: { id: courseId },
         data: { imageUrl: secureUrl },
       });
+      this.clearCourseCaches();
       return this.serializeCourse(course as Record<string, unknown>);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -359,7 +369,13 @@ export class CourseService {
         throw new BadRequestException("TRIAL_DAYS має бути додатним числом");
       }
 
-      const course = await this.findById(courseId);
+      const course = await this.prisma.course.findUnique({
+        where: { id: courseId },
+        select: { id: true, isPublished: true },
+      });
+      if (!course) {
+        throw new NotFoundException(`Курс з id ${courseId} не знайдено`);
+      }
       if (course.isPublished !== true) {
         throw new BadRequestException("Курс не опублікований");
       }
@@ -416,110 +432,143 @@ export class CourseService {
     }
   }
 
-  /** Лише для каталогу: кількість матеріалів type=video по курсах (batch). */
-  private async countVideoMaterialsByCourseIds(
-    courseIds: string[]
-  ): Promise<Map<string, number>> {
-    return this.countMaterialsByCourseIds(courseIds, CourseMaterialType.video);
+  private clearCourseCaches(): void {
+    this.listCache.clear();
+    this.listInflight.clear();
+  }
+
+  private refreshCourseList(
+    cacheKey: string,
+    where: {
+      isPublished?: boolean;
+      language?: Language;
+      tags?: { hasSome: string[] };
+      level?: Level;
+      OR?: Array<
+        | { title: { contains: string; mode: "insensitive" } }
+        | { description: { contains: string; mode: "insensitive" } }
+      >;
+    },
+  ): Promise<CourseListItem[]> {
+    const inflight = this.listInflight.get(cacheKey);
+    if (inflight) return inflight;
+
+    const task = (async () => {
+      const [courses, { videos: videoByCourse, lessons: lessonsByCourse }] =
+        await Promise.all([
+          this.prisma.course.findMany({
+            where,
+            orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
+          }),
+          this.countLessonsByCourseIds(),
+        ]);
+      const list: CourseListItem[] = courses.map((c) => ({
+        ...this.serializeCourse(c as Record<string, unknown>),
+        videoLessonCount: videoByCourse.get(c.id) ?? 0,
+        lessonsCount: lessonsByCourse.get(c.id) ?? 0,
+        avgVideoLessonMinutes: null,
+      }));
+      this.listCache.set(cacheKey, { at: Date.now(), data: list });
+      return list;
+    })().finally(() => {
+      this.listInflight.delete(cacheKey);
+    });
+
+    this.listInflight.set(cacheKey, task);
+    return task;
   }
 
   /**
-   * Average video length in minutes, from materials with a parseable duration.
-   * Quizzes and videos without duration are ignored.
+   * Nested Prisma include walks course → modules → materials → attachments
+   * sequentially (4 RTTs to remote Postgres). Fetch all four in parallel.
    */
-  private async averageVideoLessonMinutesByCourseIds(
-    courseIds: string[],
-  ): Promise<Map<string, number>> {
-    const map = new Map<string, number>();
-    if (courseIds.length === 0) return map;
-    const modules = await this.prisma.courseModule.findMany({
-      where: { courseId: { in: courseIds } },
-      select: { id: true, courseId: true },
-    });
-    if (modules.length === 0) return map;
-    const moduleIdToCourseId = new Map(
-      modules.map((m) => [m.id, m.courseId] as const),
-    );
-    const videos = await this.prisma.courseMaterial.findMany({
-      where: {
-        moduleId: { in: modules.map((m) => m.id) },
-        type: CourseMaterialType.video,
-      },
-      select: { moduleId: true, content: true },
-    });
+  private async loadCourseTree(id: string): Promise<Record<string, unknown> | null> {
+    const [course, modules, materials, attachments] = await Promise.all([
+      this.prisma.course.findUnique({ where: { id } }),
+      this.prisma.courseModule.findMany({
+        where: { courseId: id },
+        orderBy: { orderIndex: "asc" },
+      }),
+      this.prisma.courseMaterial.findMany({
+        where: { module: { courseId: id } },
+        orderBy: { orderIndex: "asc" },
+        select: {
+          id: true,
+          moduleId: true,
+          type: true,
+          title: true,
+          content: true,
+          orderIndex: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      this.prisma.materialAttachment.findMany({
+        where: { material: { module: { courseId: id } } },
+        orderBy: { orderIndex: "asc" },
+        select: {
+          id: true,
+          materialId: true,
+          kind: true,
+          title: true,
+          url: true,
+          fileName: true,
+          mimeType: true,
+          sizeBytes: true,
+          orderIndex: true,
+        },
+      }),
+    ]);
+    if (!course) return null;
 
-    const totals = new Map<string, { seconds: number; count: number }>();
-    for (const video of videos) {
-      const courseId = moduleIdToCourseId.get(video.moduleId);
-      if (!courseId) continue;
-      const seconds = this.parseContentDurationSeconds(video.content);
-      if (seconds == null || seconds <= 0) continue;
-      const prev = totals.get(courseId) ?? { seconds: 0, count: 0 };
-      totals.set(courseId, {
-        seconds: prev.seconds + seconds,
-        count: prev.count + 1,
+    const attachmentsByMaterial = new Map<string, Array<Record<string, unknown>>>();
+    for (const item of attachments) {
+      const { materialId, ...rest } = item;
+      const list = attachmentsByMaterial.get(materialId) ?? [];
+      list.push(rest);
+      attachmentsByMaterial.set(materialId, list);
+    }
+
+    const materialsByModule = new Map<string, Array<Record<string, unknown>>>();
+    for (const material of materials) {
+      const list = materialsByModule.get(material.moduleId) ?? [];
+      list.push({
+        ...material,
+        attachments: attachmentsByMaterial.get(material.id) ?? [],
       });
+      materialsByModule.set(material.moduleId, list);
     }
-    for (const [courseId, { seconds, count }] of totals) {
-      map.set(courseId, Math.max(1, Math.round(seconds / count / 60)));
-    }
-    return map;
+
+    return {
+      ...(course as Record<string, unknown>),
+      modules: modules.map((mod) => ({
+        ...mod,
+        materials: materialsByModule.get(mod.id) ?? [],
+      })),
+    };
   }
 
-  private parseContentDurationSeconds(content: unknown): number | null {
-    if (content == null || typeof content !== "object") return null;
-    const raw = (content as { duration?: unknown }).duration;
-    if (typeof raw === "number" && Number.isFinite(raw) && raw >= 0) {
-      return raw;
+  /** Один SQL замість двох Prisma-запитів — критично при remote Render DB. */
+  private async countLessonsByCourseIds(): Promise<{
+    lessons: Map<string, number>;
+    videos: Map<string, number>;
+  }> {
+    const rows = await this.prisma.$queryRaw<LessonCountRow[]>`
+      SELECT
+        m.course_id AS course_id,
+        COUNT(mat.id)::int AS lessons,
+        COUNT(mat.id) FILTER (WHERE mat.type = 'video')::int AS videos
+      FROM course_modules m
+      LEFT JOIN course_materials mat ON mat.module_id = m.id
+      GROUP BY m.course_id
+    `;
+    const lessons = new Map<string, number>();
+    const videos = new Map<string, number>();
+    for (const row of rows) {
+      lessons.set(row.course_id, Number(row.lessons));
+      videos.set(row.course_id, Number(row.videos));
     }
-    if (typeof raw !== "string") return null;
-    const value = raw.trim();
-    const hms = value.match(/^(\d+):([0-5]\d):([0-5]\d)$/);
-    if (hms) {
-      return (
-        Number(hms[1]) * 3600 + Number(hms[2]) * 60 + Number(hms[3])
-      );
-    }
-    const ms = value.match(/^(\d+):([0-5]\d)$/);
-    if (ms) {
-      return Number(ms[1]) * 60 + Number(ms[2]);
-    }
-    if (/^\d+$/.test(value)) {
-      return Number(value);
-    }
-    return null;
-  }
-
-  /** Усі матеріали (або лише обраний type) по курсах — для lessonsCount та «coming soon». */
-  private async countMaterialsByCourseIds(
-    courseIds: string[],
-    type?: CourseMaterialType,
-  ): Promise<Map<string, number>> {
-    const map = new Map<string, number>();
-    if (courseIds.length === 0) return map;
-    const modules = await this.prisma.courseModule.findMany({
-      where: { courseId: { in: courseIds } },
-      select: { id: true, courseId: true },
-    });
-    if (modules.length === 0) return map;
-    const moduleIdToCourseId = new Map(
-      modules.map((m) => [m.id, m.courseId] as const)
-    );
-    const moduleIds = modules.map((m) => m.id);
-    const grouped = await this.prisma.courseMaterial.groupBy({
-      by: ["moduleId"],
-      where: {
-        moduleId: { in: moduleIds },
-        ...(type ? { type } : {}),
-      },
-      _count: { _all: true },
-    });
-    for (const row of grouped) {
-      const courseId = moduleIdToCourseId.get(row.moduleId);
-      if (!courseId) continue;
-      map.set(courseId, (map.get(courseId) ?? 0) + row._count._all);
-    }
-    return map;
+    return { lessons, videos };
   }
 
   private async getCourseMaterialsCount(courseId: string): Promise<number> {

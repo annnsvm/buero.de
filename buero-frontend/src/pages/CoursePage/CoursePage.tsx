@@ -4,9 +4,8 @@ import type SimpleBarCore from 'simplebar-core';
 import { useSelector } from 'react-redux';
 import { NavLink, useParams } from 'react-router-dom';
 
-import { apiInstance } from '@/api/apiInstance';
-import { API_ENDPOINTS } from '@/api/apiEndpoints';
-import { completeCourseMaterial, fetchCourseProgress } from '@/api/progressApi';
+import { getCachedCourseProgress, getCachedCourseTree } from '@/api/courseWorkspaceCache';
+import { completeCourseMaterial } from '@/api/progressApi';
 import type { CourseModule } from '@/features/courses-catalog/CourseStructure';
 import {
   CourseLearningSidebar,
@@ -43,7 +42,7 @@ const CoursePage: React.FC = () => {
   const { pushUiModal } = useModal();
 
   const [course, setCourse] = useState<ApiCourseWithTree | null>(null);
-  const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'error'>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
   const [quizModalOpen, setQuizModalOpen] = useState(false);
@@ -75,10 +74,12 @@ const CoursePage: React.FC = () => {
       setLoadError(null);
       setCourseOutline([]);
       setLockedModuleIds(new Set());
+      setCompletedMaterialIds(new Set());
       try {
-        const { data } = await apiInstance.get<ApiCourseWithTree>(
-          API_ENDPOINTS.courses.byId(courseId),
-        );
+        const [data, progress] = await Promise.all([
+          getCachedCourseTree(courseId),
+          getCachedCourseProgress(courseId),
+        ]);
         if (cancelled) return;
         const courseForUi = applyTrialModuleScope(data);
         setCourse(courseForUi);
@@ -103,6 +104,9 @@ const CoursePage: React.FC = () => {
         setQuizPlaceholderResult(null);
         setSelectedMaterialId(firstId);
         setQuizModalOpen(Boolean(firstMat && String(firstMat.type).toLowerCase() === 'quiz'));
+        setCompletedMaterialIds(
+          new Set(progress?.completed_materials.map((row) => row.course_material_id) ?? []),
+        );
         setLoadStatus('idle');
       } catch (err: unknown) {
         if (cancelled) return;
@@ -136,27 +140,6 @@ const CoursePage: React.FC = () => {
       cancelled = true;
     };
   }, [courseId, t]);
-
-  useEffect(() => {
-    if (!courseId || !course || currentUser?.role !== 'student') {
-      setCompletedMaterialIds(new Set());
-      return;
-    }
-    let cancelled = false;
-    void fetchCourseProgress(courseId)
-      .then((res) => {
-        if (cancelled) return;
-        setCompletedMaterialIds(
-          new Set(res.completed_materials.map((row) => row.course_material_id)),
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setCompletedMaterialIds(new Set());
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [courseId, course, currentUser?.role]);
 
   const structureModules = useMemo(() => {
     if (courseOutline.length > 0) return courseOutline;

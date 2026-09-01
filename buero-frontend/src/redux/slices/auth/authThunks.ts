@@ -80,8 +80,9 @@ export const refreshUserThunk = createAsyncThunk<void, void>(
   {
     condition: (_, { getState }) => {
       const state = getState() as RootState;
-      const isLoggedIn  = state.auth.isAuthenticated;
-      if (!isLoggedIn) return false;
+      if (!state.auth.isAuthenticated) return false;
+      if (state.user.currentUser) return false;
+      if (state.auth.status === 'loading') return false;
       return true;
     },
   },

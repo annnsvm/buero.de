@@ -8,6 +8,7 @@ export type CourseCardProps = {
   levelLabel: string;
   badge?: string;
   imageUrl: string;
+  imagePriority?: boolean;
   description: string;
   price: string;
   lessonsCount: number;

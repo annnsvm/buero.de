@@ -133,10 +133,35 @@ export const mapApiCourseToCourseCard = (course: CatalogCourse): CourseCardProps
   };
 };
 
-export const fetchMyLearningCoursesFromCatalog = async (): Promise<CourseInfoData[]> => {
+const MY_LEARNING_TTL_MS = 20_000;
+let myLearningCache: { at: number; data: CourseInfoData[] } | null = null;
+
+export const fetchMyLearningCoursesFromCatalog = async (
+  force = false,
+): Promise<CourseInfoData[]> => {
+  if (
+    !force &&
+    myLearningCache &&
+    Date.now() - myLearningCache.at < MY_LEARNING_TTL_MS
+  ) {
+    return myLearningCache.data;
+  }
   const { data } = await apiInstance.get<CatalogCourse[]>(API_ENDPOINTS.courses.my);
   const accessible = Array.isArray(data) ? data : [];
-  return accessible.map((course) => mapApiCourseToCourseInfo(course));
+  const mapped = accessible.map((course) => mapApiCourseToCourseInfo(course));
+  myLearningCache = { at: Date.now(), data: mapped };
+  return mapped;
+};
+
+export const peekMyLearningCourses = (): CourseInfoData[] | null =>
+  myLearningCache?.data ?? null;
+
+export const invalidateMyLearningCourses = (): void => {
+  myLearningCache = null;
+};
+
+export const prefetchMyLearningCourses = (): void => {
+  void fetchMyLearningCoursesFromCatalog();
 };
 
 export const filterMyLearningCourses = (

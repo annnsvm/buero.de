@@ -60,4 +60,37 @@ describe('fetchCoursesCatalogThunk', () => {
     expect(new URL(requestUrl).pathname).toBe('/api/courses/manage');
     expect(new URL(requestUrl).searchParams.get('tags')).toBe('Beginner');
   });
+
+  it('loads access from /subscriptions/me in parallel for a student', async () => {
+    const hits: string[] = [];
+
+    server.use(
+      http.get(`${TEST_API_BASE_URL}/courses`, () => {
+        hits.push('/courses');
+        return HttpResponse.json([{ id: 'c1', title: 'German', tags: [] }]);
+      }),
+      http.get(`${TEST_API_BASE_URL}/subscriptions/me`, () => {
+        hits.push('/subscriptions/me');
+        return HttpResponse.json([{ course_id: 'c1', access_type: 'trial' }]);
+      }),
+    );
+
+    const store = configureStore({ reducer: rootReducer });
+    setStore(store);
+    store.dispatch(
+      addUser({
+        id: 's1',
+        email: 'student@test.com',
+        name: 'Student',
+        role: 'student',
+        language: 'uk',
+      }),
+    );
+    store.dispatch({ type: 'auth/login/fulfilled' });
+
+    await store.dispatch(fetchCoursesCatalogThunk());
+
+    expect(hits).toEqual(expect.arrayContaining(['/courses', '/subscriptions/me']));
+    expect(store.getState().coursesCatalog.items[0]?.isAdded).toBe(true);
+  });
 });

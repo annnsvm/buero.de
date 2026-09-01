@@ -8,7 +8,7 @@ import AnimatedProgressBar from '../shared/AnimatedProgressBar';
 import AssetImage from '../shared/AssetImage';
 import Reveal from '../shared/Reveal';
 
-const POSTER_SRC = '/assets/platform/platform-video-placeholder.jpg';
+const POSTER_SRC = '/assets/platform/platform-video-placeholder.webp';
 
 type PlatformPreviewProps = {
   videoSrc?: string;
@@ -147,6 +147,7 @@ const PlatformPreview = ({ videoSrc }: PlatformPreviewProps) => {
                   src={POSTER_SRC}
                   alt={t('landing.platformPreviewAlt')}
                   className="absolute inset-0 h-full w-full object-cover object-top"
+                  loading="eager"
                   fallback={<PlatformDashboard />}
                 />
               )}

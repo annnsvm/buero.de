@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
   CoursesCatalogHero,
@@ -35,30 +35,13 @@ const CoursesCatalogPage: FC = () => {
 
   const totalCount = useSelector(selectCoursesCatalogTotalCount);
   const catalogStatus = useSelector(selectCoursesCatalogStatus);
-  const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(true);
+  const catalogAudience = role === 'teacher' ? 'teacher' : 'catalog';
 
   const isCatalogPending =
     catalogStatus === 'loading' ||
     (catalogStatus === 'idle' && courses.length === 0);
 
-  useEffect(() => {
-    if (catalogStatus === 'loading') {
-      setShowLoadingSkeleton(true);
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setShowLoadingSkeleton(false);
-    }, 180);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [catalogStatus]);
-
-  const showCatalogGridSkeleton =
-    showLoadingSkeleton ||
-    (catalogStatus === 'idle' && courses.length === 0 && role !== 'teacher');
+  const showCatalogGridSkeleton = courses.length === 0 && isCatalogPending && role !== 'teacher';
 
   const filterTabs = useCatalogFilterTabs(role);
   const activeFilterId = (() => {
@@ -84,8 +67,8 @@ const CoursesCatalogPage: FC = () => {
   })();
 
   useEffect(() => {
-    dispatch(fetchCoursesCatalogThunk());
-  }, [dispatch, filters, role, isAuthenticated]);
+    void dispatch(fetchCoursesCatalogThunk());
+  }, [dispatch, filters, catalogAudience, isAuthenticated]);
 
 
   const handleFilterChange = (id: string) => {
