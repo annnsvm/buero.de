@@ -1,9 +1,9 @@
 export const SITE_URL = 'https://buro-de.com';
 export const SITE_NAME = 'Büro.de';
 
-export const DEFAULT_TITLE = 'Büro.de — Вивчай німецьку. Живи німецькою.';
+export const DEFAULT_TITLE = 'Büro.de - Вивчай німецьку. Живи німецькою.';
 export const DEFAULT_DESCRIPTION =
-  'Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині.';
+  'Мовні та інтеграційні курси - щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині.';
 
 export type PublicPage = {
   path: string;
