@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsEmail,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
   Matches,
@@ -57,9 +58,18 @@ export class CreateUserDto {
   @IsEnum(LanguageEnum)
   language?: LanguageEnum;
 
+  @ApiPropertyOptional({
+    enum: ["uk", "en"],
+    description: "Locale for verification and welcome emails",
+  })
+  @IsOptional()
+  @IsIn(["uk", "en"])
+  locale?: "uk" | "en";
+
   constructor() {
     this.email = "";
     this.password = "";
     this.role = RoleEnum.student;
+    this.locale = undefined;
   }
 }

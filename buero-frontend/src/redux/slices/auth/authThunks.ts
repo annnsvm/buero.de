@@ -1,4 +1,4 @@
-import type { LoginPayload, SignUpPayload } from '@/types/redux/auth.types';
+import type { LoginPayload, SignUpPayload, VerifySignupPayload } from '@/types/redux/auth.types';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { addUser } from '../user/userSlice';
 import { resetCoursesCatalog } from '../coursesCatalog/coursesCatalogSlice';
@@ -23,9 +23,12 @@ export const loginThunk = createAsyncThunk<void, LoginPayload>(
   },
 );
 
-export const signupThunk = createAsyncThunk<void, SignUpPayload>(
-  'auth/signup',
-  async ({ name, email, password, role = 'student', language = 'en' }, { dispatch, rejectWithValue }) => {
+export const startSignupThunk = createAsyncThunk<{ email: string }, SignUpPayload>(
+  'auth/startSignup',
+  async (
+    { name, email, password, role = 'student', language = 'en', locale = 'en' },
+    { rejectWithValue },
+  ) => {
     try {
       const { apiInstance } = await import('@/api/apiInstance');
       const result = await apiInstance.post(API_ENDPOINTS.auth.register, {
@@ -34,13 +37,45 @@ export const signupThunk = createAsyncThunk<void, SignUpPayload>(
         password,
         role,
         language,
+        locale,
+      });
+      return { email: result.data?.email ?? email };
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, 'Signup failed');
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const verifySignupThunk = createAsyncThunk<void, VerifySignupPayload>(
+  'auth/verifySignup',
+  async ({ email, code }, { dispatch, rejectWithValue }) => {
+    try {
+      const { apiInstance } = await import('@/api/apiInstance');
+      const result = await apiInstance.post(API_ENDPOINTS.auth.verifyRegistration, {
+        email,
+        code,
       });
       if (result.data?.user) {
         dispatch(addUser(result.data.user));
       }
       return;
     } catch (error: unknown) {
-      const message = getErrorMessage(error, 'Signup failed');
+      const message = getErrorMessage(error, 'Verification failed');
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const resendSignupCodeThunk = createAsyncThunk<void, { email: string }>(
+  'auth/resendSignupCode',
+  async ({ email }, { rejectWithValue }) => {
+    try {
+      const { apiInstance } = await import('@/api/apiInstance');
+      await apiInstance.post(API_ENDPOINTS.auth.resendRegistrationCode, { email });
+      return;
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, 'Could not resend code');
       return rejectWithValue(message);
     }
   },

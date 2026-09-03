@@ -78,20 +78,57 @@ Refresh JWT при збереженні в БД: зберігаємо **хеш**
 
 Базовий шлях: **`/api/auth`**.
 
-### 4.1 Реєстрація (= логін після успіху)
+### 4.1 Почати реєстрацію (код на email)
 
 **POST** `/api/auth/register`
 
-**Призначення:** створити користувача (user + відповідний профіль). Успішна реєстрація **працює як логін**: встановлюються cookie з access_token та refresh_token, у тілі повертаються дані користувача. Окремий виклик login після реєстрації **не потрібен**.
+**Призначення:** прийняти дані реєстрації, зберегти їх як незавершену заявку і надіслати **6-значний код** на email. Користувача ще **не створено**, cookie **не** встановлюються.
 
-**Request body (JSON):**
+**Успішна відповідь:** `200 OK`.
+
+```json
+{
+  "status": "verification_required",
+  "email": "user@example.com"
+}
+```
+
+**Помилки:** `400` — невалідні дані; `409` — email уже зареєстрований.
+
+### 4.1.1 Підтвердити реєстрацію (= логін після успіху)
+
+**POST** `/api/auth/verify-registration`
+
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+**Призначення:** перевірити код, створити user + профіль, надіслати вітальний email і увійти: cookie `access_token` + `refresh_token`, тіло `{ user }`. Окремий виклик login після цього **не потрібен**.
+
+**Успішна відповідь:** `201 Created`. Токени — **тільки в cookie**.
+
+### 4.1.2 Надіслати код ще раз
+
+**POST** `/api/auth/resend-registration-code`
+
+```json
+{ "email": "user@example.com" }
+```
+
+Код дійсний **15 хвилин**. Повторний лист — не частіше ніж раз на хвилину.
+
+**Request body для POST `/api/auth/register`:**
 
 ```json
 {
   "email": "user@example.com",
   "password": "SecurePass1",
   "role": "student",
-  "language": "de"
+  "language": "de",
+  "locale": "uk"
 }
 ```
 
@@ -101,22 +138,9 @@ Refresh JWT при збереженні в БД: зберігаємо **хеш**
 | password | string| так         | Мінімум **9 символів**, хоча б **одна велика літера**, хоча б **одна цифра** |
 | role     | enum  | так         | `student` \| `teacher` |
 | language | enum  | ні          | `en` \| `de`, за замовчуванням `en` |
+| locale   | enum  | ні          | `uk` \| `en` — мова листів |
 
-**Успішна відповідь:** `201 Created`. Токени — **тільки в cookie** (access_token, refresh_token). Тіло:
-
-```json
-{
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "role": "student",
-    "language": "de",
-    "createdAt": "2025-01-15T12:00:00.000Z"
-  }
-}
-```
-
-**Помилки:**
+**Помилки register:**
 
 - `400` — невалідні дані (email, пароль не відповідає вимогам, недопустима роль).
 - `409 Conflict` — email вже зареєстрований.
@@ -124,9 +148,9 @@ Refresh JWT при збереженні в БД: зберігаємо **хеш**
 **Логіка:**
 
 1. Валідація body (email, password: мін. 9 символів, 1 велика літера, 1 цифра; role; language).
-2. User Service: перевірка, що email не зайнятий.
-3. User Service: хешування пароля (bcrypt), створення запису в `users`, створення запису в `student_profiles` або `teacher_profiles`.
-4. User Service: генерація access JWT та refresh JWT; збереження refresh у `refresh_tokens` (token_hash або jti).
+2. Якщо email уже в `users` — 409. Інакше зберегти заявку в `pending_registrations` і надіслати код.
+3. POST `/api/auth/verify-registration`: перевірити код, створити user + профіль, надіслати вітальний лист.
+4. Після verify: генерація access JWT та refresh JWT; збереження refresh у `refresh_tokens` (token_hash або jti).
 5. Встановити cookie `access_token`, `refresh_token` (Path=/api, HttpOnly, Secure, SameSite=Lax, Max-Age як вище).
 6. Повернути 201 та JSON з об’єктом `user` (без токенів у тілі).
 
@@ -253,6 +277,7 @@ flowchart TB
 
     subgraph API["Backend API"]
         Reg[POST /api/auth/register]
+        Verify[POST /api/auth/verify-registration]
         Login[POST /api/auth/login]
         Ref[POST /api/auth/refresh]
         Out[POST /api/auth/logout]
@@ -268,8 +293,9 @@ flowchart TB
     end
 
     A --> Reg
+    Reg --> Verify
     A --> Login
-    Reg --> V
+    Verify --> V
     Login --> V
     V --> US
     US --> JWT
@@ -288,7 +314,7 @@ flowchart TB
 
 **Пояснення:**
 
-- **Реєстрація:** валідація → створення user + профіль → генерація access + refresh JWT → збереження refresh у БД → Set-Cookie → 201 + user.
+- **Реєстрація:** валідація → лист із кодом → verify → створення user + профіль → вітальний лист → генерація access + refresh JWT → збереження refresh у БД → Set-Cookie → 201 + user.
 - **Логін:** валідація → перевірка пароля → генерація access + refresh JWT → збереження refresh у БД → Set-Cookie → 200 + user.
 - **Refresh:** читання refresh з cookie → перевірка JWT та запису в БД → ротація (новий access + новий refresh, старий refresh ревокається) → Set-Cookie з новими токенами → 200 + user.
 - **Logout:** читання refresh з cookie → ревок у БД → видалення cookie (Max-Age=0) → 200.
@@ -299,7 +325,7 @@ Cookie: Path=/api, SameSite=Lax, HttpOnly, Secure (prod). Access TTL 30 хв, re
 
 ## 7. Критерії прийняття
 
-- **Реєстрація:** POST `/api/auth/register` створює user + профіль, **одразу встановлює** access_token та refresh_token в cookie, повертає 201 з `user`; при дублікаті email — 409. Пароль: мін. 9 символів, 1 велика літера, 1 цифра.
+- **Реєстрація:** POST `/api/auth/register` надсилає код на email і повертає 200 `{ status: "verification_required" }`; POST `/api/auth/verify-registration` створює user + профіль, **встановлює** access_token та refresh_token в cookie, надсилає вітальний лист, повертає 201 з `user`; при дублікаті email — 409. Пароль: мін. 9 символів, 1 велика літера, 1 цифра.
 - **Логін:** POST `/api/auth/login` перевіряє email/password, створює запис у refresh_tokens, встановлює access_token та refresh_token в cookie (Path=/api, SameSite=Lax, HttpOnly, Secure), повертає 200 з `user`; при помилці — 401.
 - **Refresh:** POST `/api/auth/refresh` при валідному refresh в cookie видає **новий** access і **новий** refresh (ротація), ревокає старий refresh, встановлює нові cookie, повертає 200 з user; без/невалідний refresh — 401.
 - **Logout:** POST `/api/auth/logout` ревокає refresh у БД та очищає cookie; відповідь **200 OK** з порожнім тілом.

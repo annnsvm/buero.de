@@ -144,6 +144,47 @@ export class UserService {
     return this.toUserWithoutPassword(user);
   }
 
+  async createUserFromHashes(params: {
+    email: string;
+    name?: string | null;
+    passwordHash: string;
+    role: Role;
+    language: Language;
+  }): Promise<UserWithoutPassword> {
+    const email = params.email.toLowerCase();
+    const existing = await this.prisma.user.findFirst({
+      where: { email, deletedAt: null },
+    });
+    if (existing) {
+      throw new ConflictException("User with this email already exists");
+    }
+
+    const name =
+      params.name == null
+        ? null
+        : (typeof params.name === "string" ? params.name.trim() : "") || null;
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        name,
+        passwordHash: params.passwordHash,
+        role: params.role,
+        language: params.language || "en",
+      },
+    });
+    if (params.role === "student") {
+      await this.prisma.studentProfile.create({
+        data: { userId: user.id },
+      });
+    } else {
+      await this.prisma.teacherProfile.create({
+        data: { userId: user.id },
+      });
+    }
+    return this.toUserWithoutPassword(user);
+  }
+
   async findUserByEmail(email: string): Promise<UserWithoutPassword | null> {
     const user = await this.prisma.user.findFirst({
       where: { email: email, deletedAt: null },

@@ -77,6 +77,24 @@
 | revoked_at | timestamp | nullable |
 | created_at | timestamp | |
 
+### 3.2.1 pending_registrations
+
+Незавершена реєстрація, поки користувач не введе код з email.
+
+| Column         | Type      | Notes |
+|----------------|-----------|--------|
+| id             | PK, UUID  | |
+| email          | string    | UNIQUE |
+| password_hash  | string    | bcrypt |
+| role           | enum      | `student` \| `teacher` |
+| language       | enum      | `en` \| `de` |
+| locale         | string    | `uk` \| `en` для листів |
+| code_hash      | string    | SHA-256 коду |
+| expires_at     | timestamp | код дійсний 15 хв |
+| attempts       | int       | |
+| created_at     | timestamp | |
+| updated_at     | timestamp | |
+
 ### 3.3 student_profiles
 
 | Column      | Type      | Notes |

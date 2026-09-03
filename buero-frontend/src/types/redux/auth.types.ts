@@ -19,7 +19,13 @@ type SignUpPayload = {
   password: string;
   role?: 'student' | 'teacher';
   language?: 'en' | 'de';
+  locale?: 'uk' | 'en';
   redirectTo?: string;
+};
+
+type VerifySignupPayload = {
+  email: string;
+  code: string;
 };
 
 type User = {
@@ -29,4 +35,4 @@ type User = {
   language: 'en' | 'de';
 };
 
-export type { AuthStatus, AuthState, LoginPayload, SignUpPayload, User };
+export type { AuthStatus, AuthState, LoginPayload, SignUpPayload, VerifySignupPayload, User };

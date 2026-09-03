@@ -2,6 +2,7 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { PrismaService } from "src/prisma/prisma.service";
 import { createE2eApp } from "./e2e-app.factory";
+import { registerVerified } from "./helpers/register-verified";
 
 function cookieHeaderFromRegister(headers: {
   "set-cookie"?: string | string[];
@@ -35,15 +36,12 @@ describe("Course materials (e2e)", () => {
   it("401 без cookie; 403 студент без доступу; video + teacher GET list", async () => {
     const suffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-    const teacherReg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: `t_mat_${suffix}@test.local`,
-        password,
-        role: "teacher",
-        language: "en",
-      })
-      .expect(201);
+    const teacherReg = await registerVerified(app, {
+      email: `t_mat_${suffix}@test.local`,
+      password,
+      role: "teacher",
+      language: "en",
+    });
     const teacherCookie = cookieHeaderFromRegister(teacherReg.headers);
 
     const course = await request(app.getHttpServer())
@@ -68,15 +66,12 @@ describe("Course materials (e2e)", () => {
 
     await request(app.getHttpServer()).get(base).expect(401);
 
-    const studentReg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: `s_mat_${suffix}@test.local`,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const studentReg = await registerVerified(app, {
+      email: `s_mat_${suffix}@test.local`,
+      password,
+      role: "student",
+      language: "en",
+    });
     const studentCookie = cookieHeaderFromRegister(studentReg.headers);
 
     await request(app.getHttpServer())

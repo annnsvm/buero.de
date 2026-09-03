@@ -1,6 +1,8 @@
 export const API_ENDPOINTS = {
   auth: {
     register: '/auth/register',
+    verifyRegistration: '/auth/verify-registration',
+    resendRegistrationCode: '/auth/resend-registration-code',
     login: '/auth/login', 
     refresh: '/auth/refresh', 
     logout: '/auth/logout', 
@@ -82,6 +84,8 @@ export const API_ENDPOINTS = {
 export const PUBLIC_ENDPOINT_PREFIXE = [
     API_ENDPOINTS.auth.login,
     API_ENDPOINTS.auth.register,
+    API_ENDPOINTS.auth.verifyRegistration,
+    API_ENDPOINTS.auth.resendRegistrationCode,
     API_ENDPOINTS.auth.refresh,
     API_ENDPOINTS.auth.logout,
     API_ENDPOINTS.courses.list,
