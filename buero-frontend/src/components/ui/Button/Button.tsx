@@ -2,7 +2,7 @@ import { VARIANT_CLASSES } from '@/components/ui/Button/variantClasses';
 import { ButtonProps } from '@/types/components/ui/Button.types';
 
 const BASE_CLASSES =
-  'inline-flex items-center justify-center px-6 py-2.5 rounded-[100px] border transition-all duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]';
+  'inline-flex items-center justify-center px-6 py-2.5 rounded-[100px] border font-semibold transition-all duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]';
 
 const Button = ({
   children,

@@ -4,7 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const BASE =
-  'inline-flex items-center justify-center px-6 py-2.5 rounded-[100px] border transition-all';
+  'inline-flex items-center justify-center px-6 py-2.5 rounded-[100px] border font-semibold transition-all';
 
 const VARIANTS = {
   primary:
