@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Volume2 } from 'lucide-react';
+import TapHint from '../shared/TapHint';
 
 const VocabularyFlashcard = () => {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ const VocabularyFlashcard = () => {
             flipped ? t('landing.vocabFlipBackAria') : t('landing.vocabFlipAria')
           }
         >
-          <div className="buero-flip-face flex flex-col justify-between border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] p-7 sm:p-8">
+          <div className="buero-flip-face relative flex flex-col justify-between border border-[var(--opacity-neutral-darkest-15)] bg-[var(--color-neutral-white)] p-7 sm:p-8">
             <div className="flex items-start justify-between gap-3">
               <span className="rounded-full bg-[var(--color-burnt-siena-lightest)] px-3 py-1 text-[0.7rem] font-semibold tracking-[0.1em] text-[var(--color-burnt-siena-dark)] uppercase">
                 {t('landing.vocabInteractive')}
@@ -42,7 +43,8 @@ const VocabularyFlashcard = () => {
               <p className="font-[family-name:var(--font-heading)] text-[1.85rem] leading-[1.2] font-semibold tracking-[-0.03em] text-[var(--color-cod-gray-base)] sm:text-[2.1rem]">
                 die Voraussetzung
               </p>
-              <p className="mt-4 text-[0.9rem] text-[var(--color-text-secondary)]">
+              <p className="mt-4 flex items-center justify-center gap-2 text-[0.9rem] text-[var(--color-text-secondary)]">
+                <TapHint visible />
                 {t('landing.vocabTapReveal')}
               </p>
             </div>
@@ -63,7 +65,6 @@ const VocabularyFlashcard = () => {
                 {t('landing.vocabExample')}
               </p>
             </div>
-            <p className="text-[0.85rem] text-white/50">{t('landing.vocabTapAgain')}</p>
           </div>
         </button>
       </div>

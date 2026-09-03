@@ -14,7 +14,11 @@ test('home page shows product sections and interactive demos', async ({ page }) 
   await expect(page.getByText('Перший модуль безкоштовно').first()).toBeVisible();
   await expect(page.getByText('Уроки 2–10 хв')).toHaveCount(0);
 
+  await expect(
+    page.getByRole('heading', { name: 'Слова вчиш. А говорити все одно страшно.' }),
+  ).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Почни безкоштовно' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Структуроване навчання' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Короткі й чіткі уроки' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Дивись. Практикуй. Запам’ятовуй.' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Словник, який залишається' })).toBeVisible();

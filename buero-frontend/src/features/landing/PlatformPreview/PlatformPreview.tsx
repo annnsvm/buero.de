@@ -116,21 +116,24 @@ const PlatformPreview = ({ videoSrc }: PlatformPreviewProps) => {
   };
 
   return (
-    <Section className="bg-[var(--color-soapstone-base)] py-16 sm:py-20">
+    <Section className="bg-[var(--color-soapstone-base)] pt-4 pb-16 sm:pt-6 sm:pb-20">
       <Container>
-        <Reveal className="mx-auto max-w-3xl text-center">
-          <SectionTitle label={t('landing.platformSection')} className="mb-4">
+        <Reveal className="mx-auto max-w-5xl text-center">
+          <div
+            aria-hidden="true"
+            className="mx-auto mb-5 h-px w-16 bg-[var(--color-burnt-siena-base)]/35 sm:mb-6"
+          />
+          <SectionTitle label={t('landing.platformSection')} className="mb-3">
             {t('landing.platformSection')}
           </SectionTitle>
-          <Title className="mb-6">{t('landing.platformTitle')}</Title>
-          <Text label={t('landing.platformSubtitle')} className="mx-auto max-w-[640px]">
+          <Title className="mb-3">{t('landing.platformTitle')}</Title>
+          <Text label={t('landing.platformSubtitle')} className="mx-auto lg:whitespace-nowrap">
             {t('landing.platformSubtitle')}
           </Text>
         </Reveal>
 
-        <Reveal delayMs={120}>
-          <div className="relative mx-auto mt-10 max-w-5xl overflow-hidden rounded-[24px] border border-[var(--opacity-neutral-darkest-15)] shadow-[0_24px_60px_rgba(1,1,1,0.12)] transition-transform duration-500 hover:-translate-y-1 sm:mt-12">
-            <div className="relative aspect-[16/10] w-full bg-[var(--color-dawn-pink-base)] sm:aspect-video">
+        <div className="relative mx-auto mt-5 max-w-5xl overflow-hidden rounded-[24px] border border-[var(--opacity-neutral-darkest-15)] shadow-[0_24px_60px_rgba(1,1,1,0.12)] transition-transform duration-500 hover:-translate-y-1 sm:mt-6">
+          <div className="relative aspect-[16/10] w-full bg-[var(--color-dawn-pink-base)] sm:aspect-video">
               {videoSrc ? (
                 <video
                   ref={videoRef}
@@ -170,9 +173,8 @@ const PlatformPreview = ({ videoSrc }: PlatformPreviewProps) => {
                   </button>
                 </div>
               )}
-            </div>
           </div>
-        </Reveal>
+        </div>
       </Container>
     </Section>
   );

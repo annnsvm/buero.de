@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
+import TapHint from '../shared/TapHint';
 
 const OPTIONS = [
   { id: 'a', key: 'quizOptA' as const, correct: false },
@@ -70,6 +71,11 @@ const QuizCard = () => {
           );
         })}
       </ul>
+
+      <p className="mt-4 flex items-center justify-center gap-2 text-[0.9rem] text-[var(--color-text-secondary)]">
+        <TapHint visible />
+        {t('landing.quizTapHint')}
+      </p>
 
       <div className="mt-5 min-h-[1.5rem]" aria-live="polite">
         {isCorrect ? (

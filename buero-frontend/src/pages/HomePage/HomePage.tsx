@@ -3,6 +3,7 @@ import {
   Faq,
   Hero,
   LearningLoop,
+  Pain,
   PlatformPreview,
   QuizDemo,
   Teachers,
@@ -17,9 +18,10 @@ const HomePage: React.FC = () => {
   return (
     <div aria-label="Home Page">
       <Hero />
+      <Pain />
       <WhyBuro />
-      <LearningLoop />
       <PlatformPreview />
+      <LearningLoop />
       <VocabularyDemo />
       <QuizDemo />
       <Teachers />
