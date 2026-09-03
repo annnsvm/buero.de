@@ -112,6 +112,24 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model PendingRegistration {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String?  @db.VarChar(255)
+  passwordHash String   @map("password_hash")
+  role         Role
+  language     Language @default(en)
+  locale       String   @default("en") @db.VarChar(8)
+  codeHash     String   @map("code_hash")
+  expiresAt    DateTime @map("expires_at")
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("pending_registrations")
+}
+
 model StudentProfile {
   id          String    @id @default(uuid())
   userId      String    @unique @map("user_id")

@@ -2,6 +2,7 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { PrismaService } from "src/prisma/prisma.service";
 import { createE2eApp } from "./e2e-app.factory";
+import { registerVerified } from "./helpers/register-verified";
 
 function getSetCookieHeaders(headers: { "set-cookie"?: string | string[] }): string[] {
   const raw = headers["set-cookie"];
@@ -37,15 +38,12 @@ describe("Users /me (e2e)", () => {
 
   it("GET /api/users/me — 200 з user/profile, без password_hash", async () => {
     const em = email();
-    const reg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const reg = await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     const cookieHeader = getSetCookieHeaders(reg.headers)
       .map((c) => c.split(";")[0])
@@ -66,15 +64,12 @@ describe("Users /me (e2e)", () => {
 
   it("PATCH /api/users/me — 200 з валідним cookie, тіло без пароля", async () => {
     const em = email();
-    const reg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const reg = await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     const cookieHeader = getSetCookieHeaders(reg.headers)
       .map((c) => c.split(";")[0])

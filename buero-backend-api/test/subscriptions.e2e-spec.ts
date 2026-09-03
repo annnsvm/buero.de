@@ -3,6 +3,7 @@ import { createHmac } from "crypto";
 import request from "supertest";
 import { PrismaService } from "src/prisma/prisma.service";
 import { createE2eApp } from "./e2e-app.factory";
+import { registerVerified } from "./helpers/register-verified";
 
 function getSetCookieHeaders(headers: {
   "set-cookie"?: string | string[];
@@ -60,10 +61,12 @@ describe("Subscriptions & Billing (e2e, WayForPay)", () => {
 
     it("creates a pending payment, unlocks the course on callback and stays idempotent", async () => {
       const email = `sub_e2e_${Date.now()}_${Math.random().toString(36).slice(2)}@test.local`;
-      const reg = await request(app.getHttpServer())
-        .post("/api/auth/register")
-        .send({ email, password, role: "student", language: "en" })
-        .expect(201);
+      const reg = await registerVerified(app, {
+        email,
+        password,
+        role: "student",
+        language: "en",
+      });
 
       userId = reg.body.user.id;
       cookieHeader = getSetCookieHeaders(reg.headers)

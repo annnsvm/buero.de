@@ -2,6 +2,7 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { PrismaService } from "src/prisma/prisma.service";
 import { createE2eApp } from "./e2e-app.factory";
+import { registerVerified } from "./helpers/register-verified";
 
 function getSetCookieHeaders(headers: { "set-cookie"?: string | string[] }): string[] {
   const raw = headers["set-cookie"];
@@ -30,7 +31,7 @@ describe("Auth (e2e)", () => {
     await app.close();
   });
 
-  it("POST /api/auth/register — 201, Set-Cookie access_token + refresh_token", async () => {
+  it("POST /api/auth/register — 200 verification_required, no auth cookies", async () => {
     const res = await request(app.getHttpServer())
       .post("/api/auth/register")
       .send({
@@ -39,18 +40,17 @@ describe("Auth (e2e)", () => {
         role: "student",
         language: "en",
       })
-      .expect(201);
+      .expect(200);
 
-    expect(res.body.user).toBeDefined();
-    expect(res.body.user.email).toBeDefined();
+    expect(res.body.status).toBe("verification_required");
+    expect(res.body.verificationCode).toMatch(/^\d{6}$/);
     const cookies = getSetCookieHeaders(res.headers);
-    expect(cookies.some((c) => c.startsWith("access_token="))).toBe(true);
-    expect(cookies.some((c) => c.startsWith("refresh_token="))).toBe(true);
+    expect(cookies.some((c) => c.startsWith("access_token="))).toBe(false);
   });
 
-  it("POST /api/auth/register — 409 duplicate email", async () => {
+  it("POST /api/auth/verify-registration — 201 cookies after valid code, 400 after wrong code", async () => {
     const em = email();
-    await request(app.getHttpServer())
+    const started = await request(app.getHttpServer())
       .post("/api/auth/register")
       .send({
         email: em,
@@ -58,7 +58,33 @@ describe("Auth (e2e)", () => {
         role: "student",
         language: "en",
       })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post("/api/auth/verify-registration")
+      .send({ email: em, code: "000000" })
+      .expect(400);
+
+    const res = await request(app.getHttpServer())
+      .post("/api/auth/verify-registration")
+      .send({ email: em, code: started.body.verificationCode })
       .expect(201);
+
+    expect(res.body.user).toBeDefined();
+    expect(res.body.user.email).toBe(em.toLowerCase());
+    const cookies = getSetCookieHeaders(res.headers);
+    expect(cookies.some((c) => c.startsWith("access_token="))).toBe(true);
+    expect(cookies.some((c) => c.startsWith("refresh_token="))).toBe(true);
+  });
+
+  it("POST /api/auth/register — 409 duplicate email after verification", async () => {
+    const em = email();
+    await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     await request(app.getHttpServer())
       .post("/api/auth/register")
@@ -73,15 +99,12 @@ describe("Auth (e2e)", () => {
 
   it("POST /api/auth/login — 200 (cookies), 401 wrong password", async () => {
     const em = email();
-    await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     const ok = await request(app.getHttpServer())
       .post("/api/auth/login")
@@ -99,15 +122,12 @@ describe("Auth (e2e)", () => {
 
   it("POST /api/auth/refresh — 200 with refresh cookie, 401 without", async () => {
     const em = email();
-    const reg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const reg = await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     const cookieHeader = getSetCookieHeaders(reg.headers)
       .map((c) => c.split(";")[0])
@@ -129,15 +149,12 @@ describe("Auth (e2e)", () => {
 
   it("POST /api/auth/logout — 200, cookies cleared", async () => {
     const em = email();
-    const reg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const reg = await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     const cookieHeader = getSetCookieHeaders(reg.headers)
       .map((c) => c.split(";")[0])
@@ -157,15 +174,12 @@ describe("Auth (e2e)", () => {
 
   it("POST /api/auth/change-password — 401 wrong current, 200 then login with new password", async () => {
     const em = email();
-    const reg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: em,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const reg = await registerVerified(app, {
+      email: em,
+      password,
+      role: "student",
+      language: "en",
+    });
 
     const cookieHeader = getSetCookieHeaders(reg.headers)
       .map((c) => c.split(";")[0])

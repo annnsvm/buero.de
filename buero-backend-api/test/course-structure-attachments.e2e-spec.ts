@@ -3,6 +3,7 @@ import request from "supertest";
 import { UserCourseAccessType } from "src/generated/prisma/enums";
 import { PrismaService } from "src/prisma/prisma.service";
 import { createE2eApp } from "./e2e-app.factory";
+import { registerVerified } from "./helpers/register-verified";
 
 function cookieHeaderFromRegister(headers: {
   "set-cookie"?: string | string[];
@@ -36,15 +37,12 @@ describe("Course structure reorder & material attachments (e2e)", () => {
   it("reorders modules and moves a material across modules; rejects foreign ids", async () => {
     const suffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-    const teacherReg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: `t_struct_${suffix}@test.local`,
-        password,
-        role: "teacher",
-        language: "en",
-      })
-      .expect(201);
+    const teacherReg = await registerVerified(app, {
+      email: `t_struct_${suffix}@test.local`,
+      password,
+      role: "teacher",
+      language: "en",
+    });
     const teacherCookie = cookieHeaderFromRegister(teacherReg.headers);
     const teacherId = teacherReg.body.user.id as string;
 
@@ -153,27 +151,21 @@ describe("Course structure reorder & material attachments (e2e)", () => {
   it("teacher can add/list/delete a link attachment; student access is enforced", async () => {
     const suffix = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-    const teacherReg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: `t_att_${suffix}@test.local`,
-        password,
-        role: "teacher",
-        language: "en",
-      })
-      .expect(201);
+    const teacherReg = await registerVerified(app, {
+      email: `t_att_${suffix}@test.local`,
+      password,
+      role: "teacher",
+      language: "en",
+    });
     const teacherCookie = cookieHeaderFromRegister(teacherReg.headers);
     const teacherId = teacherReg.body.user.id as string;
 
-    const studentReg = await request(app.getHttpServer())
-      .post("/api/auth/register")
-      .send({
-        email: `s_att_${suffix}@test.local`,
-        password,
-        role: "student",
-        language: "en",
-      })
-      .expect(201);
+    const studentReg = await registerVerified(app, {
+      email: `s_att_${suffix}@test.local`,
+      password,
+      role: "student",
+      language: "en",
+    });
     const studentCookie = cookieHeaderFromRegister(studentReg.headers);
     const studentId = studentReg.body.user.id as string;
 

@@ -1,6 +1,13 @@
 import { AuthState } from '@/types/redux/auth.types';
 import { createSlice, isAnyOf } from '@reduxjs/toolkit';
-import { loginThunk, logOutThunk, refreshUserThunk, signupThunk } from './authThunks';
+import {
+  loginThunk,
+  logOutThunk,
+  refreshUserThunk,
+  resendSignupCodeThunk,
+  startSignupThunk,
+  verifySignupThunk,
+} from './authThunks';
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -28,17 +35,23 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addMatcher(
-        isAnyOf(loginThunk.fulfilled, signupThunk.fulfilled, refreshUserThunk.fulfilled),
+        isAnyOf(loginThunk.fulfilled, verifySignupThunk.fulfilled, refreshUserThunk.fulfilled),
         (state) => {
           state.status = 'idle';
           state.isAuthenticated = true;
           state.error = null;
         },
       )
+      .addMatcher(isAnyOf(startSignupThunk.fulfilled, resendSignupCodeThunk.fulfilled), (state) => {
+        state.status = 'idle';
+        state.error = null;
+      })
       .addMatcher(
         isAnyOf(
           loginThunk.pending,
-          signupThunk.pending,
+          startSignupThunk.pending,
+          verifySignupThunk.pending,
+          resendSignupCodeThunk.pending,
           logOutThunk.pending,
           refreshUserThunk.pending,
         ),
@@ -50,7 +63,9 @@ const authSlice = createSlice({
       .addMatcher(
         isAnyOf(
           loginThunk.rejected,
-          signupThunk.rejected,
+          startSignupThunk.rejected,
+          verifySignupThunk.rejected,
+          resendSignupCodeThunk.rejected,
           logOutThunk.rejected,
           refreshUserThunk.rejected,
         ),

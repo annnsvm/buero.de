@@ -19,10 +19,13 @@ import {
 import { Throttle } from "@nestjs/throttler";
 import { LoginDto } from "./dto/login.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { VerifyRegistrationDto } from "./dto/verify-registration.dto";
+import { ResendRegistrationCodeDto } from "./dto/resend-registration-code.dto";
 import { CookieService } from "./cookie.service";
 import { UserService } from "../user/user.service";
+import { RegistrationService } from "./registration.service";
 import { Response, Request } from "express";
-import { CreateUserDto } from "../user/dto/create-user.dto";
+import { RegisterDto } from "./dto/register.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { CurrentUser } from "./decorators/current-user.decorator";
 
@@ -32,30 +35,61 @@ export class AuthController {
   constructor(
     private readonly cookieService: CookieService,
     private readonly userService: UserService,
+    private readonly registrationService: RegistrationService,
   ) {}
 
   @Post("register")
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: "Реєстрація",
+    summary: "Почати реєстрацію",
     description:
-      "Створити користувача (user + профіль). Успіх = логін: cookie access_token, refresh_token, тіло { user }. Дублікат email → 409.",
+      "Надіслати 6-значний код на email. Користувача ще не створено. Дублікат email → 409.",
   })
-  @ApiBody({ type: CreateUserDto })
-  @ApiResponse({ status: 201, description: "Користувача створено, токени в cookie" })
+  @ApiBody({ type: RegisterDto })
+  @ApiResponse({ status: 200, description: "Код надіслано, потрібна перевірка email" })
   @ApiResponse({ status: 400, description: "Невалідні дані (email, пароль, role)" })
   @ApiResponse({ status: 409, description: "Email вже зареєстрований" })
   @ApiResponse({ status: 429, description: "Too Many Requests — перевищено ліміт спроб" })
-  async register(
-    @Body() dto: CreateUserDto,
+  async register(@Body() dto: RegisterDto) {
+    return this.registrationService.startRegistration(dto);
+  }
+
+  @Post("verify-registration")
+  @Throttle({ default: { limit: 8, ttl: 60000 } })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: "Підтвердити реєстрацію",
+    description:
+      "Перевірити код з email, створити користувача і увійти: cookie access_token, refresh_token, тіло { user }.",
+  })
+  @ApiBody({ type: VerifyRegistrationDto })
+  @ApiResponse({ status: 201, description: "Користувача створено, токени в cookie" })
+  @ApiResponse({ status: 400, description: "Невірний або прострочений код" })
+  @ApiResponse({ status: 429, description: "Too Many Requests" })
+  async verifyRegistration(
+    @Body() dto: VerifyRegistrationDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.userService.createUser(dto);
+    const user = await this.registrationService.verifyRegistration(dto.email, dto.code);
     const accessToken = this.userService.signAccessToken(user.id, user.role);
     const refreshToken = await this.userService.createRefreshToken(user.id);
     this.cookieService.setAuthCookies(res, accessToken, refreshToken);
     res.status(HttpStatus.CREATED).json({ user });
+  }
+
+  @Post("resend-registration-code")
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Надіслати код реєстрації ще раз",
+  })
+  @ApiBody({ type: ResendRegistrationCodeDto })
+  @ApiResponse({ status: 200, description: "Новий код надіслано" })
+  @ApiResponse({ status: 400, description: "Занадто часті запити" })
+  @ApiResponse({ status: 404, description: "Немає незавершеної реєстрації" })
+  async resendRegistrationCode(@Body() dto: ResendRegistrationCodeDto) {
+    return this.registrationService.resendCode(dto.email);
   }
 
   @Post("login")

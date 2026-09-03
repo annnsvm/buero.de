@@ -34,7 +34,15 @@
     "switchToSignUp": "Don't have an account? Sign Up",
     "switchToLogin": "Already have an account? Log In",
     "loginFailed": "Login failed",
-    "signUpFailed": "Sign up failed"
+    "signUpFailed": "Sign up failed",
+    "verifyTitle": "Check your email",
+    "verifyDescription": "We sent a code to {{email}}. Enter it to finish signing up.",
+    "verifyCode": "Code from email",
+    "verifyButton": "Confirm",
+    "verifyResend": "Send code again",
+    "verifyResent": "A new code has been sent",
+    "verifyFailed": "Invalid or expired code",
+    "verifyBack": "Change email"
   },
   "footer": {
     "siteFooter": "Site footer",

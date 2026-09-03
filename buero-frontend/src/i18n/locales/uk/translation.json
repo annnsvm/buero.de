@@ -34,7 +34,15 @@
     "switchToSignUp": "Немає облікового запису? Зареєструватися",
     "switchToLogin": "Вже є обліковий запис? Увійти",
     "loginFailed": "Не вдалося увійти",
-    "signUpFailed": "Не вдалося зареєструватися"
+    "signUpFailed": "Не вдалося зареєструватися",
+    "verifyTitle": "Перевірка email",
+    "verifyDescription": "Ми надіслали код на {{email}}. Введи його, щоб завершити реєстрацію.",
+    "verifyCode": "Код з листа",
+    "verifyButton": "Підтвердити",
+    "verifyResend": "Надіслати код ще раз",
+    "verifyResent": "Новий код надіслано",
+    "verifyFailed": "Невірний або прострочений код",
+    "verifyBack": "Змінити email"
   },
   "footer": {
     "siteFooter": "Підвал сайту",
