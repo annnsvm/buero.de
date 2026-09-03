@@ -46,7 +46,7 @@ const FooterSocialLinks: React.FC = () => {
               <Icon name={icon} size={18} color="currentColor" />
             </a>
           ) : (
-            <span className={mutedClass} title={t('footer.socialComingSoon')} aria-label={`${name} — ${t('footer.socialComingSoon')}`}>
+            <span className={mutedClass} title={t('footer.socialComingSoon')} aria-label={`${name} - ${t('footer.socialComingSoon')}`}>
               <Icon name={icon} size={18} color="currentColor" />
             </span>
           )}

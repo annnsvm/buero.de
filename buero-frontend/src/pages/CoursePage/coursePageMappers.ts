@@ -64,12 +64,12 @@ export const formatMaterialDuration = (mat: ApiCourseMaterial): string => {
     const d = (mat.content as { duration?: string }).duration;
     if (typeof d === 'string' && d.trim()) return d;
   }
-  return '—';
+  return '-';
 };
 
 export const parseDurationLabelToSeconds = (label: string): number | null => {
   const t = label.trim();
-  if (!t || t === '—') return null;
+  if (!t || t === '-') return null;
   const parts = t.split(':').map((p) => parseInt(p.trim(), 10));
   if (parts.some((n) => Number.isNaN(n))) return null;
   if (parts.length === 2) return parts[0] * 60 + parts[1];
@@ -207,7 +207,7 @@ export const buildLearningLessonFromMaterial = (
             total: totalMaterials,
           })
         : i18n.t('coursePage.progressText', { current: 0, total: 0 }),
-    streak: '—',
+    streak: '-',
     progress: totalMaterials > 0 ? Math.round(((flatIndex + 1) / totalMaterials) * 100) : 0,
     type: typeLabel,
     status: i18n.t('coursePage.inProgress'),

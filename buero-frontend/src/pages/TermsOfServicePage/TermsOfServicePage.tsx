@@ -33,7 +33,7 @@ const TermsOfServicePage = () => {
             </h1>
 
             <p className={paragraphClass}>
-              Ці Умови використання (далі — «Умови») визначають правила користування
+              Ці Умови використання (далі - «Умови») визначають правила користування
               онлайн-платформою BÜRO.DE, яка надає доступ до онлайн-курсів з вивчення німецької
               мови, відеоматеріалів та навчальних матеріалів.
             </p>
@@ -44,7 +44,7 @@ const TermsOfServicePage = () => {
 
             <h2 className={sectionTitleClass}>1. Загальна інформація</h2>
             <p className={paragraphClass}>
-              BÜRO.DE — онлайн-платформа для вивчення німецької мови.
+              BÜRO.DE - онлайн-платформа для вивчення німецької мови.
             </p>
             <p className={paragraphClass}>Оператор платформи:</p>
             <p className={paragraphClass}>
@@ -69,18 +69,18 @@ const TermsOfServicePage = () => {
               Платформа
             </p>
             <p className={paragraphClass}>
-              — вебсайт BÜRO.DE та всі пов&apos;язані з ним цифрові сервіси.
+              - вебсайт BÜRO.DE та всі пов&apos;язані з ним цифрові сервіси.
             </p>
             <p className={`${paragraphClass} font-semibold text-[var(--color-text-primary)]`}>
               Користувач
             </p>
             <p className={paragraphClass}>
-              — фізична особа, яка створила обліковий запис або використовує матеріали платформи.
+              - фізична особа, яка створила обліковий запис або використовує матеріали платформи.
             </p>
             <p className={`${paragraphClass} font-semibold text-[var(--color-text-primary)]`}>
               Курс
             </p>
-            <p className={paragraphClass}>— цифровий освітній продукт, що може включати:</p>
+            <p className={paragraphClass}>- цифровий освітній продукт, що може включати:</p>
             <ul className={listClass}>
               <li>відеоуроки;</li>
               <li>навчальні матеріали;</li>
@@ -92,7 +92,7 @@ const TermsOfServicePage = () => {
               Особистий кабінет
             </p>
             <p className={paragraphClass}>
-              — персональний обліковий запис користувача для доступу до придбаних курсів.
+              - персональний обліковий запис користувача для доступу до придбаних курсів.
             </p>
 
             <h2 className={sectionTitleClass}>3. Реєстрація облікового запису</h2>

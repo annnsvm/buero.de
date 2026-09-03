@@ -5,14 +5,14 @@ import { PUBLIC_PAGES } from '@/seo/publicPages';
 const homeTemplate = `<!doctype html>
 <html lang="uk">
   <head>
-    <title>Büro.de — Вивчай німецьку. Живи німецькою.</title>
-    <meta name="description" content="Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
+    <title>Büro.de - Вивчай німецьку. Живи німецькою.</title>
+    <meta name="description" content="Мовні та інтеграційні курси - щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
     <link rel="canonical" href="https://buro-de.com/" />
     <meta property="og:url" content="https://buro-de.com/" />
-    <meta property="og:title" content="Büro.de — Вивчай німецьку. Живи німецькою." />
-    <meta property="og:description" content="Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
-    <meta name="twitter:title" content="Büro.de — Вивчай німецьку. Живи німецькою." />
-    <meta name="twitter:description" content="Мовні та інтеграційні курси — щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
+    <meta property="og:title" content="Büro.de - Вивчай німецьку. Живи німецькою." />
+    <meta property="og:description" content="Мовні та інтеграційні курси - щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
+    <meta name="twitter:title" content="Büro.de - Вивчай німецьку. Живи німецькою." />
+    <meta name="twitter:description" content="Мовні та інтеграційні курси - щоб говорити німецькою й знати, де й як її застосовувати в житті в Німеччині." />
   </head>
   <body></body>
 </html>`;
