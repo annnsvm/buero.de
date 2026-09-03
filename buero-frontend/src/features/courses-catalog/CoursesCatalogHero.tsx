@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Section } from '@/components/layout';
+import Reveal from '@/features/landing/shared/Reveal';
 import CatalogBackground from './CatalogBackground';
 import CourseSearch from './CourseSearch';
 
@@ -22,20 +23,24 @@ const CoursesCatalogHero: FC<CoursesCatalogHeroProps> = ({
         <Container
           className="relative z-10 flex flex-col items-center justify-center pt-38 pb-28 md:px-20"
         >
-          <div className="w-full max-w-[617px]  items-center">
-            <p className="mb-4 font-semibold uppercase  text-[var(--color-accent-primary)]">
-              {t('courses.catalogEyebrow')}
-            </p>
-            <h1 className="mb-6 text-4xl sm:text-5xl md:text-6xl font-[family-name:var(--font-heading)] leading-[1.2] tracking-[-0.01em] text-[var(--color-white)]">
-              {t('courses.catalogTitle')}
-            </h1>
-            <p className="mb-8 text-lg md:text-xl leading-[1.5] text-[var(--color-white)]">
-              {t('courses.catalogDescription')}
-            </p>
-            <CourseSearch
-              onSearch={onSearchChange ?? (() => {})}
-              initialSearch={initialSearch}
-            />
+          <div className="w-full max-w-[617px] items-center">
+            <Reveal>
+              <p className="mb-4 font-semibold uppercase text-[var(--color-accent-primary)]">
+                {t('courses.catalogEyebrow')}
+              </p>
+              <h1 className="mb-6 text-4xl sm:text-5xl md:text-6xl font-[family-name:var(--font-heading)] leading-[1.2] tracking-[-0.01em] text-[var(--color-white)]">
+                {t('courses.catalogTitle')}
+              </h1>
+            </Reveal>
+            <Reveal delayMs={140}>
+              <p className="mb-8 text-lg md:text-xl leading-[1.5] text-[var(--color-white)]">
+                {t('courses.catalogDescription')}
+              </p>
+              <CourseSearch
+                onSearch={onSearchChange ?? (() => {})}
+                initialSearch={initialSearch}
+              />
+            </Reveal>
           </div>
         </Container>
       </div>

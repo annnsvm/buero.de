@@ -1,5 +1,6 @@
 import { Container, Section, Text } from '@/components/layout';
 import { useTranslation } from 'react-i18next';
+import Reveal from '../shared/Reveal';
 import HeroBackground from './HeroBackground';
 import HeroTitle from './HeroTitle';
 import HeroActionBtn from './HeroActionBtn';
@@ -21,16 +22,18 @@ const Hero: React.FC = () => {
             ].join(' ')}
             aria-label="Hero Content"
           >
-            <HeroTitle>
-              <span className="block text-balance">{t('landing.heroTitle1')}</span>
-              <span className="block text-balance">{t('landing.heroTitle2')}</span>
-            </HeroTitle>
-            <div className={`flex w-full flex-col gap-12 sm:gap-8 ${isUk ? 'items-center' : ''}`}>
+            <Reveal>
+              <HeroTitle>
+                <span className="block text-balance">{t('landing.heroTitle1')}</span>
+                <span className="block text-balance">{t('landing.heroTitle2')}</span>
+              </HeroTitle>
+            </Reveal>
+            <Reveal delayMs={140} className={`flex w-full flex-col gap-12 sm:gap-8 ${isUk ? 'items-center' : ''}`}>
               <Text label="Hero description" className="font-normal text-[var(--color-white)]">
                 {t('landing.heroDescription')}
               </Text>
               <HeroActionBtn />
-            </div>
+            </Reveal>
             <HeroBenefits />
           </div>
         </Container>

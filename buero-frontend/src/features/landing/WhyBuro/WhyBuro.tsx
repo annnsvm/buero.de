@@ -10,7 +10,7 @@ const WhyBuro = () => {
   const { t } = useTranslation();
 
   return (
-    <Section className="bg-[var(--color-soapstone-base)] pt-20 pb-24 sm:pt-16 sm:pb-20">
+    <Section className="bg-[var(--color-soapstone-base)] pt-20 pb-8 sm:pt-16 sm:pb-10">
       <Container>
         <Reveal>
           <SectionTitle label={t('landing.whySection')}>{t('landing.whySection')}</SectionTitle>
@@ -45,20 +45,13 @@ const WhyBuro = () => {
           </li>
           <li className="h-full">
             <Reveal delayMs={140} className="h-full">
-              <BenefitCard iconName={ICON_NAMES.BOOK_A} title={t('landing.benefitStructuredTitle')}>
-                {t('landing.benefitStructuredDesc')}
-              </BenefitCard>
-            </Reveal>
-          </li>
-          <li className="h-full">
-            <Reveal delayMs={210} className="h-full">
               <BenefitCard iconName={ICON_NAMES.GLOBE} title={t('landing.benefitRealLifeTitle')}>
                 {t('landing.benefitRealLifeDesc')}
               </BenefitCard>
             </Reveal>
           </li>
-          <li className="h-full sm:col-span-2 lg:max-w-[calc(50%-0.75rem)]">
-            <Reveal delayMs={280} className="h-full">
+          <li className="h-full">
+            <Reveal delayMs={210} className="h-full">
               <BenefitCard iconName={ICON_NAMES.CONTRACT} title={t('landing.benefitShortTitle')}>
                 {t('landing.benefitShortDesc')}
               </BenefitCard>
@@ -66,7 +59,7 @@ const WhyBuro = () => {
           </li>
         </ul>
 
-        <Reveal delayMs={200} className="mt-12 flex flex-col items-center gap-3 sm:mt-14">
+        <Reveal delayMs={200} className="mt-10 flex flex-col items-center gap-3 sm:mt-12">
           <LandingCta label={t('landing.ctaAfterWhy')} to={ROUTES.COURSES} />
           <p className="text-center text-[0.95rem] text-[var(--color-text-secondary)]">
             {t('landing.ctaAfterWhyHint')}

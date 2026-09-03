@@ -12,11 +12,11 @@ const CatalogBackground: React.FC = () => {
         sizes="100vw"
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="buero-hero-bg absolute inset-0 h-full w-full object-cover object-center"
         fetchPriority="high"
         decoding="async"
       />
-      <div aria-hidden="true" className="absolute inset-0 bg-black/70" />
+      <div aria-hidden="true" className="buero-hero-overlay absolute inset-0 bg-black/70" />
     </>
   );
 };
